@@ -1,0 +1,65 @@
+{
+  "title": "Choose the layout for the glass Careers page",
+  "question": "Your page is set in frosted glass over the young Liberians in your header photo, in NICTD navy, red and white, with an application form on the page. The roll dealt three layouts. Keep the lead, take another, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Team rooms",
+      "kicker": "THE ROLL",
+      "lineage": "Studio and agency careers pages on Refero and Dribbble that group roles by team",
+      "thesis": "Three frosted glass rooms, one for each NICTD team, standing over the people who staff them.",
+      "palette": ["#071A3E", "#0B2C63", "#C8102E", "#FFFFFF"],
+      "materials": ["frosted glass", "your header photo"],
+      "viewport": "Headline and mission over the photo. Below it, three glass columns side by side: Data Collection, Research and Data Team, each holding its roles. Picking a role clears that room's glass, frosts the other two, and slides the glass application form up beneath them with the role filled in.",
+      "risk": "The teams are uneven (two roles, one, two), so the Research room reads light unless its one role carries real weight.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "headline + mission over photo", "x": 0, "y": 0, "w": 7, "h": 3 },
+        { "label": "Data Collection room", "x": 0, "y": 3, "w": 4, "h": 4, "accent": true },
+        { "label": "Research room", "x": 4, "y": 3, "w": 4, "h": 4, "accent": true },
+        { "label": "Data Team room", "x": 8, "y": 3, "w": 4, "h": 4, "accent": true },
+        { "label": "glass application form", "x": 2, "y": 7, "w": 8, "h": 3 }
+      ] },
+      "comp": ".impeccable/mocks/decision/careers-assigned.webp"
+    },
+    {
+      "id": "pathway",
+      "label": "The pathway",
+      "lineage": "Onboarding and hiring-process pages on Mobbin that show the steps as stations",
+      "thesis": "Joining NICTD as a path of four glass panes, from finding a role to paid training.",
+      "palette": ["#071A3E", "#0B2C63", "#C8102E", "#FFFFFF"],
+      "materials": ["frosted glass", "progress line"],
+      "viewport": "Four glass panes across the photo (Find a role, Apply, Screening, Training), joined by a line. Scrolling moves along the path: the first pane opens into the roles, the second into the application form, and the last two say what happens next. Each pane clears as it becomes the current step.",
+      "risk": "It asks people who only want to see the roles to walk a story first, and the form sits further down the page.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "headline over photo", "x": 0, "y": 0, "w": 8, "h": 2 },
+        { "label": "1 Find a role", "x": 0, "y": 2, "w": 3, "h": 2, "accent": true },
+        { "label": "2 Apply", "x": 3, "y": 2, "w": 3, "h": 2 },
+        { "label": "3 Screening", "x": 6, "y": 2, "w": 3, "h": 2 },
+        { "label": "4 Training", "x": 9, "y": 2, "w": 3, "h": 2 },
+        { "label": "roles (step 1 open)", "x": 0, "y": 4, "w": 12, "h": 3 },
+        { "label": "application form (step 2)", "x": 2, "y": 7, "w": 8, "h": 3 }
+      ] },
+      "comp": ".impeccable/mocks/decision/careers-pathway.webp"
+    },
+    {
+      "id": "apply-first",
+      "label": "Apply-first split",
+      "lineage": "Recruitment landing pages on Refero that open with the application",
+      "thesis": "The application is open from the first screen, a glass form standing beside the people you would be joining.",
+      "palette": ["#071A3E", "#0B2C63", "#C8102E", "#FFFFFF"],
+      "materials": ["frosted glass", "your header photo"],
+      "viewport": "The first screen splits. On the left are the photo, the headline and the mission. On the right a frosted glass application form is already open. Below, the roles run as glass rows; 'Apply for this role' carries the role's title up into the form.",
+      "risk": "A form before the roles can feel pushy to someone still deciding whether NICTD is for them.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "photo + headline + mission", "x": 0, "y": 0, "w": 7, "h": 5 },
+        { "label": "glass application form", "x": 7, "y": 0, "w": 5, "h": 5, "accent": true },
+        { "label": "roles as glass rows", "x": 0, "y": 5, "w": 12, "h": 3 },
+        { "label": "how joining works", "x": 0, "y": 8, "w": 12, "h": 2 }
+      ] },
+      "comp": ".impeccable/mocks/decision/careers-apply-first.webp"
+    }
+  ],
+  "reroll": true,
+  "steer": true,
+  "buildPath": { "value": "code", "toggle": true }
+}

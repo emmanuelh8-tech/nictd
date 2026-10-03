@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#0C0C0C"/>
+  <text x="24" y="40" font-family="Kanit,Segoe UI,sans-serif" font-weight="700" font-size="21" fill="#D7E2EA" letter-spacing="1">NATIONAL FIBER BACKBONE</text>
+  <text x="24" y="60" font-family="Consolas,monospace" font-size="11" fill="#7E8A99">schematic · demonstration graphic · not to scale</text>
+  <g stroke="#BBCCD7" stroke-width="2.2" fill="none" opacity="0.9">
+    <path d="M110 260 L200 210 L300 190 L390 220 L470 260 L540 300"/>
+    <path d="M200 210 L230 130 L330 100"/>
+    <path d="M300 190 L360 130"/>
+  </g>
+  <g stroke="#B600A8" stroke-width="1.6" stroke-dasharray="5 4" fill="none">
+    <path d="M390 220 L440 160"/>
+    <path d="M470 260 L520 210"/>
+    <path d="M110 260 L80 190"/>
+  </g>
+  <g fill="#FFFFFF">
+    <circle cx="110" cy="260" r="7"/><circle cx="200" cy="210" r="5"/><circle cx="300" cy="190" r="5"/>
+    <circle cx="390" cy="220" r="5"/><circle cx="470" cy="260" r="5"/><circle cx="540" cy="300" r="5"/>
+    <circle cx="230" cy="130" r="4"/><circle cx="330" cy="100" r="4"/><circle cx="360" cy="130" r="4"/>
+  </g>
+  <g fill="#7621B0"><circle cx="440" cy="160" r="4"/><circle cx="520" cy="210" r="4"/><circle cx="80" cy="190" r="4"/></g>
+  <text x="96" y="285" font-family="Kanit,Segoe UI,sans-serif" font-size="11" fill="#9FB0C2">Monrovia landing</text>
+  <g font-family="Kanit,Segoe UI,sans-serif" font-size="11" fill="#9FB0C2">
+    <text x="212" y="200">Kakata</text><text x="288" y="178">Gbarnga</text><text x="400" y="212">Ganta</text>
+    <text x="480" y="252">Tappita</text><text x="548" y="318">Zwedru</text><text x="236" y="120">Tubmanburg</text>
+    <text x="336" y="90">Voinjama</text>
+  </g>
+  <g font-family="Kanit,Segoe UI,sans-serif" font-size="11">
+    <line x1="24" y1="322" x2="56" y2="322" stroke="#BBCCD7" stroke-width="2.2"/><text x="62" y="326" fill="#9FB0C2">Operational</text>
+    <line x1="160" y1="322" x2="192" y2="322" stroke="#B600A8" stroke-width="1.6" stroke-dasharray="5 4"/><text x="198" y="326" fill="#9FB0C2">Planned county extension</text>
+  </g>
+</svg>

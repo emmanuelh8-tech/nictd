@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "brand/brand-kit.html"
+        ],
+        "createdAt": "2026-10-01T16:42:57.065Z",
+        "reason": "Claude: static detector pairs dark-theme tokens with light-theme grounds; every text colour in brand-kit.html renders on a background from its own theme"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "brand/brand-kit.html"
+        ],
+        "createdAt": "2026-10-01T16:49:48.740Z",
+        "reason": "Claude: flagged .stage boxes hold centred logo specimens (graphics, not text) and the files panel's table cells carry their own 11px/16px padding"
+      },
+      {
+        "rule": "wide-tracking",
+        "value": "*",
+        "files": [
+          "brand/brand-kit.html"
+        ],
+        "createdAt": "2026-10-01T16:50:19.860Z",
+        "reason": "Claude: only tracked text is the short uppercase lockup descriptor and eyebrow labels, specified to match brand/niip-lockup.svg"
+      }
+    ]
+  }
+}

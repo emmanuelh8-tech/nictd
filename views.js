@@ -1,0 +1,3854 @@
+// views.js, HTML templates for NICTD (National ICT Database of Liberia).
+// Original design system; not a copy of any real organization's branding.
+'use strict';
+
+const imgs = require('./imagestore');
+
+// Background for an admin-managed image slot. Written inline rather than in the stylesheet so a
+// new upload shows up straight away, and so every collection stays visually separate.
+const WASH = 'linear-gradient(180deg, rgba(11,44,99,.05), rgba(11,44,99,.35))';
+function slotBg(collection, key, wash = false) {
+  const u = imgs.url(collection, key);
+  if (!u) return 'background-image:linear-gradient(150deg, #0B2C63, #1C4C9E 55%, #7c0a1c)';
+  return `background-image:${wash ? WASH + ',' : ''}url('${u}')`;
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+const fmt = (v) => (v == null ? 'n/a' : Number(v).toLocaleString('en-US'));
+const fmtTs = (s) => String(s || '').replace('T', ' ').slice(0, 16);
+
+const ICONS = {
+  home: '<path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/>',
+  gauge: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M8 17v-5"/><path d="M13 17v-9"/><path d="M18 17V6"/>',
+  chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  search: '<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  arrow: '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  chevron: '<polyline points="9 18 15 12 9 6"/>',
+  layers: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+  map: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+  tower: '<path d="M12 12v10"/><path d="M8 22h8"/><circle cx="12" cy="9" r="2"/><path d="M16.24 4.76a7 7 0 0 1 0 9.9"/><path d="M7.76 14.66a7 7 0 0 1 0-9.9"/>',
+  wifi: '<path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 15.61a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>',
+  coin: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1.1-3 2.5 1.3 2 3 2.5 3 1.1 3 2.5-1.3 2.5-3 2.5-3-1.1-3-2.5"/>',
+  gavel: '<path d="M14 13l-7.5 7.5a2.1 2.1 0 0 1-3-3L11 10"/><path d="M16 16l6 6"/><path d="M8 8l6-6 6 6-6 6z"/>',
+  leaf: '<path d="M11 20A7 7 0 0 1 4 13c0-6 7-11 15-11 0 8-5 15-11 15z"/><path d="M4 13c0 3.5 2 6 5 7"/>',
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>',
+  camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  expand: '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>',
+  mail: '<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+  call: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  bars: '<path d="M5 21v-8"/><path d="M12 21V9"/><path d="M19 21V5"/><circle cx="5" cy="10.4" r="1.3"/><circle cx="12" cy="6.4" r="1.3"/><circle cx="19" cy="2.6" r="1.3"/>',
+  bookopen: '<path d="M12 6.5C10.4 5.1 7.7 4.5 3 4.5V18c4.7 0 7.4.6 9 2 1.6-1.4 4.3-2 9-2V4.5c-4.7 0-7.4.6-9 2z"/><path d="M12 6.5V20"/>',
+  pie: '<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
+  info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+  sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>',
+  cloudup: '<path d="M12 13v8"/><path d="M8 17l4-4 4 4"/><path d="M20 16.6A5 5 0 0017 8h-1.3A8 8 0 104 15.9"/>',
+  seal: '<path d="M7 3h10v11l-5 3-5-3z"/><circle cx="12" cy="8" r="2.6"/><path d="M9.5 15.5L8 21l4-2 4 2-1.5-5.5"/>',
+  docsearch: '<path d="M14 3H6v18h9"/><path d="M14 3l5 5v3"/><circle cx="17" cy="17" r="3.2"/><path d="M19.4 19.4L22 22"/>',
+  funnel: '<path d="M3 4h18l-7 8v6l-4 2v-8z"/>',
+  rotate: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
+  login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>',
+  check: '<polyline points="4.5 12.5 9.5 17.5 19.5 7"/>',
+  upload: '<path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
+};
+function icon(name, cls = 'icn') { return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`; }
+
+const DASH_ICON = { connectivity: 'tower', 'mobile-broadband': 'wifi', affordability: 'coin', 'trust-governance': 'gavel', sustainability: 'leaf', education: 'book' };
+const DASH_COLOR = { connectivity: '', 'mobile-broadband': 'teal', affordability: '', 'trust-governance': 'clay', sustainability: 'teal', education: '' };
+
+// generic report-cover graphic + PDF badge, hand-authored, varies slightly per id for visual rhythm across a list
+const COVER_ACCENTS = ['#1C5BB8', '#C8102E', '#1C4C9E', '#7FA0CE'];
+function paperCover(seed = 0) {
+  const accent = COVER_ACCENTS[seed % COVER_ACCENTS.length];
+  const lines = [64, 78, 52, 70, 44];
+  return `<svg class="paper-cover" viewBox="0 0 160 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect width="160" height="200" fill="#fff"/>
+    <rect width="160" height="46" fill="#0B2C63"/>
+    <rect y="46" width="160" height="4" fill="${accent}"/>
+    <path d="M136 0 L160 0 L160 24 Z" fill="rgba(255,255,255,.14)"/>
+    <g fill="#DCE2DA">${lines.map((w, i) => `<rect x="16" y="${72 + i * 20}" width="${w}" height="6" rx="3"/>`).join('')}</g>
+    <circle cx="128" cy="168" r="20" fill="${accent}" opacity=".12"/>
+    <path d="M40 24 L52 24 L52 36" stroke="#fff" stroke-width="2.4" fill="none" opacity=".55"/>
+  </svg>
+  <span class="pdf-badge">PDF</span>`;
+}
+
+// original "network node" mark, a center point with satellite nodes (not any real org's logo)
+function nodeMark(size = 30, cls = '') {
+  return `<svg class="nodemark ${cls}" width="${size}" height="${size}" viewBox="0 0 40 40" aria-hidden="true">
+    <g stroke="currentColor" stroke-width="1.6" fill="none" opacity="0.85">
+      <line x1="20" y1="20" x2="20" y2="5"/><line x1="20" y1="20" x2="33" y2="12"/>
+      <line x1="20" y1="20" x2="34" y2="27"/><line x1="20" y1="20" x2="22" y2="35"/>
+      <line x1="20" y1="20" x2="8" y2="31"/><line x1="20" y1="20" x2="6" y2="14"/>
+    </g>
+    <circle cx="20" cy="20" r="4.2" fill="currentColor"/>
+    <g fill="currentColor"><circle cx="20" cy="5" r="2.4"/><circle cx="33" cy="12" r="2"/><circle cx="34" cy="27" r="2.4"/>
+    <circle cx="22" cy="35" r="2"/><circle cx="8" cy="31" r="2.4"/><circle cx="6" cy="14" r="2"/></g>
+  </svg>`;
+}
+
+// ---------- official seal logo: circular badge, real Liberia national outline + circuit-node overlay ----------
+// Path traced from geoBoundaries' open Liberia ADM0 dataset (CC BY 3.0 IGO), simplified, not a real government seal.
+const LIBERIA_EMBLEM_PATH = 'M-6.87,-45.84L-8.89,-44.47L-10.48,-44.82L-13.44,-43.23L-13.36,-44.88L-14.91,-45.61L-16.78,-44.42L-18.3,-44.68L-18.61,-41.3L-19.28,-40.13L-18.87,-38.21L-19.95,-37.18L-23.19,-37.09L-25.49,-34.79L-25.5,-28.97L-27.5,-28.16L-30.68,-24.03L-36.31,-20.56L-38.17,-17.72L-40.07,-17.24L-40.39,-16.32L-40.85,-16.61L-41.75,-15.09L-41.36,-13.69L-42.29,-13.55L-42.18,-12.4L-43.48,-11.37L-43.23,-10.7L-44.98,-10.37L-42.84,-8.72L-42.03,-6.7L-39.09,-7.21L-38.05,-5.58L-38.45,-4.82L-39.64,-5.14L-42.16,-6.88L-42.48,-6.26L-41.87,-5.48L-35.57,-2.62L-34.96,-2.87L-33.24,-1.79L-33.03,-2.18L-33.14,-1.5L-29.76,1.57L-28.46,0.94L-29.25,1.43L-29.12,2.03L-29.18,1.33L-29.69,1.62L-29.83,2.86L-28.18,3.02L-27.85,3.78L-29.55,3.38L-29.87,2.67L-29.61,3.49L-27.46,4.8L-20.93,6.73L-20.23,7.63L-17.23,8.97L-16.19,10.42L-13.74,11.87L-12.74,13.89L-3.44,21.46L-3.5,22.34L-1.53,23.39L0.01,25.74L3.18,28.09L2.95,28.54L8.5,31.61L8.64,32.26L12.25,33.39L15.64,36.06L19.98,37.65L25.79,41.23L32.3,42.58L34.89,43.75L34.97,44.57L37.13,45.76L41.58,45.86L40.66,44.98L41.26,44.22L40.68,43.75L40.52,40.95L41.06,40.35L40.47,39.41L40.79,36.6L40.08,36.19L39.99,34.05L41.53,33.64L40.82,32.4L41.23,31.85L40.81,30.01L42.42,29.15L42.63,25.78L43.93,25.27L43.82,26.17L44.98,24.56L44.81,23.34L44.27,23.81L43.23,22.39L43.85,22.41L44.64,18.92L42.87,13.55L42.32,13.94L41.71,13.05L41.09,13.56L40.47,12.2L38.71,11.82L38.62,11.02L38.11,12.13L36.47,10.98L35.77,10.19L36.22,9.18L35.71,8.11L34.5,8.21L34.64,5.73L35.09,5.61L33.35,3.68L32.12,3.69L31.11,2.91L27.43,3.83L23.77,1.7L22.63,2.2L22.19,1.85L22.8,1.56L22.54,0.17L21.59,-0.7L20.92,-0.11L17.98,-1.04L19.02,-2.55L19.5,-2.36L19.63,-3.51L20.02,-3.15L21.4,-4.14L23.77,-6.78L24.52,-8.98L23.91,-9.44L24.56,-10.07L24.14,-11.34L25.24,-12.11L24.57,-13.88L25.15,-16L23.21,-17.42L22.37,-22.21L19.94,-23.35L20.26,-24.78L19.09,-25.68L19.23,-27.35L16.55,-27.32L15.71,-25.98L15.82,-23.21L12.66,-19.61L13.03,-18.32L12.37,-17.62L11.55,-17.6L11.29,-18.47L7.15,-16.35L6.77,-17.98L5.16,-18.85L5.02,-20.47L3.29,-20.21L3.1,-21.26L1.86,-21.5L0.73,-20.48L0.28,-21.32L-1.04,-20.01L1.65,-25.52L1.19,-26.42L1.91,-28.47L0.06,-31.65L0.67,-34.99L-0.54,-34.91L-0.57,-37.74L-1.75,-38.03L-1.15,-39.8L-1.87,-40.86L-1.02,-41.71L-3.44,-43.22L-4.65,-42.59L-4.05,-43.85L-4.97,-44.82L-6.33,-43.57L-6.87,-45.84Z';
+function ringArcPoint(cx, cy, r, bearingDeg) {
+  const t = (bearingDeg * Math.PI) / 180;
+  return [Math.round((cx + r * Math.sin(t)) * 100) / 100, Math.round((cy - r * Math.cos(t)) * 100) / 100];
+}
+function ringArcPath(cx, cy, r, fromDeg, toDeg, sweep) {
+  const [x1, y1] = ringArcPoint(cx, cy, r, fromDeg);
+  const [x2, y2] = ringArcPoint(cx, cy, r, toDeg);
+  const large = Math.abs(toDeg - fromDeg) > 180 ? 1 : 0;
+  return `M${x1},${y1} A${r},${r} 0 ${large},${sweep} ${x2},${y2}`;
+}
+function starPath(cx, cy, r) {
+  let d = '';
+  for (let i = 0; i < 10; i++) {
+    const rad = i % 2 === 0 ? r : r * 0.42;
+    const a = (Math.PI / 5) * i - Math.PI / 2;
+    const x = Math.round((cx + rad * Math.cos(a)) * 100) / 100, y = Math.round((cy + rad * Math.sin(a)) * 100) / 100;
+    d += (i === 0 ? 'M' : 'L') + x + ',' + y;
+  }
+  return d + 'Z';
+}
+function sealLogo(size = 40, cls = '') {
+  const cx = 100, cy = 100, ringR = 84;
+  const topArc = ringArcPath(cx, cy, ringR, -100, 100, 1);       // navy, over the top
+  const rightGap = ringArcPath(cx, cy, ringR, 100, 125, 1);      // white, star
+  const bottomArc = ringArcPath(cx, cy, ringR, 235, 125, 0);     // red, under the bottom (left->right, upright text)
+  const leftGap = ringArcPath(cx, cy, ringR, 235, 260, 1);       // white, star
+  const [rgx, rgy] = ringArcPoint(cx, cy, ringR, 112.5);
+  const [lgx, lgy] = ringArcPoint(cx, cy, ringR, 247.5);
+  return `<svg class="seal-logo ${cls}" width="${size}" height="${size}" viewBox="0 0 200 200" aria-hidden="true">
+    <circle cx="${cx}" cy="${cy}" r="96" fill="#fff" stroke="#0B2C63" stroke-width="1.4"/>
+    <circle cx="${cx}" cy="${cy}" r="72" fill="none" stroke="#0B2C63" stroke-width="1"/>
+    <path id="sealRingTop" d="${topArc}" fill="none" stroke="#0B2C63" stroke-width="18"/>
+    <path d="${rightGap}" fill="none" stroke="#fff" stroke-width="18"/>
+    <path id="sealRingBottom" d="${bottomArc}" fill="none" stroke="#C8102E" stroke-width="18"/>
+    <path d="${leftGap}" fill="none" stroke="#fff" stroke-width="18"/>
+    <path d="${starPath(rgx, rgy, 8)}" fill="#0B2C63"/>
+    <path d="${starPath(lgx, lgy, 8)}" fill="#0B2C63"/>
+    <text font-family="Public Sans,Arial,sans-serif" font-size="13" font-weight="700" fill="#fff" letter-spacing="1.6">
+      <textPath href="#sealRingTop" startOffset="50%" text-anchor="middle">NATIONAL ICT DATABASE</textPath>
+    </text>
+    <text font-family="Public Sans,Arial,sans-serif" font-size="13" font-weight="700" fill="#fff" letter-spacing="2">
+      <textPath href="#sealRingBottom" startOffset="50%" text-anchor="middle">OF LIBERIA</textPath>
+    </text>
+    <circle cx="${cx}" cy="${cy}" r="66" fill="#fff"/>
+    <g transform="translate(100,100) scale(1.28)">
+      <path d="${LIBERIA_EMBLEM_PATH}" fill="#0B2C63"/>
+      <g stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round">
+        <path d="M-4,-2 L10,-14 M10,-14 L22,-8 M10,-14 L14,-28 M-4,-2 L-2,14 M-2,14 L10,24"/>
+      </g>
+      <g fill="#fff">
+        <circle cx="-4" cy="-2" r="3.2"/><circle cx="10" cy="-14" r="2.6"/><circle cx="22" cy="-8" r="2.6"/>
+        <circle cx="14" cy="-28" r="2.2"/><circle cx="-2" cy="14" r="2.6"/><circle cx="10" cy="24" r="2.6"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+const FONT_HEAD = `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,400..900;1,400..700&family=Public+Sans:ital,wght@0,300..900;1,400..700&display=swap" rel="stylesheet">`;
+const FAVICON = `<link rel="icon" href="data:image/svg+xml,${encodeURIComponent(sealLogo(32))}">`;
+
+// ---------- shared shell pieces ----------
+// Liberia map silhouette lit up with a live ICT network (glowing, pulsing nodes + flowing links).
+function liberiaMapMark(size = 48) {
+  const nodes = [[-24, -16], [-6, -8], [13, -12], [27, 9], [6, 13], [31, 30], [-14, 17], [-31, -25], [18, -2]];
+  const links = [[7, 0], [0, 1], [1, 2], [2, 8], [8, 3], [3, 5], [1, 4], [4, 5], [4, 6], [6, 0], [1, 6], [2, 4]];
+  const lines = links.map(([a, b]) => `<line class="lmk-link" x1="${nodes[a][0]}" y1="${nodes[a][1]}" x2="${nodes[b][0]}" y2="${nodes[b][1]}"/>`).join('');
+  const dots = nodes.map((n, i) => `<circle class="lmk-node" cx="${n[0]}" cy="${n[1]}" r="1.8" style="animation-delay:${(i * 0.26).toFixed(2)}s"/>`).join('');
+  return `<svg class="liberia-map" viewBox="-52 -52 104 104" width="${size}" height="${size}" aria-hidden="true">
+    <defs><clipPath id="lmkClip"><path d="${LIBERIA_EMBLEM_PATH}"/></clipPath></defs>
+    <path class="lmk-land" d="${LIBERIA_EMBLEM_PATH}"/>
+    <g clip-path="url(#lmkClip)">${lines}${dots}</g>
+    <path class="lmk-outline" d="${LIBERIA_EMBLEM_PATH}"/>
+  </svg>`;
+}
+// Flag of Liberia, drawn to the official 10:19 ratio: eleven stripes (six red, five white)
+// for the eleven signatories of the Declaration of Independence, and a blue canton five
+// stripes square carrying one white star.
+function liberiaFlag(size = 46) {
+  const RED = '#BF0A30', BLUE = '#002868', H = 10, W = 19;
+  const stripe = H / 11;
+  const stripes = [];
+  for (let i = 0; i < 11; i++) {
+    if (i % 2 === 0) stripes.push(`<rect x="0" y="${(i * stripe).toFixed(4)}" width="${W}" height="${stripe.toFixed(4)}" fill="${RED}"/>`);
+  }
+  const canton = 5 * stripe;                       // the canton is five stripes square
+  const cx = canton / 2, cy = canton / 2, R = canton * 0.36, r = R * 0.382;
+  let star = '';
+  for (let i = 0; i < 10; i++) {
+    const rad = (i % 2 === 0 ? R : r);
+    const a = (Math.PI / 5) * i - Math.PI / 2;     // first point straight up
+    star += `${(cx + rad * Math.cos(a)).toFixed(4)},${(cy + rad * Math.sin(a)).toFixed(4)} `;
+  }
+  return `<svg class="liberia-flag" viewBox="0 0 ${W} ${H}" width="${size}" height="${(size * H / W).toFixed(1)}"
+    role="img" aria-label="Flag of Liberia">
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#FFFFFF"/>
+    ${stripes.join('')}
+    <rect x="0" y="0" width="${canton.toFixed(4)}" height="${canton.toFixed(4)}" fill="${BLUE}"/>
+    <polygon points="${star.trim()}" fill="#FFFFFF"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="rgba(0,0,0,.28)" stroke-width=".18"/>
+  </svg>`;
+}
+function mainNav(active, q) {
+  // [href, label, icon, submenu?]
+  const links = [
+    ['/', 'Home', 'home'],
+    ['/data', 'Data Explorer', 'bars', [['/indicators', 'Indicator Catalogue', 'bookopen'], ['/query', 'Data Query', 'search'], ['/landscape', 'Data Landscape', 'layers']]],
+    ['/reports', 'ICT Reports', 'chart'],
+    ['/research', 'Research', 'doc', [['/research/submit', 'Submit Paper', 'plus']]],
+    ['/partners', 'Our Partners', 'users'],
+    ['/careers', 'Careers', 'users'],
+    ['/about', 'About', 'info'],
+  ];
+  const isActive = (href, sub) => active === href || (sub || []).some(([h]) => active === h);
+  const navItem = ([href, label, ic, sub]) => {
+    const link = `<a href="${href}" class="nav-link ${isActive(href, sub) ? 'active' : ''}">${icon(ic)}<span>${label}</span>${sub ? `<i class="nav-caret">${icon('chevron')}</i>` : ''}</a>`;
+    if (!sub) return link;
+    return `<div class="nav-has-sub">${link}
+      <div class="nav-submenu">
+        ${sub.map(([h, l, i2]) => `<a href="${h}" class="nav-subitem ${active === h ? 'active' : ''}">${icon(i2)}<span>${l}</span></a>`).join('')}
+      </div>
+    </div>`;
+  };
+  return `<nav class="gov-nav"><div class="nav-shell">
+    <a class="gov-wordmark nav-mapblock" href="/" aria-label="NICTD home">${liberiaFlag(46)}</a>
+    <form class="nav-search" action="/indicators" method="get">
+      <input type="search" name="q" placeholder="Search indicators…" value="${esc(q || '')}">
+      <button type="submit" aria-label="Search">${icon('search')}</button>
+    </form>
+    <div class="gov-navlinks">
+      ${links.map(navItem).join('')}
+    </div>
+    <a class="nav-cta" href="/login">${icon('login')}<span>Log In</span></a>
+  </div></nav>`;
+}
+function footerDh() {
+  // Drawn only when a seal has actually been supplied, so the footer never shows a broken image.
+  const seal = imgs.exists('brand', 'seal')
+    ? `<img class="footer-seal" src="${imgs.url('brand', 'seal')}" width="58" height="62"
+        alt="Coat of Arms of the Republic of Liberia" loading="lazy" decoding="async">`
+    : '';
+  return `<footer class="footer-dh">${seal}
+    <div class="footer-grid">
+      <div>
+        <h4>About NICTD</h4>
+        <p>The National ICT Database of Liberia (NICTD) is the official source of ICT statistics and digital-development data for Liberia, tracking connectivity, affordability, market structure and digital governance across all 15 counties.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="X / Twitter">${icon('share')}</a>
+          <a href="#" aria-label="LinkedIn">${icon('users')}</a>
+          <a href="#" aria-label="Instagram">${icon('camera')}</a>
+        </div>
+      </div>
+      <div><h4>Ministry Links</h4>
+        <a href="/about">Ministry of Posts &amp; Telecommunications</a>
+        <a href="/about">Liberia Telecommunications Authority</a>
+        <a href="/research">Research Papers</a>
+        <a href="/updates">Updates</a>
+      </div>
+      <div><h4>Connect</h4>
+        <a href="/query">Data Query builder</a>
+        <a href="/login">Log In</a>
+        <a href="/register">Request an account</a>
+      </div>
+    </div>
+    <div class="footer-bottom-strip"><div class="footer-bottom-inner">
+      <nav><a href="/about">Contact</a><a href="/about">Privacy Notice</a><a href="/about">Accessibility</a><a href="/about">Report an Issue</a></nav>
+      <span class="mono" style="font-size:.72rem;color:#6E8194">© 2026 NICTD</span>
+    </div></div>
+    <p class="footer-credit">Data curated by the ICT Statistics &amp; Policy Unit, Ministry of Posts and Telecommunications. Platform developed by Harris &amp; Associates LLC. Figures shown are demonstration data pending production feeds.</p>
+  </footer>`;
+}
+// Cache-buster stamped at server start so edited CSS/JS is never served stale from the browser cache.
+const ASSET_V = Date.now().toString(36);
+function publicLayout(ctx, { title, active = '', body, extraHead = '', q = '' }) {
+  return `<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} · NICTD</title>
+${FONT_HEAD}
+<link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
+${FAVICON}
+<script src="/assets/liberia-counties.js?v=${ASSET_V}" defer></script>
+${extraHead}
+</head><body>
+${mainNav(active, q)}
+<main>${body}</main>
+${footerDh()}
+<script src="/assets/app.js?v=${ASSET_V}" defer></script></body></html>`;
+}
+
+// ---------- signed-in workspace shell ----------
+function appLayout(ctx, { title, active = '', body, extraHead = '' }) {
+  const u = ctx.user;
+  const has = (p) => ctx.perms.includes(p);
+  const item = (href, key, icn, label, badge = 0) =>
+    `<a class="sb-item ${active === key ? 'active' : ''}" href="${href}">${icon(icn)}<span class="sb-label">${label}</span>${badge ? `<span class="badge">${badge}</span>` : ''}</a>`;
+  const roleLabel = { public: 'Public User', stakeholder: 'Stakeholder', admin: 'Administrator' }[u.role];
+  const initials = u.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+  return `<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} · NICTD</title>
+${FONT_HEAD}
+<link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
+${FAVICON}
+<script src="/assets/liberia-counties.js?v=${ASSET_V}" defer></script>
+${extraHead}
+</head><body>
+<div class="app">
+  <aside class="sidebar">
+    <a class="sb-brand" href="/portal">${sealLogo(38)}
+      <span class="sb-brand-text"><strong>NICTD</strong><span>Liberia ICT Data</span></span>
+    </a>
+    <nav class="sb-nav">
+      <span class="sb-section-label">Workspace</span>
+      ${item('/portal', 'portal', 'home', 'Overview')}
+      ${item('/data', 'data', 'database', 'Data Explorer')}
+      ${item('/indicators', 'indicators', 'layers', 'Indicator Catalogue')}
+      ${item('/query', 'query', 'sliders', 'Data Query')}
+      ${item('/partners', 'partners', 'users', 'Our Partners')}
+      ${item('/research', 'research', 'doc', 'Research Papers', ctx.paperReview || 0)}
+      ${item('/media', 'media', 'image', 'Media Library')}
+      ${has('analytics') ? `<span class="sb-section-label">Insights</span>${item('/analytics', 'analytics', 'chart', 'Platform Analytics')}` : ''}
+      <span class="sb-section-label">Communication</span>
+      ${has('messaging') ? item('/messages', 'messages', 'chat', 'Messages', ctx.unreadMsgs || 0) : ''}
+      ${has('admin_inbox') ? item('/admin/inbox', 'inbox', 'inbox', 'Team Inbox', ctx.unreadInbox || 0) : ''}
+      ${has('manage_users') ? `<span class="sb-section-label">Administration</span>${item('/admin', 'admin', 'shield', 'Admin Panel')}` : ''}
+      ${has('manage_content') ? item('/admin/images', 'images', 'image', 'Image Library') : ''}
+      <span class="sb-section-label">Resources</span>
+      ${item('/', 'site', 'globe', 'Public Website')}
+      ${item('/api/docs', 'apidocs', 'doc', 'API Documentation')}
+    </nav>
+    <div class="sb-user">
+      <span class="sb-avatar">${esc(initials)}</span>
+      <span class="sb-user-info"><strong>${esc(u.name)}</strong><span>${esc(roleLabel)}</span></span>
+      <form method="post" action="/logout" class="inline-form"><button class="sb-logout" type="submit" title="Log out">${icon('logout')}</button></form>
+    </div>
+  </aside>
+  <div class="content">
+    <div class="content-topbar">
+      <span class="crumb">NICTD<strong>${esc(title)}</strong></span>
+      <span class="topbar-actions"><span class="role-chip ${u.role === 'admin' ? 'admin' : ''}">${esc(roleLabel)}</span></span>
+    </div>
+    <div class="page-body">${body}</div>
+  </div>
+</div>
+<script src="/assets/app.js?v=${ASSET_V}" defer></script></body></html>`;
+}
+
+// small helper: wrap public vs. workspace shell depending on session
+function shell(ctx, opts) {
+  return ctx.user ? appLayout(ctx, { ...opts, active: opts.workspaceActive || opts.active }) : publicLayout(ctx, opts);
+}
+
+// ---------- reusable dropdown markup ----------
+function xdd(id, label) {
+  return `<div class="xdd" id="${id}">
+    <button type="button" class="xdd-trigger"><span class="xdd-trigger-label">${esc(label)}</span>${icon('chevron', 'icn')}</button>
+    <div class="xdd-panel"><div class="xdd-search"><input type="text" placeholder="Search…"></div><div class="xdd-list"></div></div>
+  </div>`;
+}
+function xddMulti(id, placeholder, selectAllLabel) {
+  return `<div class="xdd" id="${id}">
+    <button type="button" class="xdd-trigger"><span class="xdd-trigger-label">${esc(placeholder)}</span>${icon('chevron', 'icn')}</button>
+    <div class="xdd-panel">
+      <div class="xdd-search"><input type="text" placeholder="Search…"></div>
+      ${selectAllLabel ? `<label class="xdd-select-all"><input type="checkbox" class="xdd-all-check"><span>${esc(selectAllLabel)}</span></label>` : ''}
+      <div class="xdd-list"></div>
+      <div class="xdd-footer"><button type="button" class="btn btn-teal btn-sm xdd-done">Done</button></div>
+    </div>
+  </div>`;
+}
+function selectorRow(idPrefix = '') {
+  return `<div class="selector-card">
+    <div class="selector-field"><label>Indicator or Dashboard</label>${xdd(idPrefix + 'dd-home-indicator', 'Search indicators or dashboards…')}</div>
+    <div class="selector-field"><label>Focus Location</label>${xdd(idPrefix + 'dd-home-focus', 'National (Liberia)')}</div>
+    <div class="selector-field"><label>Comparison Area</label>${xdd(idPrefix + 'dd-home-compare', 'None')}</div>
+    <a class="btn btn-teal" href="/data">${icon('database')} Open Explorer</a>
+  </div>`;
+}
+
+// ============ HOME ============
+exports.home = (ctx, { headlines, papers, keyStats, dashboards, indicatorsForSearch, counties, lastUpdated, heroTitle, heroSub,
+  homeVideo = '', homeVideoTitle = 'About the National ICT Database Project', homeVideoCaption = '', homeVideoPlaylist = '' }) => {
+  return shell(ctx, {
+    title: 'Home', active: '/', body: `
+  ${heroSlider()}
+
+  ${featuredPapers()}
+
+  ${nationalReports()}
+
+  ${homeVideoSection(homeVideo, homeVideoTitle, homeVideoCaption, homeVideoPlaylist)}
+
+  ${latestUpdates(headlines)}
+
+  <script>window.__NICTD_PAGE__='home';window.__HOME_STATE__=${JSON.stringify({ indicators: indicatorsForSearch, dashboards, counties })};
+</script>
+  <script>${heroSliderScript}</script>
+  <script>${featuredPapersScript}</script>
+  <script>${nationalReportsScript}</script>
+  <script>${latestUpdatesScript}</script>
+  <script>${homeVideoScript}</script>`,
+  });
+};
+
+// Scroll-triggered image slider hero. Six slides cross-fade as the visitor scrolls through a tall
+// sticky band, opening with the President and closing with Kenya. Each carries either the NICTD intro
+// or one verified quotation. Images live at /img/hero/slide-{1..6}, numbered in display order, and are
+// overridable per slot from the image admin screen. The search selector stays persistent below.
+const HERO_SLIDES = [
+  // His infrastructure pledge at the Liberia Technology Summit. The Executive Mansion release
+  // reports it rather than quoting it, so it carries no quotation marks.
+  { img: 'slide-1', reported: true,
+    quote: 'Liberia is investing in digital infrastructure, connectivity and cybersecurity — to modernize governance and expand economic opportunity.',
+    pos: 'center 22%',
+    who: 'H.E. Joseph Nyuma Boakai, Sr.', role: 'President of the Republic of Liberia',
+    meta: 'Liberia Technology Summit 2026, 21 July · emansion.gov.lr' },
+  { img: 'slide-2', title: 'Liberia’s National ICT\nDatabase Project', sub: 'Liberia’s Data, owned by Liberia.' },
+  { img: 'slide-3', quote: 'If we cannot measure the contribution of technology to GDP, we cannot monetize it.',
+    pos: 'center 20%',
+    who: 'Mr. Claver Gatete', role: 'UN Under-Secretary-General · Executive Secretary, UNECA',
+    meta: 'UN Economic Commission for Africa · uneca.org' },
+  // Verified against the Ghana News Agency report of the National AI Strategy launch.
+  { img: 'slide-4',
+    quote: 'Ghana cannot build a meaningful AI future using systems that do not understand our Ghanaian realities.',
+    pos: 'center 18%',
+    who: 'H.E. John Dramani Mahama', role: 'President of the Republic of Ghana',
+    meta: 'National AI Strategy launch, April 2026 · Accra' },
+  // Verified against president.go.ke, 11th Huawei ICT Competition. Trimmed between his two
+  // sentences; the ellipsis marks the cut.
+  { img: 'slide-5',
+    quote: 'The future … will belong to those who imagine, invent and build the technologies that the world has not yet conceived.',
+    pos: 'center 32%',
+    who: 'H.E. William Ruto', role: 'President of the Republic of Kenya',
+    meta: 'State House, Nairobi · president.go.ke' },
+  { img: 'slide-6', quote: 'Africa must prioritize local data processing and systems that reflect its realities.',
+    who: 'Ambassador Philip Thigo', role: 'Kenya’s Special Envoy on Technology', meta: 'April 2026 · Tangier, Morocco' },
+];
+function heroSlider() {
+  const slides = HERO_SLIDES.map((s, i) => `<div class="hs-slide ${i === 0 ? 'active' : ''}" data-i="${i}" style="${slotBg('hero', s.img)}${s.pos ? ';background-position:' + s.pos : ''}"></div>`).join('');
+  const texts = HERO_SLIDES.map((s, i) => `<div class="hs-text ${s.quote ? 'is-quote' : ''} ${i === 0 ? 'active' : ''}" data-i="${i}">
+      ${s.quote ? `<blockquote class="hs-quote${s.reported ? ' is-reported' : ''}">
+        ${s.reported ? '' : '<span class="hs-qmark" aria-hidden="true">&ldquo;</span>'}
+        <p>${esc(s.quote)}</p>
+        <footer>
+          <span class="hs-who">${esc(s.who)}</span>
+          <span class="hs-role">${esc(s.role)}</span>
+          ${s.meta ? `<span class="hs-qmeta mono">${esc(s.meta)}</span>` : ''}
+        </footer>
+      </blockquote>`
+      : `${s.kicker ? `<p class="kicker">${esc(s.kicker)}</p>` : ''}
+      <h1>${s.title.split('\n').map(esc).join('<br>')}</h1>
+      ${s.sub ? `<p class="hs-sub">${esc(s.sub)}</p>` : ''}`}
+    </div>`).join('');
+  const dots = HERO_SLIDES.map((s, i) => `<span class="hs-dot ${i === 0 ? 'active' : ''}" data-i="${i}"></span>`).join('');
+  return `<section class="hero-slider" id="heroSlider">
+    <div class="hs-sticky">
+      <div class="hs-stage">${slides}<div class="hs-scrim"></div></div>
+      <div class="hs-content wrap">
+        <div class="hs-texts">${texts}</div>
+      </div>
+      <div class="hs-dots" aria-hidden="true">${dots}</div>
+      <div class="hv-cue" aria-hidden="true"><span>Scroll to explore</span><i></i></div>
+    </div>
+  </section>`;
+}
+const heroSliderScript = `
+(function(){
+  var sec=document.getElementById('heroSlider'); if(!sec) return;
+  var slides=[].slice.call(sec.querySelectorAll('.hs-slide'));
+  var texts=[].slice.call(sec.querySelectorAll('.hs-text'));
+  var dots=[].slice.call(sec.querySelectorAll('.hs-dot'));
+  var cue=sec.querySelector('.hv-cue'), n=slides.length, cur=-1, running=false, raf=0, inView=true;
+  var lastScrollIdx=-1, autoT=null;
+  var reduceHero=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function restartAuto(){ if(reduceHero||n<2) return; clearInterval(autoT);
+    autoT=setInterval(function(){ setActive((cur+1)%n); }, 4000); }
+  function progress(){ var total=sec.offsetHeight-window.innerHeight; if(total<=0) return 0;
+    return Math.min(1,Math.max(0,-sec.getBoundingClientRect().top/total)); }
+  function setActive(i){ if(i===cur) return; cur=i;
+    slides.forEach(function(el,k){ el.classList.toggle('active',k===i); });
+    texts.forEach(function(el,k){ el.classList.toggle('active',k===i); });
+    dots.forEach(function(el,k){ el.classList.toggle('active',k===i); }); }
+  function update(){
+    var p=progress();
+    // map scroll progress across n slides, with a little dwell at each
+    var idx=Math.min(n-1, Math.floor(p*n*0.999));
+    if(idx!==lastScrollIdx){ lastScrollIdx=idx; setActive(idx); restartAuto(); }
+    // fade the scroll cue (no image transform, the photo must stay fully visible)
+    if(cue) cue.style.opacity=String(Math.max(0,1-p*4));
+  }
+  function tick(){ update(); if(running&&inView) raf=requestAnimationFrame(tick); }
+  function start(){ if(running) return; running=true; raf=requestAnimationFrame(tick); }
+  function stop(){ running=false; if(raf) cancelAnimationFrame(raf); update(); }
+  window.addEventListener('scroll',update,{capture:true,passive:true});
+  document.addEventListener('scroll',update,{capture:true,passive:true});
+  window.addEventListener('resize',update);
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){ es.forEach(function(e){ inView=e.isIntersecting; inView?start():stop(); }); },{threshold:0}).observe(sec);
+  } else { start(); }
+  update();
+  restartAuto();
+  sec.addEventListener('mouseenter', function(){ clearInterval(autoT); });
+  sec.addEventListener('mouseleave', restartAuto);
+})();
+`;
+
+// Featured research papers, a "Latest News"-style card carousel with prev/next arrows.
+// Featured images live at /img/papers/<img>.jpg (real photos where available, themed gradient fallback otherwise).
+const FEATURED_PAPERS = [
+  { id: 1, tag: 'Flagship Report', img: 'connectivity', title: 'State of Connectivity in Liberia 2025', author: 'ICT Statistics & Policy Unit', date: 'Aug 2025' },
+  { id: 4, tag: 'National Baseline', img: 'national', title: 'National Digital Transformation Strategy: Progress Review', author: 'Ministry of Posts & Telecommunications', date: 'Jul 2025' },
+  { id: 3, tag: 'Report', img: 'governance', title: 'Digital Trust, National ID & E-Government Baseline', author: 'Governance & Data Protection Desk', date: 'Jun 2025' },
+  { id: 2, tag: 'Joint Study', img: 'education', title: 'ICT in Education: School Connectivity & Device Access', author: 'Ministry of Education · NICTD', date: 'May 2025' },
+  { id: 3, tag: 'Working Paper', img: 'fintech', title: 'Mobile Money & Financial Inclusion Across the 15 Counties', author: 'Digital Economy Working Group', date: 'Apr 2025' },
+  { id: 1, tag: 'Policy Brief', img: 'broadband', title: 'The Urban-Rural Broadband Divide: County Evidence', author: 'NICTD Research', date: 'Mar 2025' },
+];
+function featuredPapers() {
+  const card = (p) => `<a class="fp-card" href="/research/${p.id}">
+    <div class="fp-thumb" style="${slotBg('papers', p.img, true)}"></div>
+    <div class="fp-body">
+      <span class="tag">${esc(p.tag)}</span>
+      <h4>${esc(p.title)}</h4>
+      <div class="fp-meta">by ${esc(p.author)} &nbsp;·&nbsp; ${esc(p.date)}</div>
+    </div>
+  </a>`;
+  return `<section class="wrap section reveal" id="featuredPapers">
+    <div class="sec-head-dh">
+      <h2>Featured Research Papers</h2>
+      <div class="fp-nav">
+        <a class="more" href="/research" style="margin-right:.8rem">All papers ${icon('arrow')}</a>
+        <button class="fp-arrow" data-dir="-1" aria-label="Previous">${icon('chevron', 'icn fp-flip')}</button>
+        <button class="fp-arrow" data-dir="1" aria-label="Next">${icon('chevron')}</button>
+      </div>
+    </div>
+    <div class="fp-track" id="fpTrack">${FEATURED_PAPERS.map(card).join('')}${FEATURED_PAPERS.map(card).join('')}</div>
+  </section>`;
+}
+const featuredPapersScript = `
+(function(){
+  // Continuous slow left-drift for the card rows. Hover pauses; leaving resumes.
+  // Each row renders its cards twice, so we can wrap at the halfway point seamlessly.
+  function marquee(track, speed){
+    if(!track) return null;
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var paused=false, raf=0, last=0;
+    // keep the position as a float: scrollLeft is rounded by the browser, so
+    // sub-pixel per-frame increments would otherwise be discarded and never move.
+    var pos=track.scrollLeft;
+    function half(){ return track.scrollWidth/2; }
+    function step(ts){
+      if(!last) last=ts;
+      var dt=Math.min(64, ts-last); last=ts;
+      if(!paused){
+        var h=half();
+        pos += speed*(dt/1000);
+        if(h>0 && pos>=h) pos-=h;
+        track.scrollLeft = pos;
+      } else {
+        pos = track.scrollLeft;   // stay in sync if the user scrolls while paused
+      }
+      raf=requestAnimationFrame(step);
+    }
+    track.addEventListener('mouseenter', function(){ paused=true; });
+    track.addEventListener('mouseleave', function(){ paused=false; });
+    track.addEventListener('focusin', function(){ paused=true; });
+    track.addEventListener('focusout', function(){ paused=false; });
+    if(!reduce) raf=requestAnimationFrame(step);
+    return {
+      nudge: function(dir){
+        var c=track.querySelector(':scope > *');
+        var w=c ? c.getBoundingClientRect().width+24 : 320;
+        var h=half();
+        pos = track.scrollLeft + dir*w*1.5;
+        if(h>0 && pos>=h) pos-=h;
+        if(pos<0) pos += h;
+        track.scrollLeft = pos;
+      },
+      pause: function(){ paused=true; }, resume: function(){ paused=false; }
+    };
+  }
+  window.__nictdMarquee = marquee;
+
+  // reveal-on-scroll entry animation for the card rows
+  var reveal = document.querySelectorAll('.reveal');
+  function showAll(){ reveal.forEach(function(el){ el.classList.add('in'); }); }
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{threshold:.15});
+    reveal.forEach(function(el){ io.observe(el); });
+    // fail-safe: never leave content hidden behind the animation
+    setTimeout(showAll, 1500);
+  } else { showAll(); }
+
+  var fp = marquee(document.getElementById('fpTrack'), 26);
+  document.querySelectorAll('#featuredPapers .fp-arrow').forEach(function(b){
+    b.addEventListener('click', function(){ if(fp) fp.nudge(Number(b.dataset.dir)); });
+  });
+})();
+`;
+
+// National ICT Reports, a "facing" coverflow carousel: the centre report faces the viewer while
+// its neighbours angle away in 3D. Auto-advances, pauses on hover, arrows + dots, and a See more link.
+// img keys point at the "reports" image collection, which is kept separate from the research
+// papers and the hero slider so no picture appears twice on the site.
+const NATIONAL_REPORTS = [
+  { img: 'sector-performance', year: 2025,
+    tag: 'Sector Report', title: 'Liberia ICT Sector Performance Report 2025', date: 'Q3 2025',
+    desc: 'Subscriptions, traffic, revenue and infrastructure rollout across the national telecom sector.' },
+  { img: 'broadband-coverage', year: 2025,
+    tag: 'Assessment', title: 'National Broadband Coverage & Quality Assessment', date: 'Aug 2025',
+    desc: 'Measured coverage, speed and reliability by county, with the verified connectivity-gap index.' },
+  { img: 'market-pricing', year: 2025,
+    tag: 'Market Review', title: 'Telecom Market Competition & Pricing Review', date: 'Jul 2025',
+    desc: 'Tariff baskets, market share and affordability of voice and data relative to household income.' },
+  { img: 'digital-inclusion', year: 2025,
+    tag: 'Inclusion', title: 'Digital Inclusion & Gender Access Report', date: 'Jun 2025',
+    desc: 'Who is online and who is not, device ownership, skills and the gender access gap.' },
+  { img: 'cybersecurity', year: 2025,
+    tag: 'Governance', title: 'Cybersecurity & Data Protection Readiness', date: 'May 2025',
+    desc: 'National cyber posture, incident response capacity and data-protection compliance.' },
+];
+
+// ---------------------------------------------------------------------------
+// Filter bar. One component used everywhere the app filters a list: ICT Reports,
+// Research Papers, Careers and Our Partners.
+//
+// Row one is the controls, row two shows what is currently applied and how much of
+// the list survives it. Items opt in with data-lib-item plus data-lib-search and,
+// where a dropdown is present, data-lib-facet.
+// ---------------------------------------------------------------------------
+function filterBar({ placeholder, facetLabel, facetAll, options = [], total = 0, noun = 'shown' }) {
+  return `<div class="fbar" data-library>
+    <div class="fbar-controls">
+      <div class="fbar-search">
+        ${icon('search')}
+        <input type="search" placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}">
+      </div>
+      ${options.length ? `<label class="fbar-facet">
+        <span class="fbar-facet-label">${esc(facetLabel)}</span>
+        <span class="fbar-select">
+          <select class="lib-year" aria-label="${esc(facetLabel)}">
+            <option value="">${esc(facetAll)}</option>
+            ${options.map((o) => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('')}
+          </select>
+          ${icon('chevron', 'icn fbar-caret')}
+        </span>
+      </label>` : ''}
+      <button type="button" class="fbar-go">${icon('search')} Search</button>
+      <button type="button" class="fbar-clear" hidden>${icon('rotate')} Clear all</button>
+    </div>
+    <div class="fbar-foot">
+      <div class="fbar-active" hidden>
+        ${icon('funnel', 'icn fbar-funnel')}
+        <span class="fbar-active-label">Active filters:</span>
+        <span class="fbar-chips"></span>
+      </div>
+      <span class="fbar-count"><b>${total}</b> of ${total} ${esc(noun)}</span>
+    </div>
+  </div>`;
+}
+
+// Drives every .fbar on the page. Kept dependency free and tolerant of a missing
+// dropdown, so the same script serves a search-only bar and a search-plus-facet bar.
+const libraryFilterScript = `
+(function(){
+  var bars=[].slice.call(document.querySelectorAll('[data-library]'));
+  if(!bars.length) return;
+  bars.forEach(function(root){
+    var input=root.querySelector('.fbar-search input');
+    var go=root.querySelector('.fbar-go');
+    var clear=root.querySelector('.fbar-clear');
+    var facet=root.querySelector('.lib-year');
+    var count=root.querySelector('.fbar-count b');
+    var countWrap=root.querySelector('.fbar-count');
+    var active=root.querySelector('.fbar-active');
+    var chips=root.querySelector('.fbar-chips');
+    var empty=document.querySelector('[data-lib-empty]');
+    var scope=root.closest('[data-lib-scope]')||document;
+    var items=[].slice.call(scope.querySelectorAll('[data-lib-item]'));
+    var facetLabel=root.querySelector('.fbar-facet-label');
+    var facetName=facetLabel?facetLabel.textContent.trim():'Filter';
+
+    function chip(label,onClear){
+      var b=document.createElement('button');
+      b.type='button'; b.className='fbar-chip';
+      b.innerHTML='<span></span><i aria-hidden="true">&times;</i>';
+      b.querySelector('span').textContent=label;
+      b.setAttribute('aria-label','Remove filter: '+label);
+      b.addEventListener('click',function(){ onClear(); apply(); });
+      return b;
+    }
+
+    function apply(){
+      var q=(input.value||'').trim().toLowerCase();
+      var f=facet?facet.value:'';
+      var n=0;
+      items.forEach(function(it){
+        var hay=(it.getAttribute('data-lib-search')||'').toLowerCase();
+        var val=it.getAttribute('data-lib-facet');
+        if(val===null) val=it.getAttribute('data-lib-year');
+        var okQ=!q||hay.indexOf(q)>-1;
+        var okF=!f||val===f;
+        var show=okQ&&okF;
+        it.hidden=!show;
+        if(show) n++;
+      });
+      if(count) count.textContent=n;
+      if(countWrap) countWrap.classList.toggle('is-empty',n===0);
+      if(empty) empty.hidden=n!==0;
+
+      // reflect what is applied, so a filter is never silently on
+      chips.innerHTML='';
+      if(q) chips.appendChild(chip('"'+input.value.trim()+'"',function(){ input.value=''; }));
+      if(f){
+        var opt=facet.options[facet.selectedIndex];
+        chips.appendChild(chip(facetName+': '+opt.text,function(){ facet.value=''; }));
+      }
+      var any=!!(q||f);
+      active.hidden=!any;
+      clear.hidden=!any;
+    }
+
+    input.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); apply(); } });
+    input.addEventListener('input',apply);
+    if(go) go.addEventListener('click',apply);
+    if(facet) facet.addEventListener('change',apply);
+    if(clear) clear.addEventListener('click',function(){
+      input.value=''; if(facet) facet.value=''; apply(); input.focus();
+    });
+    apply();
+  });
+})();
+`;
+
+// Back-compat shim: the older call signature is still used in a few places.
+function libraryFilter(placeholder, years, total, facetLabel = 'Year', facetAll = 'All years') {
+  return filterBar({
+    placeholder,
+    facetLabel,
+    facetAll,
+    options: years.map((y) => ({ value: String(y), label: String(y) })),
+    total,
+  });
+}
+
+function nationalReports() {
+  const cards = NATIONAL_REPORTS.map((r, i) => `<article class="rc-card" data-i="${i}">
+    <div class="rc-thumb" style="${slotBg('reports', r.img, true)}"></div>
+    <div class="rc-body">
+      <span class="tag">${esc(r.tag)}</span>
+      <h3>${esc(r.title)}</h3>
+      <p>${esc(r.desc)}</p>
+      <div class="rc-meta">${esc(r.date)}</div>
+    </div>
+  </article>`).join('');
+  const dots = NATIONAL_REPORTS.map((r, i) => `<span class="rc-dot ${i === 0 ? 'active' : ''}" data-i="${i}"></span>`).join('');
+  return `<section class="wrap section reveal" id="natReports" style="padding-top:0">
+    <div class="sec-head-dh">
+      <h2>National ICT Reports</h2>
+      <div class="rc-nav">
+        <a class="more" href="/reports" style="margin-right:.8rem">See more ${icon('arrow')}</a>
+        <button class="rc-arrow" data-dir="-1" aria-label="Previous report">${icon('chevron', 'icn fp-flip')}</button>
+        <button class="rc-arrow" data-dir="1" aria-label="Next report">${icon('chevron')}</button>
+      </div>
+    </div>
+    <div class="rc-stage" id="rcStage">${cards}</div>
+    <div class="rc-dots">${dots}</div>
+  </section>`;
+}
+const nationalReportsScript = `
+(function(){
+  var stage=document.getElementById('rcStage'); if(!stage) return;
+  var cards=[].slice.call(stage.querySelectorAll('.rc-card'));
+  var dots=[].slice.call(document.querySelectorAll('#natReports .rc-dot'));
+  var n=cards.length, cur=0, timer=null, reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function layout(){
+    cards.forEach(function(c,i){
+      var d=i-cur; if(d>n/2) d-=n; if(d<-n/2) d+=n;   // shortest way round
+      var abs=Math.abs(d);
+      c.classList.toggle('is-active', d===0);
+      if(abs>2){ c.style.opacity='0'; c.style.pointerEvents='none'; c.style.transform='translateX('+(d>0?200:-200)+'%) scale(.6)'; c.style.zIndex=0; return; }
+      c.style.pointerEvents='auto';   // side cards stay hoverable so they can slide themselves in
+      c.style.opacity=(abs===0?'1':(abs===1?'.62':'.28'));
+      c.style.zIndex=String(10-abs);
+      var x=d*54, s=1-abs*0.14, ry=d*-20;
+      c.style.transform='translateX('+x+'%) scale('+s+') rotateY('+ry+'deg)';
+    });
+    dots.forEach(function(el,k){ el.classList.toggle('active',k===cur); });
+  }
+  function go(dir){ cur=(cur+dir+n)%n; layout(); }
+  function play(){ if(reduce) return; stop(); timer=setInterval(function(){ go(1); }, 4200); }
+  function stop(){ if(timer) clearInterval(timer); timer=null; }
+  document.querySelectorAll('#natReports .rc-arrow').forEach(function(b){
+    b.addEventListener('click', function(){ go(Number(b.dataset.dir)); play(); });
+  });
+  dots.forEach(function(el,k){ el.addEventListener('click', function(){ cur=k; layout(); play(); }); });
+  // Hover a side card to slide it into the centre. Re-arms only after the cursor actually MOVES,
+  // so a resting cursor never re-triggers when the cards shift underneath it.
+  // One hover = exactly one step. A time lock rides out the re-entry events that fire
+  // while the cards are still sliding; real cursor movement then re-arms the next step.
+  var armed=true, lockUntil=0, lastX=null, lastY=null;
+  stage.addEventListener('mousemove', function(e){
+    if(Date.now() < lockUntil) return;
+    if(lastX!==null && Math.abs(e.clientX-lastX)<8 && Math.abs(e.clientY-lastY)<8) return;
+    lastX=e.clientX; lastY=e.clientY; armed=true;
+  });
+  function stepTo(i){
+    cur=i; layout();
+    armed=false;
+    lockUntil=Date.now()+700;
+    lastX=null; lastY=null;
+  }
+  cards.forEach(function(c,i){
+    c.addEventListener('mouseenter', function(){
+      if(i===cur || !armed || Date.now()<lockUntil) return;
+      stepTo(i);
+    });
+    c.addEventListener('click', function(){ if(i!==cur) stepTo(i); });
+  });
+  stage.addEventListener('mouseenter', stop); stage.addEventListener('mouseleave', play);
+  layout(); play();
+})();
+`;
+
+// A live dashboard embedded on the home page (same element ids the dashboard JS populates).
+function homeDashboard(label) {
+  return `<section class="wrap section" id="homeDash" style="padding-top:0">
+    <div class="sec-head-dh">
+      <h2>Live Dashboard <span class="hd-chip">${esc(label)}</span></h2>
+      <a class="more" href="/dashboards">See more ${icon('arrow')}</a>
+    </div>
+    <div class="dash-hero-dh">
+      <div class="sync"><span class="pulse"></span><span class="mono" id="dash-sync-text" style="color:#B9C7D3;font-size:.8rem">connecting…</span></div>
+      <div class="dash-hero-stats" id="dash-hero-stats"><div class="cell"><div class="val">…</div><div class="lbl">Loading</div></div></div>
+    </div>
+    <div class="chart-panel" style="margin-top:1.1rem">
+      <h3 id="dash-trend-title">Trend</h3>
+      <div id="dash-trend" class="chart-dh"></div>
+    </div>
+    <div class="two-col" style="margin-top:1.1rem">
+      <div class="panel"><h3>Top 5 counties</h3><div id="dash-ranking-top" class="chart-dh"></div></div>
+      <div class="panel"><h3>Bottom 5 counties</h3><div id="dash-ranking-bottom" class="chart-dh"></div></div>
+    </div>
+
+    <p style="margin-top:1.3rem;text-align:center"><a class="btn btn-gold" href="/dashboards">${icon('pie')} See more dashboards</a></p>
+  </section>`;
+}
+
+// Home video, accepts a YouTube link/ID (embedded player) or a local/uploaded file (native player).
+function youTubeId(s) {
+  if (!s) return '';
+  const m = String(s).match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|watch\?v=|v\/|shorts\/))([A-Za-z0-9_-]{6,})/);
+  if (m) return m[1];
+  if (/^[A-Za-z0-9_-]{8,}$/.test(String(s).trim())) return String(s).trim();
+  return '';
+}
+function playerFor(src, title) {
+  const yt = youTubeId(src);
+  return yt
+    ? `<iframe id="hvPlayer" src="https://www.youtube-nocookie.com/embed/${esc(yt)}?rel=0&modestbranding=1" title="${esc(title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
+    : `<video id="hvPlayer" src="${esc(src)}" controls preload="metadata" playsinline></video>`;
+}
+// Parses the admin playlist, one item per line. Two forms are accepted:
+//   Title | source                    -> queue sub-label falls back to "YouTube"/"On-platform"
+//   Title | Channel or credit | source -> the middle field is shown as the sub-label
+// The credit form matters for embedded third-party video: .vq-title clamps to two lines,
+// so appending the channel to the title would push the title itself out of view.
+function parsePlaylist(raw, fallbackTitle, fallbackSrc) {
+  const items = String(raw || '').split(/[\r\n]+/).map((l) => l.trim()).filter(Boolean).map((line) => {
+    const parts = line.split('|').map((s) => s.trim());
+    if (parts.length >= 3) {
+      return { title: parts.slice(0, -2).join(' | '), source: parts[parts.length - 2], src: parts[parts.length - 1] };
+    }
+    if (parts.length === 2) return { title: parts[0], source: '', src: parts[1] };
+    return { title: line, source: '', src: '' };
+  }).filter((it) => it.src);
+  if (!items.length && fallbackSrc) items.push({ title: fallbackTitle, source: '', src: fallbackSrc });
+  return items;
+}
+// YouTube-style: main player left, "Up next" list on the right.
+function homeVideoSection(src, title, caption, playlistRaw) {
+  const list = parsePlaylist(playlistRaw, title, src);
+  if (!list.length) return '';
+  const main = list[0];
+  const thumb = (it) => (youTubeId(it.src)
+    ? `background-image:url('https://i.ytimg.com/vi/${esc(youTubeId(it.src))}/mqdefault.jpg')`
+    : `background-image:linear-gradient(135deg,rgba(11,44,99,.35),rgba(200,16,46,.3)),url('/img/papers/connectivity.jpg')`);
+  return `<section class="wrap section reveal" id="homeVideo">
+    <div class="sec-head-dh"><h2>${esc(title)}</h2></div>
+    <div class="vid-layout">
+      <div class="vid-frame">${playerFor(main.src, main.title)}</div>
+      <aside class="vid-queue">
+        <div class="vq-head">Up next</div>
+        <ol class="vq-list">
+          ${list.map((it, i) => `<li>
+            <button class="vq-item ${i === 0 ? 'active' : ''}" data-src="${esc(it.src)}" data-title="${esc(it.title)}" type="button">
+              <span class="vq-thumb" style="${thumb(it)}"></span>
+              <span class="vq-meta">
+                <span class="vq-title">${esc(it.title)}</span>
+                <span class="vq-sub">${esc(it.source || (youTubeId(it.src) ? 'YouTube' : 'On-platform'))}</span>
+              </span>
+            </button>
+          </li>`).join('')}
+        </ol>
+      </aside>
+      <div class="vid-meta">
+        <h3 class="vid-now" id="hvNowTitle">${esc(main.title)}</h3>
+        ${caption ? `<p class="muted" style="margin:.5rem 0 0;max-width:62em">${esc(caption)}</p>` : ''}
+      </div>
+    </div>
+  </section>`;
+}
+const homeVideoScript = `
+(function(){
+  var frame=document.querySelector('#homeVideo .vid-frame'); if(!frame) return;
+  var now=document.getElementById('hvNowTitle');
+  var items=[].slice.call(document.querySelectorAll('#homeVideo .vq-item'));
+  function ytId(s){
+    s=String(s||'').trim();
+    var keys=['youtu.be/','/embed/','watch?v=','/v/','/shorts/'];
+    for(var i=0;i<keys.length;i++){
+      var k=s.indexOf(keys[i]);
+      if(k>-1){
+        var r=s.slice(k+keys[i].length), id='';
+        for(var j=0;j<r.length;j++){ var c=r.charAt(j);
+          if((c>='A'&&c<='Z')||(c>='a'&&c<='z')||(c>='0'&&c<='9')||c==='_'||c==='-') id+=c; else break; }
+        return id.length>=6 ? id : '';
+      }
+    }
+    if(s.length>=8 && s.indexOf('/')===-1 && s.indexOf('.')===-1) return s;
+    return '';
+  }
+  items.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var src=btn.dataset.src, title=btn.dataset.title, id=ytId(src);
+      frame.innerHTML = id
+        ? '<iframe id="hvPlayer" src="https://www.youtube-nocookie.com/embed/'+id+'?rel=0&modestbranding=1&autoplay=1" title="'+title.replace(/"/g,'&quot;')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+        : '<video id="hvPlayer" src="'+src+'" controls autoplay playsinline></video>';
+      if(now) now.textContent=title;
+      items.forEach(function(b){ b.classList.toggle('active', b===btn); });
+    });
+  });
+
+  // Start the first video as the section scrolls into view. It has to be muted,
+  // every current browser blocks autoplay with sound until the visitor interacts,
+  // so the player is loaded with mute=1 and the viewer unmutes from the controls.
+  // Skipped if the visitor already picked something, or asked for reduced motion.
+  var sec=document.getElementById('homeVideo');
+  var reduce=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var touched=false, started=false;
+  items.forEach(function(b){ b.addEventListener('click', function(){ touched=true; }); });
+  if(sec && !reduce && 'IntersectionObserver' in window){
+    var vio=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting || started || touched) return;
+        var f=frame.querySelector('iframe');
+        if(!f || f.src.indexOf('autoplay=1')>-1) return;
+        started=true; vio.disconnect();
+        f.src = f.src + (f.src.indexOf('?')>-1 ? '&' : '?') + 'autoplay=1&mute=1&playsinline=1';
+      });
+    }, { threshold: 0.55 });
+    vio.observe(sec);
+  }
+})();
+`;
+
+// Liberia ICT Trends: a squeeze carousel. One update holds the open panel and the rest narrow
+// into slats down the right; opening one widens it and slides the strip along, while the copy
+// and button underneath cross-fade to match. Rendered complete on the server (first panel
+// open, its copy showing), then latestUpdatesScript below takes over the motion.
+// News cards draw on their own image collection, so nothing here repeats a paper or report cover.
+const LU_SLOTS = ['news-1', 'news-2', 'news-3', 'news-4', 'news-5'];
+const UPD_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const updateSlug = (u) => String((u && u.title) || '').toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+const updateAnchor = (u) => 'update-' + updateSlug(u);
+exports.updateSlug = updateSlug;
+// Each update keeps one photo wherever it appears (carousel, list, its own page). The photos were
+// first dealt newest-first to the five updates there were; counting from the oldest keeps every
+// update's photo fixed as new ones are published. Expects the updates newest first.
+function updPhoto(items, i) {
+  const n = LU_SLOTS.length, fromOldest = items.length - 1 - i;
+  return imgs.url('news', LU_SLOTS[(((n - 1 - fromOldest) % n) + n) % n]);
+}
+function updDate(d) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d || ''));
+  return m ? `${+m[3]} ${UPD_MONTHS[+m[2] - 1]} ${m[1]}` : '';
+}
+function updCategory(c) {
+  const t = String(c || 'news').replace(/_/g, ' ');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+// The update's opening sentence, so title and sentence read as one short paragraph.
+// A full stop only ends the sentence when a space follows it, so "33.6%" stays whole.
+function firstSentence(text, max = 200) {
+  const t = String(text || '').trim();
+  const m = /^.+?[.!?](?=\s|$)/.exec(t);
+  let out = m ? m[0] : t;
+  if (out.length > max) out = out.slice(0, max).replace(/\s+\S*$/, '') + '…';
+  return out;
+}
+const SQ_BACK = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M9.6 2.6 5.1 7.1h9.1v1.8H5.1l4.5 4.5-1.2 1.2-6-6L1.8 8l.6-.6 6-6 1.2 1.2Z"/></svg>';
+const SQ_NEXT = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.4 2.6l4.5 4.5H1.8v1.8h9.1l-4.5 4.5 1.2 1.2 6-6 .6-.6-.6-.6-6-6-1.2 1.2Z"/></svg>';
+const SQ_GO = '<svg width="6" height="9" viewBox="0 0 6 9" fill="none" aria-hidden="true"><path d="M1.2 1 4.7 4.5 1.2 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// col: 0 is the open panel, 1-3 the narrowing panels, above 3 the tail of slats, below 0 a
+// slat on its way out of the left edge. The script keeps the same markup in step.
+const sqKind = (col) => (col === 0 ? 'open' : col < 0 ? 'out' : col > 3 ? 'tail' : 'panel');
+function sqCard(s, i, col, place = col) {
+  return `<button type="button" class="sq-card" role="tab" id="sqTab-${place}" data-slide="${i}" data-col="${col}" data-kind="${sqKind(col)}" aria-selected="${col === 0}" aria-controls="sqPanel" aria-label="${esc(s.title)}" tabindex="${col === 0 ? 0 : -1}"><img class="sq-pic" src="${esc(s.img)}" alt="" decoding="async" draggable="false"><span class="sq-over" aria-hidden="true"><span class="sq-cap"><span class="sq-title" data-go>${esc(s.title)}</span><span class="sq-over-in">${esc(s.cat)} · ${esc(s.date)}</span></span></span><span class="sq-spine" aria-hidden="true"><span class="sq-spine-in" data-go>${esc(s.title)}</span></span></button>`;
+}
+function latestUpdates(headlines) {
+  if (!headlines || !headlines.length) return '';
+  // every update comes in (so each keeps its photo); the carousel shows the latest eight
+  const slides = headlines.slice(0, 8).map((h, i) => {
+    const title = String(h.title || '').trim();
+    return {
+      title, desc: firstSentence(h.body),
+      img: updPhoto(headlines, i),
+      cat: updCategory(h.category), date: updDate(h.published_on), href: '/updates/' + updateSlug(h),
+    };
+  });
+  const n = slides.length;
+  const slats = Math.max(1, Math.min(3, n - 4));
+  const visible = 4 + slats;
+  const strip = n > 1
+    ? Array.from({ length: visible }, (_, place) => sqCard(slides[place % n], place % n, place)).join('')
+    : sqCard(slides[0], 0, 0);
+  const copy = slides.map((s, i) => `<div class="sq-slide${i === 0 ? ' is-open' : ''}" aria-hidden="${i !== 0}">
+        <p>${esc(s.desc)}</p>
+        <a class="sq-go" href="${esc(s.href)}" tabindex="${i === 0 ? 0 : -1}">Read update ${SQ_GO}</a>
+      </div>`).join('');
+  const data = JSON.stringify(slides.map(({ title, img, cat, date, href }) => ({ title, img, cat, date, href }))).replace(/</g, '\\u003c');
+  return `<section class="wrap section reveal" id="latestUpdates" style="padding-top:0">
+    <div class="sec-head-dh">
+      <h2 id="sqTrendsTitle">Liberia ICT Trends</h2>
+      <div class="sq-nav">
+        <a class="more" href="/updates">All updates ${icon('arrow')}</a>
+        ${n > 1 ? `<button type="button" class="sq-arrow" data-sq-step="-1" aria-label="Previous update">${SQ_BACK}</button><button type="button" class="sq-arrow" data-sq-step="1" aria-label="Next update">${SQ_NEXT}</button>` : ''}
+      </div>
+    </div>
+    <div class="sq" id="sqTrends"><div class="sq-body" style="--sq-slats:${slats}">
+      <div class="sq-window"><div class="sq-strip" role="tablist" aria-labelledby="sqTrendsTitle">${strip}</div></div>
+      <div class="sq-copy" id="sqPanel" role="tabpanel" aria-labelledby="sqTab-0" aria-live="polite">${copy}</div>
+    </div></div>
+    <script type="application/json" id="sqTrendsData">${data}</script>
+  </section>`;
+}
+// The strip is a row that slides, not a ring that turns. Stepping on appends a card to the tail,
+// shifts every card one column left (the open one narrows to a slat and leaves the left edge)
+// and slides the row by one slat plus gap; when the movement ends, the off-screen card is cut
+// and the numbers reset with transitions off, so the picture never jumps. Stepping back is the
+// mirror. Widths come from CSS shares of the row, so nothing is measured.
+const latestUpdatesScript = `
+(function(){
+  var section=document.getElementById('latestUpdates');
+  var root=document.getElementById('sqTrends');
+  var src=document.getElementById('sqTrendsData');
+  if(!section||!root||!src) return;
+  var data; try{ data=JSON.parse(src.textContent); }catch(e){ return; }
+  var n=data.length; if(n<2) return;
+  var strip=root.querySelector('.sq-strip');
+  var copies=[].slice.call(root.querySelectorAll('.sq-slide'));
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+  var slats=Math.max(1,Math.min(3,n-4)), visible=4+slats;
+  var wrap=function(i){ return ((i%n)+n)%n; };
+  var cards=[].slice.call(strip.children).map(function(el){ return { el:el, slide:+el.getAttribute('data-slide') }; });
+  var column=0, slid=0, pending=null, uid=cards.length;
+  var panel=document.getElementById('sqPanel');
+
+  function make(i){
+    var s=data[i], b=document.createElement('button');
+    b.type='button'; b.className='sq-card'; b.setAttribute('role','tab'); b.id='sqTab-'+(uid++);
+    b.setAttribute('data-slide',i); b.setAttribute('aria-controls','sqPanel'); b.setAttribute('aria-label',s.title);
+    var img=document.createElement('img'); img.className='sq-pic'; img.src=s.img; img.alt=''; img.decoding='async'; img.draggable=false;
+    var over=document.createElement('span'); over.className='sq-over'; over.setAttribute('aria-hidden','true');
+    var label=document.createElement('span'); label.className='sq-over-in'; label.textContent=s.cat+' \\u00b7 '+s.date;
+    var cap=document.createElement('span'); cap.className='sq-cap';
+    var title=document.createElement('span'); title.className='sq-title'; title.setAttribute('data-go',''); title.textContent=s.title;
+    cap.appendChild(title); cap.appendChild(label); over.appendChild(cap);
+    var spine=document.createElement('span'); spine.className='sq-spine'; spine.setAttribute('aria-hidden','true');
+    var spineIn=document.createElement('span'); spineIn.className='sq-spine-in'; spineIn.setAttribute('data-go',''); spineIn.textContent=s.title;
+    spine.appendChild(spineIn); b.appendChild(img); b.appendChild(over); b.appendChild(spine);
+    return b;
+  }
+  function kind(col){ return col===0?'open':col<0?'out':col>3?'tail':'panel'; }
+  function paint(){
+    cards.forEach(function(c,place){
+      var col=place+column;
+      c.el.setAttribute('data-col',col); c.el.setAttribute('data-kind',kind(col));
+      c.el.setAttribute('aria-selected',col===0?'true':'false'); c.el.tabIndex=col===0?0:-1;
+    });
+    strip.style.setProperty('--sq-slid',slid);
+  }
+  // apply a change with every transition off, flushing styles either side so the next change animates from it
+  function instant(fn){ root.classList.add('is-still'); fn(); void strip.offsetWidth; root.classList.remove('is-still'); void strip.offsetWidth; }
+  function front(){ var c=cards[-column]; return c?c.slide:0; }
+  function syncCopy(){
+    var open=front(), f=cards[-column];
+    if(f&&panel) panel.setAttribute('aria-labelledby',f.el.id);
+    copies.forEach(function(el,i){
+      var on=i===open; el.classList.toggle('is-open',on); el.setAttribute('aria-hidden',on?'false':'true');
+      var go=el.querySelector('.sq-go'); if(go) go.tabIndex=on?0:-1;
+    });
+  }
+  function settle(){
+    if(!pending) return;
+    clearTimeout(pending.t); var fwd=pending.forward; pending=null;
+    instant(function(){
+      var keep=fwd?cards.slice(-visible):cards.slice(0,visible);
+      cards.forEach(function(c){ if(keep.indexOf(c)<0) c.el.remove(); });
+      cards=keep; column=0; slid=0; paint();
+    });
+  }
+  function step(by,auto){
+    if(!by) return;
+    settle();
+    if(panel) panel.setAttribute('aria-live',auto?'off':'polite');
+    var ms=reduce.matches?0:1000, k;
+    if(by>0){
+      instant(function(){
+        for(k=0;k<by;k++){ var s=wrap(cards[cards.length-1].slide+1), el=make(s); strip.appendChild(el); cards.push({el:el,slide:s}); }
+        paint();
+      });
+      column-=by; slid-=by; paint();
+    }else{
+      instant(function(){
+        for(k=0;k<-by;k++){ var s=wrap(cards[0].slide-1), el=make(s); strip.insertBefore(el,strip.firstChild); cards.unshift({el:el,slide:s}); }
+        column=by; slid=by; paint();
+      });
+      column=0; slid=0; paint();
+    }
+    syncCopy();
+    pending={ forward:by>0, t:setTimeout(settle, ms+40) };
+    if(!ms) settle();
+    arm();
+  }
+
+  strip.addEventListener('click',function(e){
+    var b=e.target.closest('.sq-card'); if(!b) return;
+    var col=+b.getAttribute('data-col');
+    if(col===0||(col>0&&col<=3&&e.target.closest('[data-go]'))){ var d=data[+b.getAttribute('data-slide')]; if(d&&d.href) location.href=d.href; return; }
+    if(col>0) step(col);
+  });
+  strip.addEventListener('mousemove',function(e){
+    var b=e.target.closest('.sq-card'); if(!b) return;
+    var col=+b.getAttribute('data-col');
+    if(col>=0&&col<=3) root.setAttribute('data-hover',col); else root.removeAttribute('data-hover');
+  });
+  strip.addEventListener('mouseleave',function(){ root.removeAttribute('data-hover'); });
+  strip.addEventListener('keydown',function(e){
+    var by=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0; if(!by) return;
+    e.preventDefault(); step(by);
+    var f=cards[-column]; if(f) f.el.focus({preventScroll:true});
+  });
+  section.querySelectorAll('[data-sq-step]').forEach(function(btn){
+    btn.addEventListener('click',function(){ step(+btn.getAttribute('data-sq-step')); });
+  });
+
+  // steps on every 6 s; holds while pointed at, focused, off screen, or in a hidden tab
+  var timer=0, hovering=false, focused=false, seen=true;
+  function arm(){
+    clearTimeout(timer);
+    if(reduce.matches||hovering||focused||!seen||document.hidden) return;
+    timer=setTimeout(function(){ step(1,true); },6000);
+  }
+  section.addEventListener('mouseenter',function(){ hovering=true; arm(); });
+  section.addEventListener('mouseleave',function(){ hovering=false; arm(); });
+  section.addEventListener('focusin',function(){ focused=true; arm(); });
+  section.addEventListener('focusout',function(e){ if(!section.contains(e.relatedTarget)){ focused=false; arm(); } });
+  document.addEventListener('visibilitychange',arm);
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){ seen=es[0].isIntersecting; arm(); },{threshold:0.35}).observe(root);
+  }
+  arm();
+})();
+`;
+
+// ============ DATA EXPLORER ============
+exports.dataExplorer = (ctx, { indicators, indicatorsByDomain, domainOrder, domainLabels, meta, counties, focus, compare }) => shell(ctx, {
+  title: 'Data Explorer', active: '/data', workspaceActive: 'data',
+  extraHead: `<script src="/assets/explorer.js?v=${ASSET_V}" defer></script>`,
+  body: `
+  <!-- Pre-loader. It is the first thing in the body so it paints before anything behind it,
+       and the script that dismisses it sits immediately after, so the hard timeout is armed
+       before any other script on the page can fail. Without JS the noscript rule removes it
+       outright: the curtain must never be able to strand the page behind it. -->
+  <div class="dxload" id="dxLoad" role="status" aria-label="Loading the Data Explorer">
+    <div class="dxload-inner">
+      <video class="dxload-vid" src="/media/explorer-loader.mp4" poster="/media/explorer-loader-poster.jpg"
+             autoplay muted playsinline preload="auto" aria-hidden="true" tabindex="-1"></video>
+      <img class="dxload-still" src="/media/explorer-loader-poster.jpg" alt="" aria-hidden="true">
+    </div>
+    <p class="dxload-line" aria-hidden="true">
+      <span class="dxload-lead">Loading</span>
+      <span class="dxload-roll">
+        <!-- Sizes the window to the longest subject so the word before it never shifts. -->
+        <span class="dxload-sizer">Data Explorer<i class="dxload-dots"><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span></i></span>
+        <span class="dxload-msg" data-step="0">Data Explorer<i class="dxload-dots"><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span></i></span>
+        <span class="dxload-msg" data-step="1">Databases<i class="dxload-dots"><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span></i></span>
+        <span class="dxload-msg" data-step="2">Indicators<i class="dxload-dots"><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span><span>.</span></i></span>
+      </span>
+    </p>
+    <div class="dxload-bar" aria-hidden="true"><i></i></div>
+    <span class="sr-only">Loading the Data Explorer, please wait.</span>
+  </div>
+  <noscript><style>.dxload{display:none!important}</style></noscript>
+  <script>
+  (function(){
+    var el = document.getElementById('dxLoad');
+    if (!el) return;
+    // Four seconds, three subjects. The slots are chained rather than scheduled up front:
+    // this page's own script is heavy, and three independent timers can all come due at
+    // once while the main thread is blocked, firing the last two in a burst too fast to
+    // read. Chaining means each subject is measured from the moment the previous one
+    // actually appeared, so every one of them gets its time on screen.
+    var SLOT = 1333, HARD = 9000;
+    var msgs = el.querySelectorAll('.dxload-msg');
+    var done = false, loaded = false, elapsed = false, i = 0;
+
+    function show(n){
+      for (var k = 0; k < msgs.length; k++) {
+        msgs[k].classList.toggle('is-live', k === n);
+        msgs[k].classList.toggle('is-past', k < n);
+      }
+    }
+    function step(){
+      show(i);
+      i++;
+      setTimeout(i < msgs.length ? step : function(){ elapsed = true; maybe(); }, SLOT);
+    }
+    step();
+    // next frame, so the first subject has a from-state to rise out of
+    setTimeout(function(){ el.classList.add('is-go'); }, 30);
+
+    function hide(){
+      if (done) return;
+      done = true;
+      el.classList.add('is-out');
+      var vid = el.querySelector('video');
+      if (vid) { try { vid.pause(); } catch (e) {} }
+      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 620);
+    }
+    function maybe(){ if (loaded && elapsed) hide(); }
+
+    // Armed first: whatever else fails, the page is never left behind the curtain.
+    setTimeout(hide, HARD);
+    function onLoad(){ loaded = true; maybe(); }
+    if (document.readyState === 'complete') onLoad();
+    else window.addEventListener('load', onLoad);
+    // A back/forward restore must not show a stale curtain over a rendered page.
+    window.addEventListener('pageshow', function(e){ if (e.persisted) hide(); });
+  })();
+  </script>
+
+  ${pageHeader('data-explorer', 'Data Explorer', 'Map, trend and county comparison for every indicator you are authorized to see.')}
+
+  <div class="sticky-selector dx-cmd dx-black"><div class="wrap">
+    <div class="selector-field"><label>Category</label>${xdd('dd-category', 'All categories')}</div>
+    <div class="selector-field"><label>Indicator</label>${xdd('dd-indicator', meta.name)}</div>
+    <div class="selector-field"><label>Focus Location</label>${xdd('dd-focus', focus || 'National (Liberia)')}</div>
+    <div class="selector-field"><label>Comparison Area</label>${xdd('dd-compare', compare || 'None')}</div>
+    <div class="selector-field dx-cmd-year">
+      <label for="year-slider">Year <b id="year-slider-val">${meta.year || 2025}</b></label>
+      <input type="range" id="year-slider" min="2018" max="2025" value="${meta.year || 2025}" aria-label="Year">
+    </div>
+    <div class="selector-field dx-cmd-play">
+      <label>Animate</label>
+      <button type="button" class="dx-play" id="dx-play" aria-label="Play through the years">${icon('rotate')}<span>Play years</span></button>
+    </div>
+    <button type="button" class="dx-cmd-pin" id="dx-cmd-pin" aria-label="Hide the filters" aria-expanded="true">${icon('chevron')}</button>
+    <button type="button" class="dx-cmd-peek" id="dx-cmd-peek" aria-hidden="true" tabindex="-1"></button>
+  </div></div>
+
+  <nav class="dx-rail" id="dx-rail" aria-label="Jump to section"></nav>
+
+  <div class="explorer-shell dx-black">
+    <aside class="indicator-tree" id="indicator-tree">
+      <button type="button" class="tree-toggle" id="tree-toggle" aria-expanded="false">${icon('layers')}<span>Browse indicators</span></button>
+      <div class="tree-body">
+        <p class="tree-title">Indicators</p>
+        ${domainOrder.map((d) => `<div class="tree-cat ${meta.domain === d ? 'open' : ''}">
+          <div class="tree-cat-header" role="button" tabindex="0"><span>${esc(domainLabels[d])}</span><em class="tree-count">${(indicatorsByDomain[d] || []).length}</em>${icon('chevron')}</div>
+          <div class="tree-items"><div class="tree-items-inner">
+            ${(indicatorsByDomain[d] || []).map((i) => `<div class="tree-item ${i.code === meta.code ? 'selected' : ''}" data-code="${esc(i.code)}" role="button" tabindex="0"><span>${esc(i.name)}</span></div>`).join('')}
+          </div></div>
+        </div>`).join('')}
+      </div>
+    </aside>
+
+    <main class="dx-main" id="dx-main">
+      <section class="dx-sec dx-intro" id="dx-intro">
+        <p class="dx-eyebrow" id="explorer-domain-tag">${esc(domainLabels[meta.domain])}</p>
+        <h1 class="dx-title" id="explorer-title">${esc(meta.name)}</h1>
+        <p class="dx-statement" id="explorer-desc">${esc(meta.description || '')}</p>
+        <p class="dx-source">
+          <span class="dx-mock" id="dx-mock" hidden title="These figures are placeholders for demonstration. They are not official statistics.">Mock data</span>
+          <span class="dx-fact"><i>Unit</i><b id="dx-unit">${esc(meta.unit)}</b></span>
+          <span class="dx-fact dx-fact-source"><i>Source</i><b id="dx-agency">${esc(meta.agency || 'n/a')}</b></span>
+          <span class="dx-fact"><i>Coverage</i><b id="dx-coverage">${counties.length} counties</b></span>
+          <span class="dx-fact"><i>Years</i><b id="dx-years-span">&nbsp;</b></span>
+        </p>
+      </section>
+
+      <section class="dx-sec dx-snapshot" id="dx-snapshot" aria-label="Data snapshot">
+        <div class="dx-stat"><span class="dx-stat-lbl">Current value</span><span class="dx-stat-val" id="snap-value">0</span><span class="dx-stat-sub" id="snap-value-sub">&nbsp;</span><span class="dx-stat-cmp" id="snap-value-cmp" hidden></span></div>
+        <div class="dx-stat"><span class="dx-stat-lbl" id="snap-rank-lbl">National position</span><span class="dx-stat-val" id="snap-rank">&nbsp;</span><span class="dx-stat-sub" id="snap-rank-sub">&nbsp;</span><span class="dx-stat-cmp" id="snap-rank-cmp" hidden></span></div>
+        <div class="dx-stat"><span class="dx-stat-lbl">Change</span><span class="dx-stat-val" id="snap-change">&nbsp;</span><span class="dx-stat-sub" id="snap-change-sub">&nbsp;</span><span class="dx-stat-cmp" id="snap-change-cmp" hidden></span></div>
+        <div class="dx-stat"><span class="dx-stat-lbl">Locations</span><span class="dx-stat-val" id="snap-locations">0</span><span class="dx-stat-sub" id="snap-locations-sub">counties reporting</span><span class="dx-stat-cmp" id="snap-locations-cmp" hidden></span></div>
+      </section>
+
+      <section class="dx-sec dx-view" id="dx-geo">
+        <!-- The stage pins for the length of its three readings: the map holds still and stays
+             wholly in view while 01, 02 and 03 change in place, then the page carries on. -->
+        <div class="dx-geo-pin" id="dx-geo-pin">
+        <div class="dx-geo-sticky">
+        <header class="dx-view-head">
+          <span class="dx-view-num">View 01 &middot; Geography</span>
+          <h2>Where does it stand across the country?</h2>
+          <p class="dx-view-sub" id="geo-sub">&nbsp;</p>
+        </header>
+        <div class="dx-map-stage">
+          <div class="dx-steps-col">
+          <div class="dx-steps" id="map-steps">
+            <article class="dx-step" data-step="national"><span class="dx-step-n">01</span><h3 id="step1-h">&nbsp;</h3><p id="step1-p">&nbsp;</p></article>
+            <article class="dx-step" data-step="top"><span class="dx-step-n">02</span><h3 id="step2-h">&nbsp;</h3><p id="step2-p">&nbsp;</p></article>
+            <article class="dx-step" data-step="bottom"><span class="dx-step-n">03</span><h3 id="step3-h">&nbsp;</h3><p id="step3-p">&nbsp;</p></article>
+          </div>
+          <div class="dx-step-dots" id="map-step-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          <div class="dx-map-sticky">
+            <div class="dx-map-frame">
+              <div id="choropleth" class="dx-map"></div>
+              <div class="dx-map-foot">
+                <div class="map-legend"><span>Lower</span><span class="map-legend-bar"></span><span>Higher</span></div>
+                <div class="dx-readout"><span class="dx-readout-lbl">Reading</span><b id="readout-name">National</b><span class="dx-readout-val" id="readout-val"></span></div>
+                <div class="dx-size">
+                  <label for="size-choropleth">Size</label>
+                  <input type="range" id="size-choropleth" class="dx-size-range" data-viz="choropleth" min="45" max="100" value="100" step="5">
+                  <span class="dx-size-val" id="size-choropleth-val">100%</span>
+                </div>
+                <button type="button" class="dx-expand" data-expand="choropleth" title="View full screen" aria-label="View full screen">${icon('expand')}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        </div>
+      </section>
+
+      <section class="dx-sec dx-view" id="dx-rank-sec">
+        <header class="dx-view-head">
+          <span class="dx-view-num">View 02 &middot; Ranking</span>
+          <h2>Which counties lead?</h2>
+          <p class="dx-view-sub" id="rank-sub">&nbsp;</p>
+        </header>
+        ${vizSize('viz-ranking')}
+        <div id="viz-ranking" class="dx-viz"></div>
+      </section>
+
+      <section class="dx-sec dx-view" id="dx-trend">
+        <header class="dx-view-head">
+          <span class="dx-view-num">View 03 &middot; Trend</span>
+          <h2>How has it changed over time?</h2>
+          <p class="dx-view-sub" id="trend-sub">&nbsp;</p>
+        </header>
+        ${vizSize('explorer-trend')}
+        <div id="explorer-trend" class="dx-viz dx-viz-tall"></div>
+        <div class="dx-legend" id="trend-legend"></div>
+      </section>
+
+      <section class="dx-sec dx-view" id="dx-change">
+        <header class="dx-view-head">
+          <span class="dx-view-num">View 04 &middot; Change</span>
+          <h2>Where is it rising, and where is it slipping?</h2>
+          <p class="dx-view-sub" id="change-sub">&nbsp;</p>
+        </header>
+        ${vizSize('viz-change')}
+        <div id="viz-change" class="dx-viz"></div>
+      </section>
+
+      <section class="dx-sec dx-view" id="dx-compare">
+        <header class="dx-view-head">
+          <span class="dx-view-num">View 05 &middot; Comparison</span>
+          <h2 id="cmp-title">How does it compare?</h2>
+          <p class="dx-view-sub" id="cmp-sub">&nbsp;</p>
+        </header>
+        ${vizSize('viz-compare')}
+        <div id="viz-compare" class="dx-viz"></div>
+        <div class="compare-stat-row" id="compare-stats"></div>
+      </section>
+
+      <section class="dx-sec dx-view" id="dx-heat">
+        <header class="dx-view-head">
+          <span class="dx-view-num">View 06 &middot; Matrix</span>
+          <h2>Every county, every year</h2>
+          <p class="dx-view-sub">Darker cells carry higher values. Click any cell to move the page to that county and year.</p>
+        </header>
+        ${vizSize('viz-heat')}
+        <div id="viz-heat" class="dx-viz viz-heat-wrap"></div>
+      </section>
+
+      <section class="dx-sec dx-view dx-data" id="dx-data">
+        <header class="dx-view-head">
+          <span class="dx-view-num">Data &middot; Analyze</span>
+          <h2>Explore the complete dataset</h2>
+          <p class="dx-view-sub" id="data-sub">&nbsp;</p>
+        </header>
+        <div class="table-toolbar">
+          <div class="toolbar-actions">
+            <a class="btn btn-ghost btn-sm" id="dl-csv" href="#">${icon('download')} CSV</a>
+            <a class="btn btn-ghost btn-sm" id="dl-json" href="#">${icon('download')} JSON</a>
+            <button class="btn btn-ghost btn-sm" id="btn-png" type="button">${icon('camera')} PNG</button>
+            <button class="btn btn-ghost btn-sm" id="btn-share" type="button">${icon('share')} Share link</button>
+          </div>
+        </div>
+        <div class="dx-table-wrap">
+          <table class="data-table" id="explorer-table">
+            <thead><tr><th class="sortable" data-key="county">County<span class="sort-arrow"></span></th><th class="num sortable" data-key="value">Value<span class="sort-arrow"></span></th><th class="num sortable" data-key="yoy">YoY change<span class="sort-arrow"></span></th><th class="num sortable" data-key="rank">Rank<span class="sort-arrow"></span></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+  <!-- Full screen stage. The visual is moved in here and moved back on close, so it keeps
+       its listeners and its drawn state rather than being rebuilt from a copy. -->
+  <div class="dx-fs" id="dx-fs" hidden>
+    <div class="dx-fs-bar">
+      <span class="dx-fs-title" id="dx-fs-title"></span>
+      <button type="button" class="dx-fs-close" id="dx-fs-close" aria-label="Close full screen">${icon('x')}</button>
+    </div>
+    <div class="dx-fs-body" id="dx-fs-body"></div>
+  </div>
+  <script>window.__NICTD_PAGE__='explorer';window.__EXPLORER_STATE__=${JSON.stringify({ indicator: meta.code, year: meta.year || 2025, focus: focus || '', compare: compare || '', indicators, counties: counties.map((c) => ({ name: c.name })) })};</script>`,
+});
+
+
+// ============ DATA LANDSCAPE ============
+// Liberia's 15 counties as a floor, one tower per county sized by the selected indicator.
+// The engine is public/landscape.js; the geometry is public/liberia-counties.js, the same
+// file the Data Explorer's map draws from.
+exports.landscape = (ctx, { indicators, meta, year, years, counties }) => shell(ctx, {
+  title: 'Data Landscape', active: '/landscape', workspaceActive: 'data',
+  extraHead: `<script src="/assets/lsc-charts.js?v=${ASSET_V}" defer></script>
+    <script src="/assets/landscape.js?v=${ASSET_V}" defer></script>`,
+  body: `
+  ${pageHeader('data-landscape', 'Data Landscape', 'Every county as a tower. Height is the value, so you can see which counties lead and which are behind national, in one look.')}
+
+  <div class="sticky-selector dx-cmd dx-black lsc-cmd"><div class="wrap">
+    <div class="selector-field"><label>Category</label>${xdd('dd-lsc-category', 'All categories')}</div>
+    <div class="selector-field"><label>Indicator</label>${xdd('dd-lsc-indicator', meta.name)}</div>
+    <div class="selector-field lsc-cmd-year">
+      <label for="lsc-year">Year <b id="lsc-year-val">${year}</b></label>
+      <input type="range" id="lsc-year" min="${years[0]}" max="${years[years.length - 1]}" value="${year}" aria-label="Year">
+    </div>
+    <div class="selector-field lsc-cmd-play">
+      <label>Animate</label>
+      <button type="button" class="lsc-play" id="lsc-play" aria-label="Play through the years">${icon('rotate')}<span>Play years</span></button>
+    </div>
+  </div></div>
+
+  <div class="wrap section lsc-wrap">
+    <div class="lsc-head">
+      <p class="dx-eyebrow" id="lsc-domain">${esc(meta.domainLabel || '')}</p>
+      <h1 class="dx-title" id="lsc-title">${esc(meta.name)}</h1>
+      <p class="dx-statement" id="lsc-desc">${esc(meta.description || '')}</p>
+      <p class="dx-source">
+        <span class="dx-mock" id="lsc-mock" ${meta.is_mock ? '' : 'hidden'} title="These figures are placeholders for demonstration. They are not official statistics.">Mock data</span>
+        <span class="dx-fact"><i>Unit</i><b id="lsc-unit">${esc(meta.unit || '')}</b></span>
+        <span class="dx-fact dx-fact-source"><i>Source</i><b id="lsc-agency">${esc(meta.agency || 'n/a')}</b></span>
+      </p>
+    </div>
+
+    <div class="lsc-stage">
+      <div class="lsc-map" id="lsc-map">
+        <button type="button" class="lsc-fs" id="lsc-fs" aria-label="Expand the landscape to full screen">
+          <i class="lsc-ico lsc-ico-in">${icon('expand')}</i><i class="lsc-ico lsc-ico-out">${icon('x')}</i>
+        </button>
+        <div class="lsc-nat" id="lsc-nat" hidden><i>National</i><b id="lsc-nat-val"></b></div>
+        <div class="lsc-card" id="lsc-card" hidden></div>
+        <p class="lsc-status" id="lsc-status" role="status"></p>
+      </div>
+      <aside class="lsc-side">
+        <div class="lsc-side-head">
+          <h2>All 15 counties</h2>
+          <p>Hover or tap a county here or on the map. Select one to carry it through.</p>
+          <p class="lsc-natnote" id="lsc-natnote" hidden></p>
+        </div>
+        <div class="lsc-rank" id="lsc-rank"></div>
+        <a class="lsc-go" id="lsc-go" href="/data">Open in Data Explorer</a>
+      </aside>
+    </div>
+
+    <section class="lsc-analysis" id="lsc-analysis">
+      <div class="lsc-an-head">
+        <div>
+          <p class="dx-eyebrow">Analysis</p>
+          <h2>Five ways to interrogate this indicator</h2>
+          <p class="lsc-an-sub">Every panel is computed from the same figures as the landscape above.
+            Hover any mark for the county and value behind it.</p>
+        </div>
+        <div class="lsc-an-pair">
+          <label>Plot against</label>
+          ${xdd('dd-lsc-pair', 'Choose a second indicator')}
+        </div>
+      </div>
+      <div class="lsc-an-grid">
+        ${[
+          ['motion', 'Motion scatter', 'Where is each county, and which way is it moving?'],
+          ['bump', 'Rank trajectories', 'Who overtook whom, across every year at once?'],
+          ['cartogram', 'Population cartogram', 'Weighted by people, not by land area.'],
+          ['gap', 'Gap to the leader', 'How far is each county from the best performer?'],
+          ['readiness', 'Readiness board', 'Which domains are defined, and what is still placeholder?'],
+        ].map(([id, t, q], i) => `<figure class="lsc-an-card" id="lsc-card-${id}" data-chart="${id}">
+          <figcaption>
+            <span class="lsc-an-n">${String(i + 1).padStart(2, '0')}</span>
+            <span><b>${t}</b><em>${q}</em></span>
+            <button type="button" class="lsc-an-fs" data-fs="${id}" aria-label="Expand ${t} to full screen">
+              <i class="lsc-ico lsc-ico-in">${icon('expand')}</i><i class="lsc-ico lsc-ico-out">${icon('x')}</i>
+            </button>
+          </figcaption>
+          <div class="lsc-an-plot" id="lsc-an-${id}"></div>
+        </figure>`).join('')}
+      </div>
+    </section>
+
+    <div class="lsc-legend">
+      <h2>How to read this</h2>
+      <div class="lsc-legend-grid">
+        <div><b>Tower height is the value.</b> The taller the tower, the higher the figure for that county. The scale is fixed across every year of an indicator, so when you scrub the years you are watching real change, not a rescaled picture.</div>
+        <div><b>Colour says the same thing again.</b> Pale to deep on the national scale, so rank still reads where a tall tower stands in front of a short one. The county you point at turns red.</div>
+        <div><b>The floor is the map.</b> Each county tile carries a faint wash of its own value and uses the exact county boundaries, so the landscape still works as a map of Liberia.</div>
+        <div><b>The floating outline is the national figure.</b> Towers breaking through it are above the national level; towers under it are below. Counties with no recorded value show a grey tile and no tower.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lsc-deck" id="lsc-deck" hidden role="dialog" aria-modal="true" aria-label="Visualization deck">
+    <div class="lsc-deck-bar">
+      <span class="lsc-deck-n" id="lsc-deck-n"></span>
+      <span class="lsc-deck-title" id="lsc-deck-title"></span>
+      <span class="lsc-deck-tools">
+        <button type="button" class="lsc-deck-play" id="lsc-deck-play" aria-label="Play through every visual">${icon('rotate')}<span>Play all</span></button>
+        <button type="button" class="lsc-deck-x" id="lsc-deck-close" aria-label="Close full screen">${icon('x')}</button>
+      </span>
+    </div>
+    <div class="lsc-deck-stage">
+      <button type="button" class="lsc-deck-nav is-prev" id="lsc-deck-prev" aria-label="Previous visual">${icon('chevron')}</button>
+      <div class="lsc-deck-body" id="lsc-deck-body"></div>
+      <button type="button" class="lsc-deck-nav is-next" id="lsc-deck-next" aria-label="Next visual">${icon('chevron')}</button>
+    </div>
+    <div class="lsc-deck-dots" id="lsc-deck-dots"></div>
+  </div>
+
+  <script>window.__NICTD_PAGE__='landscape';window.__LANDSCAPE_STATE__=${JSON.stringify({
+    indicator: meta.code,
+    year,
+    indicators: indicators.map((i) => ({ code: i.code, name: i.name, unit: i.unit, domain: i.domain, domainLabel: i.domainLabel, description: i.description, agency: i.agency, is_mock: !!i.is_mock })),
+    counties: (counties || []).map((c) => ({ name: c.name, population: c.population })),
+    domains: Object.values(indicators.reduce((acc, i) => {
+      const d = acc[i.domain] || (acc[i.domain] = { domain: i.domain, label: i.domainLabel || i.domain, n: 0, mock: 0 });
+      d.n++; if (i.is_mock) d.mock++;
+      return acc;
+    }, {})),
+  })};</script>`,
+});
+
+// ============ INDICATOR CATALOGUE ============
+exports.catalogue = (ctx, { indicators, domainOrder, domainLabels, q = '' }) => shell(ctx, {
+  title: 'Indicator Catalogue', active: '/indicators', workspaceActive: 'indicators', q, body: `
+  <div class="wrap section">
+    <p class="kicker">Catalogue</p>
+    <h1>Indicator Catalogue</h1>
+    <p class="lede-sm">Every indicator tracked by NICTD, with definitions, methodology and source metadata. Select a row for full details.</p>
+    <input class="catalogue-search" id="catalogue-search" type="search" placeholder="Search indicators…" value="${esc(q)}">
+    <div class="catalogue-filters">
+      <span class="pill-chip active" data-domain="">All categories</span>
+      ${domainOrder.map((d) => `<span class="pill-chip" data-domain="${d}">${esc(domainLabels[d])}</span>`).join('')}
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Indicator</th><th>Category</th><th>Unit</th><th>Source</th><th>Last updated</th><th class="num">Coverage</th></tr></thead>
+      <tbody id="catalogue-tbody">
+        ${indicators.map((i) => `<tr class="cat-row" data-code="${esc(i.code)}" data-domain="${esc(i.domain)}" data-search="${esc((i.name + ' ' + i.description).toLowerCase())}">
+          <td><strong>${esc(i.name)}</strong>${i.access_level !== 'public' ? ` <span class="tag">${esc(i.access_level)}</span>` : ''}</td>
+          <td>${esc(i.domainLabel)}</td><td class="mono">${esc(i.unit)}</td><td>${esc(i.agency || '')}</td>
+          <td class="mono">${esc(i.lastUpdated)}</td><td class="num mono">${i.coverage} / 15</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  <div class="drawer-overlay" id="drawer-overlay">
+    <div class="drawer-panel">
+      <div class="drawer-head"><h3 id="drawer-title"></h3><button class="drawer-close" type="button">${icon('x')}</button></div>
+      <div class="drawer-body" id="drawer-body"></div>
+    </div>
+  </div>
+  <script>window.__NICTD_PAGE__='catalogue';window.__CATALOGUE_STATE__=${JSON.stringify({ indicators })};</script>`,
+});
+
+// ============ DATA QUERY BUILDER ============
+exports.query = (ctx, { indicators, domainOrder, domainLabels, counties, years }) => shell(ctx, {
+  title: 'Data Query', active: '/query', workspaceActive: 'query', body: `
+  <div class="wrap section">
+    <p class="kicker">Custom extract</p>
+    <h1>Data Query builder</h1>
+    <p class="lede-sm">Build a custom extract across indicators, counties and years. Preview updates live; download as CSV, JSON or XLSX.</p>
+    <div class="query-layout">
+      <div class="query-build-panel">
+        <h3>Build your query</h3>
+        <div class="selector-field">
+          <label>Indicators</label>
+          ${xddMulti('dd-query-indicators', 'Select indicators…')}
+        </div>
+        <div class="selector-field">
+          <label>Counties</label>
+          ${xddMulti('dd-query-counties', 'Select counties…', 'Select all 15 counties')}
+        </div>
+        <div class="query-range-row">
+          <div class="selector-field"><label>From</label><select id="year-from">${years.map((y) => `<option ${y === years[0] ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+          <div class="selector-field"><label>To</label><select id="year-to">${years.map((y) => `<option ${y === years[years.length - 1] ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
+        </div>
+        <div class="selector-field">
+          <label>Output format</label>
+          <div class="format-toggle">
+            <label class="format-opt"><input type="radio" name="fmt" value="csv" checked><span>CSV</span></label>
+            <label class="format-opt"><input type="radio" name="fmt" value="json"><span>JSON</span></label>
+            <label class="format-opt"><input type="radio" name="fmt" value="xlsx"><span>XLSX</span></label>
+          </div>
+        </div>
+        <div class="query-build-actions">
+          <button class="btn btn-gold" id="btn-generate-download" type="button">${icon('download')} Download</button>
+          <button class="btn btn-outline" id="btn-save-query" type="button">Save query</button>
+        </div>
+      </div>
+      <div class="query-results-panel">
+        <div class="sec-head-dh"><h2 style="margin:0">Live preview</h2><span class="mono muted" id="query-count" style="font-size:.78rem"></span></div>
+        <div class="panel query-preview-table">
+          <table class="data-table" id="query-preview"><thead><tr><th>Indicator</th><th>County</th><th class="num">Year</th><th class="num">Value</th><th>Unit</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>window.__NICTD_PAGE__='query';window.__QUERY_STATE__=${JSON.stringify({ years, indicators: indicators.map((i) => ({ value: i.code, label: i.name, group: domainLabels[i.domain] })), counties: counties.map((c) => ({ value: c.name, label: c.name })) })};</script>`,
+});
+
+// ============ DASHBOARDS ============
+// One dashboards page: the title itself is the filter, pick a dashboard and it loads in place.
+exports.dashboardsIndex = (ctx, { dashboards, counties = [], initial }) => {
+  const cur = dashboards.find((d) => d.slug === initial) || dashboards[0];
+  const meta = {};
+  dashboards.forEach((d) => { meta[d.slug] = { label: d.label, description: d.description, narrative: d.narrative || '' }; });
+  return shell(ctx, {
+    title: 'Dashboards', active: '/dashboards', workspaceActive: 'dashboards', body: `
+  ${pageHeader('dashboards', 'Dashboards', 'Curated single-page views combining hero stats, trends and county rankings.')}
+  <div class="wrap section">
+    <div class="dash-title-row">
+      <label class="dash-title-select">
+        <select id="dash-topic-select" aria-label="Choose a dashboard">
+          ${dashboards.map((d) => `<option value="${esc(d.slug)}" ${d.slug === cur.slug ? 'selected' : ''}>${esc(d.label)}</option>`).join('')}
+        </select>
+        ${icon('chevron')}
+      </label>
+      <span class="scope-chip" id="dash-scope-label">National</span>
+    </div>
+    <p class="lede-sm" id="dash-description">${esc(cur.description)}</p>
+
+    <div class="dash-hero-dh">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+        <div class="sync"><span class="pulse"></span><span class="mono" id="dash-sync-text" style="color:#B9C7D3;font-size:.8rem">connecting…</span></div>
+        <select id="dash-county-filter" style="width:auto;background:var(--navy-600);color:#fff;border-color:rgba(255,255,255,.2)">
+          <option value="">National (all counties)</option>
+          ${counties.map((c) => `<option>${esc(c.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="dash-hero-stats" id="dash-hero-stats"><div class="cell"><div class="val">…</div><div class="lbl">Loading</div></div></div>
+    </div>
+
+    <div class="narrative-block"><p class="muted" id="dash-narrative">${esc(cur.narrative || '')}</p></div>
+
+    <div class="map-panel dash-map">
+      <div class="map-panel-head">
+        <div><p class="kicker" id="dash-map-tag">County map</p><h3 id="dash-map-title" style="margin:0">Connectivity</h3></div>
+        <div class="map-head-right">
+          <span class="mono muted" style="font-size:.8rem">Year <strong id="dash-map-year" style="color:var(--navy)">2025</strong></span>
+          <div class="map-legend"><span>Lower</span><span class="map-legend-bar"></span><span>Higher</span></div>
+        </div>
+      </div>
+      <p class="muted" id="dash-map-desc" style="font-size:.86rem"></p>
+      <div class="map-size-row">
+        <label for="map-zoom">Map size</label>
+        <input type="range" id="map-zoom" min="40" max="100" value="100" step="5">
+        <span class="mono muted" id="map-zoom-val">100%</span>
+      </div>
+      <div id="choropleth"></div>
+    </div>
+
+    <div class="chart-panel" style="margin-top:1.1rem">
+      <h3 id="dash-trend-title">Trend</h3>
+      <div id="dash-trend" class="chart-dh"></div>
+    </div>
+
+    <div class="two-col" style="margin-top:1.1rem">
+      <div class="panel"><h3>Top 5 counties</h3><div id="dash-ranking-top" class="chart-dh"></div></div>
+      <div class="panel"><h3>Bottom 5 counties</h3><div id="dash-ranking-bottom" class="chart-dh"></div></div>
+    </div>
+
+    <div class="viz-grid">
+      <div class="chart-card">
+        <div class="chart-panel-head"><h3>Distribution by county <span class="mono" id="dash-dist-year" style="font-size:.8rem"></span></h3></div>
+        <div id="dash-distribution" class="chart-dh"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-panel-head"><h3>Change vs previous year</h3></div>
+        <div id="dash-change" class="chart-dh"></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-top:1.1rem">
+      <div class="chart-panel-head"><h3>Year-on-year growth <span class="mono" id="dash-growth-scope" style="font-size:.8rem"></span></h3></div>
+      <div id="dash-growth" class="chart-dh"></div>
+    </div>
+
+    <div class="chart-card" style="margin-top:1.1rem">
+      <div class="chart-panel-head">
+        <h3>Heat map, county × year</h3>
+        <span class="mono" style="font-size:.78rem">Darker = higher</span>
+      </div>
+      <div id="dash-heat" class="viz-heat-wrap"></div>
+    </div>
+
+    <p style="margin-top:1.2rem"><a class="btn btn-gold" id="dash-download" href="/api/v1/download/data.csv">${icon('download')} Download full dataset</a></p>
+  </div>
+  <script>window.__NICTD_PAGE__='dashboard-topic';window.__DASHBOARD_STATE__=${JSON.stringify({ topic: cur.slug, meta })};</script>`,
+  });
+};
+
+exports.dashboardTopic = (ctx, { slug, label, description, counties, narrative }) => shell(ctx, {
+  title: label, active: '/dashboards', workspaceActive: 'dashboards', body: `
+  <div class="wrap section">
+    <p class="kicker"><a href="/dashboards">← Dashboards</a></p>
+    <div class="dash-hero-dh">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+        <div><h1>${esc(label)} <span class="scope-chip" id="dash-scope-label" style="margin-left:.5rem">National</span></h1><p>${esc(description)}</p></div>
+        <div style="text-align:right">
+          <div class="sync" style="justify-content:flex-end"><span class="pulse"></span><span class="mono" id="dash-sync-text" style="color:#B9C7D3;font-size:.8rem">connecting…</span></div>
+          <select id="dash-county-filter" style="margin-top:.5rem;width:auto;background:var(--navy-600);color:#fff;border-color:rgba(255,255,255,.2)">
+            <option value="">National (all counties)</option>
+            ${counties.map((c) => `<option>${esc(c.name)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="dash-hero-stats" id="dash-hero-stats"><div class="cell"><div class="val">…</div><div class="lbl">Loading</div></div></div>
+    </div>
+
+    <div class="narrative-block"><p class="muted">${esc(narrative)}</p></div>
+
+    <div class="chart-panel">
+      <h3 id="dash-trend-title">Trend</h3>
+      <div id="dash-trend" class="chart-dh"></div>
+    </div>
+
+    <div class="two-col" style="margin-top:1.1rem">
+      <div class="panel"><h3>Top 5 counties</h3><div id="dash-ranking-top" class="chart-dh"></div></div>
+      <div class="panel"><h3>Bottom 5 counties</h3><div id="dash-ranking-bottom" class="chart-dh"></div></div>
+    </div>
+
+    <div class="viz-grid">
+      <div class="chart-card">
+        <div class="chart-panel-head"><h3>Distribution by county <span class="mono" id="dash-dist-year" style="font-size:.8rem"></span></h3></div>
+        <div id="dash-distribution" class="chart-dh"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-panel-head"><h3>Change vs previous year</h3></div>
+        <div id="dash-change" class="chart-dh"></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-top:1.1rem">
+      <div class="chart-panel-head"><h3>Year-on-year growth <span class="mono" id="dash-growth-scope" style="font-size:.8rem"></span></h3></div>
+      <div id="dash-growth" class="chart-dh"></div>
+    </div>
+
+    <div class="chart-card" style="margin-top:1.1rem">
+      <div class="chart-panel-head">
+        <h3>Heat map, county × year</h3>
+        <span class="mono" style="font-size:.78rem">Darker = higher</span>
+      </div>
+      <div id="dash-heat" class="viz-heat-wrap"></div>
+    </div>
+
+    <p style="margin-top:1.2rem"><a class="btn btn-gold" id="dash-download" href="/api/v1/download/data.csv">${icon('download')} Download full dataset</a></p>
+  </div>
+  <script>window.__NICTD_PAGE__='dashboard-topic';window.__DASHBOARD_STATE__=${JSON.stringify({ topic: slug })};</script>`,
+});
+
+// ============ ABOUT ============
+// Editorial studio treatment: oversized uppercase display type, parenthesised section
+// markers, a white ground with one red accent, and scroll-driven reveals. All styling is
+// scoped under .m in styles.css.
+
+// The mark shown against each policy commitment. Liberia's own flag for the national
+// instruments and the UN's published SDG mark for the goal; the African Union and ECOWAS
+// emblems are not in the asset library, so those carry a typographic abbreviation rather
+// than an approximation of an official emblem.
+// Flags for the peer table. Drawn as plain geometry rather than pulled from an icon set,
+// so they carry no dependency; each is the flag's actual construction and colours.
+const FLAGS = {
+  rw: '<rect width="30" height="20" fill="#00A1DE"/><rect y="10" width="30" height="4" fill="#FAD201"/><rect y="14" width="30" height="6" fill="#20603D"/><circle cx="22" cy="5" r="2.6" fill="#E5BE01"/>',
+  ke: '<rect width="30" height="20" fill="#fff"/><rect width="30" height="6" fill="#000"/><rect y="7" width="30" height="6" fill="#BB0000"/><rect y="14" width="30" height="6" fill="#006600"/><ellipse cx="15" cy="10" rx="3" ry="6" fill="#BB0000" stroke="#fff" stroke-width="1"/>',
+  ng: '<rect width="30" height="20" fill="#fff"/><rect width="10" height="20" fill="#008751"/><rect x="20" width="10" height="20" fill="#008751"/>',
+  gh: '<rect width="30" height="20" fill="#FCD116"/><rect width="30" height="6.67" fill="#CE1126"/><rect y="13.33" width="30" height="6.67" fill="#006B3F"/><polygon points="15,7 16.2,10.4 19.8,10.4 16.9,12.5 18,16 15,13.8 12,16 13.1,12.5 10.2,10.4 13.8,10.4" fill="#000"/>',
+  sn: '<rect width="30" height="20" fill="#FDEF42"/><rect width="10" height="20" fill="#00853F"/><rect x="20" width="10" height="20" fill="#E31B23"/><polygon points="15,7 16.2,10.4 19.8,10.4 16.9,12.5 18,16 15,13.8 12,16 13.1,12.5 10.2,10.4 13.8,10.4" fill="#00853F"/>',
+};
+function peerFlag(code) {
+  if (code === 'lr') return liberiaFlag(30);
+  const g = FLAGS[code];
+  if (!g) return '';
+  return `<svg class="m-peer-flag" viewBox="0 0 30 20" role="img" aria-hidden="true">${g}</svg>`;
+}
+
+function policyEmblem(kind) {
+  if (kind === 'lr') return liberiaFlag(72);
+  if (kind === 'sdg') {
+    const u = imgs.url('partnerLogos', 'sdg');
+    return u ? `<img src="${esc(u)}" alt="United Nations Sustainable Development Goals">` : '';
+  }
+  if (kind === 'au') return `<img src="/img/partnerLogos/au.png" alt="African Union">`;
+  return `<span class="m-pol-mono">ECOWAS</span>`;
+}
+
+// ============ ABOUT (/about) ============
+// Built on the Careers page's system (reference: Sharplink's about page, pinned by the user): the
+// chrome seal (careers.js) stands in the hero, beside the commitments, as a wireframe in the black
+// capacity band, and alone above the closing line. Every figure is live from the catalogue or the
+// programme; every photo is one of the site's own.
+exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => {
+  const DEFAULT_MISSION = "The National ICT Database of Liberia (NICTD) is a private-sector-led national initiative advancing Liberia's data sovereignty, and the country's official, continuously maintained source of ICT statistics, infrastructure, usage, affordability, market structure, digital trust and governance, and sustainability, disaggregated across all 15 counties. NICTD exists to give researchers, policymakers, donors and the public a single, trustworthy place to find and compare Liberia's digital-development data.";
+  const statement = String(mission || DEFAULT_MISSION).trim();
+
+  // live from the catalogue where the database has it; programme figures from the programme
+  const stats = [
+    [15, 'Counties measured', 'Every indicator, nationwide'],
+    [indicatorCount, 'Indicators in the catalogue', 'Published and documented'],
+    [domainCount, 'Indicator domains', 'From connectivity to sustainability'],
+    [174, 'Programme positions', 'Created for Liberian staff'],
+  ].filter(([n]) => n > 0);
+
+  const story = [
+    ['The mission', statement],
+    ['The problem', 'For two decades Liberia’s digital-development story has been told with numbers produced somewhere else: estimated rather than observed, national rather than local, and always a reporting cycle behind the decisions they are meant to inform.'],
+    ['The answer', 'The law is already in place: a Data Protection Act in 2026, and data sovereignty among the eight priorities of the National Digital Strategy. What has not moved is the infrastructure. NICTD is that missing layer: the database, the collection pipeline and the platform that turn a commitment on paper into a working national asset.'],
+  ];
+
+  // [title, label, body, photo, alt]
+  const doing = [
+    ['Collect at source', 'Primary collection', 'CAPI field survey across all 15 counties, operator feeds and agency uploads, not re-publication.',
+      '/img/about/field-tall.jpg', 'A field enumerator recording survey answers on a tablet in a village.'],
+    ['Own the stack at home', 'Built in Liberia', 'Databases, pipelines and the publication platform, built and run by Liberian engineers.',
+      '/img/about/analysts.jpg', 'Analysts working at computers in an office.'],
+    ['Close the indicator gaps', 'What partners miss', 'We collect what international datasets leave missing, dated, or reported only at national level.',
+      '/img/about/field.jpg', 'Two survey workers walking a dirt road toward a village.'],
+    ['Assure before publishing', 'Quality control', 'Automated validation, field back-checks and human review stand before publication.',
+      '/img/about/analyst-sq.jpg', 'An analyst reviewing charts at her desk.'],
+    ['Publish openly', 'Free at the point of use', 'Explorer, catalogue, query builder, dashboards and a documented API, openly licensed.',
+      '/img/about/phone-sq.jpg', 'A woman reading her phone at a market stall.'],
+    ['Build the workforce', '174 positions', 'Enumerators, engineers, analysts and statisticians: capacity that stays in Liberia.',
+      '/img/about/colleagues.jpg', 'Two young colleagues talking on the steps outside an office.'],
+  ];
+
+  const agencies = [
+    ['mopt', 'Ministry of Posts & Telecommunications', 'Policy lead'],
+    ['lta', 'Liberia Telecommunications Authority', 'Sector regulator'],
+    ['lisgis', 'LISGIS', 'National statistics'],
+    ['moe', 'Ministry of Education', 'Education data'],
+    ['epa', 'Environmental Protection Agency', 'E-waste & sustainability'],
+    ['cbl', 'Central Bank of Liberia', 'Digital finance'],
+  ];
+
+  const alignment = [
+    ['ARREST Agenda for Inclusive Development', '2025-2029',
+      'ICT modernization sits in the Infrastructure pillar. NICTD is the measurement layer it is judged against.', 'lr'],
+    ['National Digital Strategy', '2025-2029',
+      'Cybersecurity and data sovereignty is one of its eight priorities. This is that pillar, made operational.', 'lr'],
+    ['Data Protection Act', 'Enacted 2026',
+      'Built to Liberia’s first personal-data law: aggregate, anonymized statistics only.', 'lr'],
+    ['AU Data Policy Framework', 'Adopted 2022',
+      'Continental policy since 2022: member states are expected to hold and govern their own data.', 'au'],
+    ['SDG Target 17.18', 'Global goal',
+      'Data “disaggregated by … geographic location.” County-level is the target, verbatim.', 'sdg'],
+    ['Regional Digital Integration', 'ECOWAS · WARDIP',
+      'You cannot negotiate on indicators you cannot produce, or benchmark against neighbours without them.', 'ecowas'],
+  ];
+
+  const bench = [
+    ['Rwanda', 'Data-residency rules enforced; hosts the UN Big Data hub in Kigali; national AI agency.', 'Ahead', 'rw'],
+    ['Kenya', 'Government data held in-territory by policy; sovereign-hosted cloud launched 2026.', 'Ahead', 'ke'],
+    ['Nigeria', 'Domestic storage of all payment data mandated from January 2027.', 'Ahead', 'ng'],
+    ['Ghana', 'Malabo Convention ratified; national data portal published and maintained.', 'Ahead', 'gh'],
+    ['Senegal, Côte d’Ivoire, Togo', 'Malabo ratified; national data-centre programmes in delivery.', 'Ahead', 'sn'],
+    ['Liberia', 'Law and strategy in place. No national ICT statistics platform in operation.', 'The gap', 'lr'],
+  ];
+
+  const faqs = [
+    ['How is NICTD data licensed?', 'All open data published through NICTD is available under an open licence for research, journalism and policy use, with attribution to the ICT Statistics & Policy Unit, Ministry of Posts and Telecommunications. Open by default is a design principle, not a concession.'],
+    ['How often is the data updated?', 'Most indicators refresh annually following the national survey wave; a subset fed by operator data-sharing agreements refreshes biennially. Each indicator’s periodicity is shown in the Indicator Catalogue.'],
+    ['How is this different from the data international agencies already publish on Liberia?', 'International datasets are indispensable and we use them. But where national returns are incomplete they are modelled or trend-projected, and they report Liberia as one national figure. NICTD collects observed values, disaggregates them to all 15 counties, and publishes the method alongside the number.'],
+    ['Is NICTD a government body or a private initiative?', 'NICTD is a private-sector-led initiative delivering a national public good, working with the Ministry of Posts and Telecommunications and contributing agencies under data-sharing cooperation. The platform is built to be handed to, and sustained by, Liberian institutions.'],
+    ['What happens when donor funding ends?', 'The programme is designed for transition, not dependency: infrastructure hosted in-country, methodology documented and published, staff recruited and trained locally, and a services and licensing model intended to carry recurring costs after the establishment phase.'],
+    ['How do you protect personal data?', 'NICTD publishes aggregate, anonymized statistics only. It collects no individual-level personal data beyond what is required to produce those aggregates, in line with Liberia’s Data Protection Act.'],
+    ['How do I request a new indicator?', 'Registered users can reach the ICT Statistics & Policy Unit directly through the platform’s messaging system once logged in.'],
+    ['Can I use this data in a publication?', 'Yes, cite NICTD and the ICT Statistics & Policy Unit. Values are demonstration data pending production feeds; check the methodology note on each indicator before publication.'],
+  ];
+
+  const sdg = imgs.url('partnerLogos', 'sdg');
+  const rise = (i = 0) => ` data-rise style="--i:${i}"`;
+  // the reference's quote marks, drawn as dashed outlines
+  const qmark = `<svg class="ab-qmark" viewBox="0 0 120 84" aria-hidden="true"><path d="M4 4h44v40L30 80H12l10-36H4z"/><path d="M68 4h44v40L94 80H76l10-36H68z"/></svg>`;
+
+  return shell(ctx, {
+    title: 'About', active: '/about', workspaceActive: 'about', extraHead: CAREERS_HEAD, body: `
+  <div class="cs ab" id="abPage">
+    <canvas class="cs-star" id="csStar" aria-hidden="true" data-seal="${esc(sealArt())}"></canvas>
+    <div class="ab-hud" aria-hidden="true"><i class="ab-hud-a"></i><i class="ab-hud-b"></i><i class="ab-hud-c"></i></div>
+
+    <section class="cs-hero ab-hero" data-star="hero" aria-labelledby="abTitle">
+      <div class="cs-wrap cs-hero-in">
+        <h1 id="abTitle" class="cs-h1" aria-label="Liberia’s ICT data, collected and managed by Liberians.">${csDecode('Liberia’s ICT data,')}${csDecode('collected and managed by Liberians.', 'cs-dim')}</h1>
+        <div class="cs-ctas">
+          ${csBtn('/data', 'Explore the data')}
+          <a class="cs-btn cs-btn-dark" href="/research"><span>Read the research</span></a>
+        </div>
+        <p class="cs-hero-sub">The official, continuously maintained source of Liberia’s ICT statistics, disaggregated across all 15 counties.</p>
+      </div>
+    </section>
+
+    <section class="cs-mission ab-story" data-star="mission" aria-labelledby="abStoryTitle">
+      <div class="cs-wrap">
+        <span class="cs-mark" aria-hidden="true"></span>
+        <h2 id="abStoryTitle" class="cs-h2" aria-label="Data sovereignty, made operational.">${csDecode('Data sovereignty, made operational.')}</h2>
+        ${stats.length ? `<div class="ab-stats" role="list" aria-label="NICTD in numbers">${stats.map(([n, l, s], i) => `
+          <div class="ab-stat" role="listitem"${rise(i)}>
+            <p class="ab-stat-n" data-count="${n}">${n}</p>
+            <p class="ab-stat-l">${esc(l)}</p>
+            <p class="ab-stat-s">${esc(s)}</p>
+          </div>`).join('')}
+        </div>` : ''}
+        <dl class="cs-rows">${story.map(([tag, text]) => `
+          <div class="cs-row"><dt><span class="cs-tag">${esc(tag)}</span></dt><dd data-fill>${esc(text)}</dd></div>`).join('')}
+        </dl>
+      </div>
+    </section>
+
+    <section class="ab-quote" data-star="quiet" aria-label="The global target">
+      <div class="cs-wrap ab-quote-in">
+        ${qmark}
+        <figure class="ab-quote-fig">
+          <blockquote><p>…increase significantly the availability of high-quality, timely and reliable data disaggregated by income, gender, age, race, ethnicity, migratory status, disability, geographic location and other characteristics relevant in national contexts.</p></blockquote>
+          <figcaption><b>United Nations Sustainable Development Goals</b><span>Target 17.18</span></figcaption>
+        </figure>
+        ${sdg ? `<div class="ab-frame ab-frame--white ab-quote-frame"><img src="${esc(sdg)}" alt="Sustainable Development Goal 17: Partnerships for the goals" loading="lazy" decoding="async"></div>` : ''}
+      </div>
+    </section>
+
+    <section class="ab-team" data-star="quiet" aria-labelledby="abDoTitle">
+      <div class="cs-wrap">
+        <span class="cs-mark" aria-hidden="true"></span>
+        <h2 class="ab-lead" aria-label="Providing Liberia ICT data in real time. We collect, validate and publish Liberia’s ICT statistics for all 15 counties, and we build the infrastructure that keeps them at home.">${csDecode('Providing Liberia ICT data in real time.')}${csDecode('We collect, validate and publish Liberia’s ICT statistics for all 15 counties, and we build the infrastructure that keeps them at home.', 'cs-dim')}</h2>
+        <div class="ab-grid">
+          <header class="ab-grid-head">
+            <h3 id="abDoTitle">What we do</h3>
+            <p class="cs-count">${doing.length}</p>
+          </header>
+          <ul class="ab-cards">${doing.map(([t, l, b, src, alt], i) => `
+            <li class="ab-card"${rise(i % 3)}>
+              <div class="ab-frame ab-frame--blue"><img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async"></div>
+              <h4>${esc(t)}</h4>
+              <p class="ab-card-l">${esc(l)}</p>
+              <p class="ab-card-b">${esc(b)}</p>
+            </li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="cs-dark ab-dark" data-star="dark" aria-labelledby="abCapTitle">
+      <div class="cs-wrap cs-dark-in">
+        <span class="cs-frame" aria-hidden="true"></span>
+        <h2 id="abCapTitle" class="cs-h2 cs-h2-lg" aria-label="A dataset is also a workforce. 174 positions across eight role types.">${csDecode('A dataset is also a workforce.')}${csDecode('174 positions across eight role types.', 'cs-dim')}</h2>
+        <p class="ab-dark-p">Enumerators and supervisors in every county, research leads, data engineers, GIS and sampling specialists, quality analysts and developers, recruited from Liberian STEM graduates and researchers. Hosted in-country, methodology published, staff trained locally: the measure of this programme is whether Liberia can run it without us.</p>
+        <div class="cs-ctas">${csBtn('/careers', 'See open roles')}</div>
+      </div>
+    </section>
+
+    <section class="ab-partners" data-star="quiet" aria-labelledby="abPartTitle">
+      <div class="cs-wrap ab-grid">
+        <header class="ab-grid-head">
+          <h2 id="abPartTitle">Partner institutions</h2>
+          <p class="cs-count">${agencies.length}</p>
+          <p class="ab-grid-note">These institutions contribute data, validation or domain review. Partnership is confirmed institution by institution.</p>
+          ${csBtn('/partners', 'All partners', 'cs-btn-sm cs-btn-dark ab-grid-btn')}
+        </header>
+        <ul class="ab-cards">${agencies.map(([slug, name, role], i) => {
+          const src = imgs.url('partnerLogos', slug);
+          return `
+          <li class="ab-card"${rise(i % 3)}>
+            <div class="ab-frame ab-frame--white">${src ? `<img src="${esc(src)}" alt="${esc(name)} logo" loading="lazy" decoding="async">` : ''}</div>
+            <h3>${esc(name)}</h3>
+            <p class="ab-card-l">${esc(role)}</p>
+          </li>`;
+        }).join('')}
+        </ul>
+      </div>
+    </section>
+
+    <section class="ab-commit" data-star="commit" aria-labelledby="abPolTitle">
+      <div class="cs-wrap">
+        <div class="ab-commit-in">
+          <span class="cs-mark" aria-hidden="true"></span>
+          <h2 id="abPolTitle" class="cs-h2" aria-label="Commitments already made.">${csDecode('Commitments already made.')}</h2>
+          <p class="ab-sub">Not a new agenda. This is the measurement capability six existing commitments already assume Liberia has.</p>
+          <ol class="ab-pols">${alignment.map(([t, y, b, kind], i) => `
+            <li class="ab-pol"${rise(i % 2)}>
+              <span class="ab-pol-mark" aria-hidden="true">${policyEmblem(kind)}</span>
+              <div>
+                <p class="ab-pol-y">${esc(y)}</p>
+                <h3>${esc(t)}</h3>
+                <p class="ab-pol-b">${esc(b)}</p>
+              </div>
+            </li>`).join('')}
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="ab-bench" data-star="quiet" aria-labelledby="abBenchTitle">
+      <div class="cs-wrap">
+        <span class="cs-mark" aria-hidden="true"></span>
+        <h2 id="abBenchTitle" class="cs-h2" aria-label="Where Liberia stands in the region.">${csDecode('Where Liberia stands in the region.')}</h2>
+        <p class="ab-sub">Peers have moved their data infrastructure home. Liberia has the law and the strategy, and not yet the platform.</p>
+        <div class="ab-brows" role="table" aria-label="Regional data-governance benchmark">${bench.map(([c, w, st, code], i) => `
+          <div class="ab-brow${st === 'The gap' ? ' is-gap' : ''}" role="row"${rise(i)}>
+            <span class="ab-bc" role="cell"><i class="ab-flag">${peerFlag(code)}</i>${esc(c)}</span>
+            <span class="ab-bw" role="cell">${esc(w)}</span>
+            <span class="ab-bs" role="cell">${esc(st)}</span>
+          </div>`).join('')}
+        </div>
+        <p class="ab-note">Based on publicly documented data-governance infrastructure. Sources in the policy annex, on request.</p>
+      </div>
+    </section>
+
+    <section class="cs-faq ab-faq" data-star="quiet" aria-labelledby="abFaqTitle">
+      <div class="cs-wrap cs-faq-in">
+        <div class="cs-faq-head">
+          <span class="cs-mark" aria-hidden="true"></span>
+          <h2 id="abFaqTitle" class="cs-h2 cs-h2-xl">FAQ</h2>
+          <p class="cs-faq-more"><span>Got more questions?</span> ${csBtn('/register', 'Request an account', 'cs-btn-light')}</p>
+        </div>
+        <div class="cs-faq-list">${faqs.map(([q, a], i) => `<details class="cs-q"><summary><span class="cs-q-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><span class="cs-q-t">${esc(q)}</span><span class="cs-q-x" aria-hidden="true"></span></summary><div class="cs-q-a"><p>${esc(a)}</p></div></details>`).join('')}</div>
+      </div>
+    </section>
+
+    <div class="ab-emblem" data-star="emblem" aria-hidden="true"></div>
+
+    <section class="ab-close" data-star="outro" aria-labelledby="abCloseTitle">
+      <div class="cs-wrap ab-close-in">
+        <h2 id="abCloseTitle" class="cs-h2 cs-h2-lg" aria-label="Liberia’s ICT statistics, research and reports, all in one place.">${csDecode('Liberia’s ICT statistics, research and reports,')}${csDecode('all in one place.', 'cs-dim')}</h2>
+        <div class="cs-ctas">
+          ${csBtn('/data', 'Explore the data')}
+          <a class="cs-btn cs-btn-dark" href="/research"><span>Read the research</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="cs-outro ab-outro" data-star="outro" aria-hidden="true"><div class="cs-word">NIIS</div></section>
+  </div>`,
+  });
+};
+
+// ============ SUBMIT A PAPER (public) ============
+// Open submission form: submitter bio data + contact email, then the paper itself.
+// Everything lands in the papers table with status 'submitted' for admin review.
+exports.submitPaper = (ctx, { errors = [], values = {}, done = false } = {}) => {
+  const v = (k) => esc(values[k] || '');
+  const bad = (k) => (errors.some((e) => e.field === k) ? ' has-error' : '');
+  const COUNTRIES = ['Liberia', 'Sierra Leone', 'Guinea', "Côte d'Ivoire", 'Ghana', 'Nigeria', 'Senegal', 'Other'];
+  const ROLES = ['Researcher / Academic', 'Student', 'Government / Public sector', 'Regulator', 'Development partner / NGO',
+    'Private sector', 'Journalist', 'Independent consultant', 'Other'];
+  const TAGS = ['Report', 'Working Paper', 'Policy Brief', 'Dataset Note', 'Article'];
+
+  if (done) {
+    return shell(ctx, {
+      title: 'Submission received', active: '/research', workspaceActive: 'research', body: `
+    ${pageHeader('research', 'Submission received', 'Thank you, your paper is now with the ICT Statistics & Policy Unit.')}
+    <div class="wrap section narrow">
+      <div class="panel sp-done">
+        <h2>${icon('shield')} Your paper has been submitted for review</h2>
+        <p>The ICT Statistics &amp; Policy Unit reviews every submission before publication. We will contact you at the
+           email address you provided with the outcome. Review normally takes ten working days.</p>
+        <p class="muted">Nothing is published until a reviewer approves it, and your contact details are never published
+           alongside the paper, they are used only to reach you about this submission.</p>
+        <p style="margin-top:1.2rem">
+          <a class="btn btn-teal" href="/research">${icon('doc')} Browse published research</a>
+          <a class="btn btn-outline" href="/research/submit" style="margin-left:.5rem">${icon('plus')} Submit another paper</a>
+        </p>
+      </div>
+    </div>`,
+    });
+  }
+
+  return shell(ctx, {
+    title: 'Submit a Paper', active: '/research', workspaceActive: 'research', body: `
+  ${pageHeader('research', 'Submit a Paper', 'Send research, a working paper or a policy brief to the ICT Statistics & Policy Unit for review.')}
+  <div class="wrap section narrow">
+    <p class="lede-sm">Submissions are open to anyone, no account required. A reviewer reads every paper before it is
+      published to the NICTD research library. Fields marked <span class="sp-req">*</span> are required.</p>
+
+    ${errors.length ? `<div class="alert alert-error"><strong>Please check the form.</strong><ul style="margin:.4rem 0 0 1.1rem">
+      ${errors.map((e) => `<li>${esc(e.message)}</li>`).join('')}</ul></div>` : ''}
+
+    <form method="post" action="/research/submit" class="sp-form" novalidate>
+
+      <section class="panel">
+        <h2>${icon('users')} About you</h2>
+        <p class="muted">We collect this so a reviewer can identify and contact you. It is not published with your paper.</p>
+        <div class="grid-form">
+          <label>Full name <span class="sp-req">*</span>
+            <input name="sub_name" required maxlength="120" value="${v('sub_name')}" class="${bad('sub_name')}" autocomplete="name"></label>
+          <label>Email address <span class="sp-req">*</span>
+            <input type="email" name="sub_email" required maxlength="180" value="${v('sub_email')}" class="${bad('sub_email')}" autocomplete="email"
+              placeholder="you@example.org"></label>
+          <label>Institution / organization
+            <input name="sub_org" maxlength="160" value="${v('sub_org')}" autocomplete="organization"></label>
+          <label>Country
+            <select name="sub_country">
+              <option value="">Select…</option>
+              ${COUNTRIES.map((c) => `<option ${values.sub_country === c ? 'selected' : ''}>${c}</option>`).join('')}
+            </select></label>
+          <label style="grid-column:1/-1">Your role
+            <select name="sub_role">
+              <option value="">Select…</option>
+              ${ROLES.map((r) => `<option ${values.sub_role === r ? 'selected' : ''}>${r}</option>`).join('')}
+            </select></label>
+          <label style="grid-column:1/-1">Short bio
+            <textarea name="sub_bio" rows="3" maxlength="800" placeholder="A few lines on your background and research interests.">${v('sub_bio')}</textarea>
+            <span class="sp-hint">Up to 800 characters.</span></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>${icon('doc')} Your paper</h2>
+        <div class="grid-form">
+          <label style="grid-column:1/-1">Title <span class="sp-req">*</span>
+            <input name="title" required maxlength="240" value="${v('title')}" class="${bad('title')}"></label>
+          <label>Author(s) <span class="sp-req">*</span>
+            <input name="authors" required maxlength="200" value="${v('authors')}" class="${bad('authors')}"
+              placeholder="As they should appear in print"></label>
+          <label>Category
+            <select name="tag">${TAGS.map((t) => `<option ${values.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
+          <label style="grid-column:1/-1">Abstract <span class="sp-req">*</span>
+            <textarea name="abstract" rows="4" required maxlength="1200" class="${bad('abstract')}">${v('abstract')}</textarea>
+            <span class="sp-hint">Up to 1,200 characters.</span></label>
+          <label style="grid-column:1/-1">Full text <span class="sp-hint-inline">optional</span>
+            <textarea name="body" rows="8" maxlength="20000" placeholder="Paste the full paper here, or leave blank and a reviewer will request the file by email.">${v('body')}</textarea></label>
+        </div>
+      </section>
+
+      <section class="panel sp-consent">
+        <label class="sp-check">
+          <input type="checkbox" name="consent" value="1" ${values.consent ? 'checked' : ''} class="${bad('consent')}">
+          <span>I confirm this is my own work or that I am authorised to submit it, and I consent to the ICT Statistics
+            &amp; Policy Unit storing my contact details to process this submission. <span class="sp-req">*</span></span>
+        </label>
+        <p class="muted" style="margin-top:.7rem">NICTD holds aggregate, anonymized statistics. Your name, email and bio are
+          stored only against this submission for review correspondence, in line with Liberia’s Data Protection Act.</p>
+      </section>
+
+      <div class="sp-actions">
+        <button class="btn btn-teal" type="submit">${icon('arrow')} Submit for review</button>
+        <a class="btn btn-outline" href="/research">Cancel</a>
+      </div>
+    </form>
+  </div>`,
+  });
+};
+
+// Scroll-scrubbed video hero. The clip autoplays on arrival; once the reader starts
+// scrolling, their scroll position drives the playhead instead, so scrolling down runs the
+// footage forward and scrolling back runs it in reverse. The section is tall and the frame
+// inside it is sticky, which is what gives the scroll something to scrub against.
+function videoHero({ src, poster, kicker = '', title, sub = '' }) {
+  return `<section class="vhero" id="vhero">
+    <div class="vhero-sticky">
+      <video class="vhero-video" id="vheroVideo"
+             src="${esc(src)}" poster="${esc(poster)}"
+             muted playsinline preload="auto" aria-hidden="true"></video>
+      <div class="vhero-scrim"></div>
+      <div class="vhero-inner wrap">
+        ${kicker ? `<p class="vhero-kicker">${esc(kicker)}</p>` : ''}
+        <h1 class="vhero-title">${esc(title)}</h1>
+        ${sub ? `<p class="vhero-sub">${esc(sub)}</p>` : ''}
+      </div>
+      <div class="vhero-progress"><i id="vheroBar"></i></div>
+    </div>
+  </section>`;
+}
+
+const videoHeroScript = `
+(function(){
+  var sec=document.getElementById('vhero');
+  var vid=document.getElementById('vheroVideo');
+  var bar=document.getElementById('vheroBar');
+  if(!sec||!vid) return;
+  var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Autoplay on arrival. Muted playback is allowed without a gesture; if a browser still
+  // refuses, the poster frame stands in and scrubbing takes over on the first scroll.
+  var autoplaying=false;
+  if(!reduced){
+    var p=vid.play();
+    if(p&&p.catch) p.catch(function(){ autoplaying=false; });
+    autoplaying=true;
+  }
+
+  var target=0, current=0, raf=null, duration=0;
+  var lastFrame=0, fallbackT=null;
+  function dur(){
+    if(duration) return duration;
+    if(vid.duration&&isFinite(vid.duration)) duration=vid.duration;
+    return duration||0;
+  }
+  vid.addEventListener('loadedmetadata',function(){ duration=vid.duration; });
+
+  function progress(){
+    var r=sec.getBoundingClientRect();
+    var travel=sec.offsetHeight-window.innerHeight;
+    if(travel<=0) return 0;
+    return Math.min(1,Math.max(0,-r.top/travel));
+  }
+
+  // Seeking past the buffered range makes the browser abandon the seek and snap back to the
+  // start, which reads as the hero resetting itself mid scroll. Clamp to what has actually
+  // loaded: on a slow link the scrub simply stops short and extends as more arrives.
+  function loadedTo(){
+    try{ if(vid.buffered.length) return vid.buffered.end(vid.buffered.length-1); }catch(e){}
+    return 0;
+  }
+  function seek(pos){
+    var d=dur();
+    if(!d) return;
+    var want=Math.min(d-0.05,Math.max(0,pos*d));
+    var cap=loadedTo();
+    if(cap>0.25) want=Math.min(want,cap-0.12);
+    try{ vid.currentTime=Math.max(0,want); }catch(e){}
+  }
+
+  function tick(){
+    lastFrame=Date.now();
+    clearTimeout(fallbackT);
+    var d=dur();
+    if(!d){ raf=null; return; }
+    // ease toward the target so a fast flick does not snap the playhead
+    current+=(target-current)*0.12;
+    if(Math.abs(target-current)<0.004) current=target;
+    seek(current);
+    if(bar) bar.style.transform='scaleX('+target+')';
+    if(Math.abs(target-current)>0.001){ raf=requestAnimationFrame(tick); } else { raf=null; }
+  }
+
+  function onScroll(){
+    var p=progress();
+    // While the reader is still at the very top, let the clip autoplay. Control passes to the
+    // scrub only once they have actually moved, otherwise the init call would pause it at once.
+    if(autoplaying && p<=0.002){
+      target=p;
+      if(bar) bar.style.transform='scaleX('+p+')';
+      return;
+    }
+    if(autoplaying){ vid.pause(); autoplaying=false; current=vid.currentTime/(dur()||1); }
+    target=p;
+    if(bar) bar.style.transform='scaleX('+target+')';
+    if(!raf) raf=requestAnimationFrame(tick);
+    // Some embedded contexts throttle requestAnimationFrame to nothing. If no frame has run
+    // shortly after a scroll, drive the playhead directly so the scrub still tracks, losing
+    // only the easing.
+    clearTimeout(fallbackT);
+    fallbackT=setTimeout(function(){
+      // recency, not a latch: a frame that ran once at load must not disable the fallback
+      // forever if the browser then stops delivering frames.
+      if(Date.now()-lastFrame < 100) return;
+      current=target;
+      seek(current);
+    }, 120);
+  }
+
+  if(reduced){
+    // no scrubbing: hold a representative frame
+    vid.addEventListener('loadedmetadata',function(){ try{ vid.currentTime=vid.duration*0.35; }catch(e){} });
+  } else {
+    window.addEventListener('scroll',onScroll,{passive:true});
+    window.addEventListener('resize',onScroll);
+    onScroll();
+  }
+})();
+`;
+
+// Promo band under the research video hero. The circle alternates between two pictures
+// every three seconds; the three chips name the three things the page is for.
+// Counts are deliberately expressed as ranges: the platform is new and a precise figure
+// would overstate it.
+const RESEARCH_PROMO_STATS = [
+  { icon: 'doc',   value: '1\u20132K',    label: 'Papers' },
+  { icon: 'users', value: '100\u2013300', label: 'Active Users' },
+];
+
+function researchPromo() {
+  const img1 = imgs.url('researchCircle', 'circle-1');
+  const img2 = imgs.url('researchCircle', 'circle-2');
+  const chip = (cls, ic, a, b) => `<span class="rp-chip ${cls}">
+      ${icon(ic, 'icn rp-chip-ico')}
+      <b>${esc(a)}<br>${esc(b)}</b>
+    </span>`;
+  return `<section class="rp">
+    <div class="wrap rp-grid">
+      <div class="rp-left">
+        <h2 class="rp-title">
+          Search Papers,<br>
+          <em>Submit Papers,</em><br>
+          Become Published,<br>
+          all in one place.
+        </h2>
+        <p class="rp-sub">Discover relevant research, submit your own work and get it published.
+          Faster, easier and more connected than ever before.</p>
+        <div class="rp-cta">
+          <a class="rp-btn rp-btn-primary" href="#paper-search">
+            ${icon('search', 'icn rp-btn-ico')} Search Papers ${icon('arrow', 'icn rp-btn-go')}
+          </a>
+          <a class="rp-btn rp-btn-ghost" href="/research/submit">
+            ${icon('cloudup', 'icn rp-btn-ico')} Submit Paper ${icon('arrow', 'icn rp-btn-go')}
+          </a>
+        </div>
+        <div class="rp-stats">
+          ${RESEARCH_PROMO_STATS.map((s, i) => `${i ? '<i class="rp-stat-div"></i>' : ''}
+            <div class="rp-stat">
+              <span class="rp-stat-ico">${icon(s.icon)}</span>
+              <span class="rp-stat-text"><b>${esc(s.value)}</b><span>${esc(s.label)}</span></span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="rp-right">
+        <div class="rp-circle" id="rpCircle">
+          <svg class="rp-ring" viewBox="0 0 320 320" aria-hidden="true">
+            <defs>
+              <linearGradient id="rpg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#7C3AED"/>
+                <stop offset="100%" stop-color="#2F80F5"/>
+              </linearGradient>
+            </defs>
+            <circle class="rp-ring-track" cx="160" cy="160" r="150"/>
+            <circle class="rp-ring-arc" cx="160" cy="160" r="150" stroke="url(#rpg)"/>
+            <circle class="rp-ring-dot" cx="160" cy="10" r="5.5" fill="#7C3AED"/>
+            <circle class="rp-ring-dot" cx="160" cy="310" r="5.5" fill="#2F80F5"/>
+          </svg>
+          <div class="rp-photo">
+            <img src="${esc(img1)}" alt="" class="is-on" data-rp-slide>
+            <img src="${esc(img2)}" alt="" data-rp-slide>
+          </div>
+          ${chip('rp-chip-a', 'docsearch', 'Search', 'Papers')}
+          ${chip('rp-chip-b', 'cloudup', 'Submit', 'Papers')}
+          ${chip('rp-chip-c', 'seal', 'Get', 'Published')}
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+const researchPromoScript = `
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('[data-rp-slide]'));
+  if(slides.length<2) return;
+  var i=0, timer=null;
+  var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function show(n){
+    slides.forEach(function(s,k){ s.classList.toggle('is-on', k===n); });
+  }
+  function start(){
+    if(reduced||timer) return;
+    timer=setInterval(function(){ i=(i+1)%slides.length; show(i); }, 3000);
+  }
+  function stop(){ if(timer){ clearInterval(timer); timer=null; } }
+  // only run while the section is on screen
+  var host=document.getElementById('rpCircle');
+  if(host && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){ e.isIntersecting ? start() : stop(); });
+    }, { threshold: 0.15 }).observe(host);
+    setTimeout(start, 2500);   // fail-safe if the observer never reports
+  } else { start(); }
+  document.addEventListener('visibilitychange', function(){
+    document.hidden ? stop() : start();
+  });
+})();
+`;
+
+// ============ PARTNER BOOK (hero on Our Partners) ============
+// A book on a desk whose pages turn as the reader scrolls, one spread per group of partners.
+// Built from the live partner list, so it never drifts from the cards below it. Only partners
+// with a supplied logo appear here; the rest are on the cards.
+function partnerBook(partners) {
+  const withLogo = partners.filter((p) => imgs.url('partnerLogos', p.slug));
+  const PER_SPREAD = 6;
+  const spreads = [];
+  for (let i = 0; i < withLogo.length; i += PER_SPREAD) spreads.push(withLogo.slice(i, i + PER_SPREAD));
+  if (!spreads.length) return '';
+
+  const plate = (p) => `<figure class="bk-plate">
+      <div class="bk-plate-img"><img src="${esc(imgs.url('partnerLogos', p.slug))}" alt="${esc(p.name)}" loading="lazy"></div>
+      <figcaption>${esc(p.name)}</figcaption>
+    </figure>`;
+
+  const leaf = (group, i) => {
+    const half = Math.ceil(group.length / 2);
+    return `<div class="bk-leaf" data-leaf="${i}">
+      <div class="bk-page bk-page-l">
+        <p class="bk-page-label">${esc(i === 0 ? 'Our partners' : 'Our partners, continued')}</p>
+        <div class="bk-plates">${group.slice(0, half).map(plate).join('')}</div>
+      </div>
+      <div class="bk-page bk-page-r">
+        <p class="bk-page-label" aria-hidden="true"></p>
+        <div class="bk-plates">${group.slice(half).map(plate).join('')}</div>
+        <p class="bk-page-no">${i + 1} of ${spreads.length}</p>
+      </div>
+    </div>`;
+  };
+
+  return `<section class="bk" id="bk" style="--bk-turns:${Math.max(1, spreads.length - 1)}">
+    <div class="bk-sticky">
+      <div class="bk-desk" style="background-image:url('/img/sponsors/desk.jpg')"></div>
+      <div class="bk-scrim"></div>
+      <div class="bk-stage">
+        <div class="bk-book" id="bkBook">${spreads.map(leaf).join('')}</div>
+      </div>
+      <div class="bk-copy wrap">
+        <p class="bk-kicker">Partnership</p>
+        <h1 class="bk-title">Our Partners</h1>
+        <p class="bk-sub">The institutions that build, supply and govern the National ICT Database of Liberia.</p>
+      </div>
+      <div class="bk-hint" id="bkHint">Scroll to turn the page</div>
+      <div class="bk-progress"><i id="bkBar"></i></div>
+    </div>
+  </section>`;
+}
+
+const partnerBookScript = `
+(function(){
+  var sec=document.getElementById('bk');
+  var book=document.getElementById('bkBook');
+  var bar=document.getElementById('bkBar');
+  var hint=document.getElementById('bkHint');
+  if(!sec||!book) return;
+  var leaves=[].slice.call(book.querySelectorAll('.bk-leaf'));
+  var turns=Math.max(1,leaves.length-1);
+
+  // --nav-h is 3.75rem but the bar renders taller than that, and it grows again on narrow
+  // screens. Measuring it keeps the sticky frame exactly one viewport tall, so the book
+  // clears the nav at the top and the progress bar stays on screen at the bottom.
+  var nav=document.querySelector('.gov-nav');
+  function fitNav(){
+    if(!nav) return;
+    sec.style.setProperty('--bk-nav', Math.round(nav.getBoundingClientRect().height)+'px');
+  }
+  fitNav();
+  var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function progress(){
+    var travel=sec.offsetHeight-window.innerHeight;
+    if(travel<=0) return 0;
+    return Math.min(1,Math.max(0,-sec.getBoundingClientRect().top/travel));
+  }
+
+  function paint(p){
+    // p across the whole section maps onto the page turns
+    var pos=p*turns;
+    leaves.forEach(function(leaf,i){
+      // how far this leaf has turned, 0 flat, 1 fully over
+      var t=Math.min(1,Math.max(0,pos-i));
+      var last=i===leaves.length-1;
+      var lift=(leaves.length-i)*2;
+      leaf.style.zIndex=String(leaves.length-i);
+      if(last){ leaf.style.transform='translateZ('+lift+'px) rotateY(0deg)'; return; }
+      leaf.style.transform='translateZ('+lift+'px) rotateY('+(-180*t)+'deg)';
+      leaf.style.opacity=t>0.98?'0':'1';
+    });
+    if(bar) bar.style.transform='scaleX('+p+')';
+    if(hint) hint.style.opacity=p>0.06?'0':'1';
+  }
+
+  var target=0,current=0,raf=null,lastFrame=0,fallbackT=null;
+  function tick(){
+    lastFrame=Date.now(); clearTimeout(fallbackT);
+    current+=(target-current)*0.14;
+    if(Math.abs(target-current)<0.002) current=target;
+    paint(current);
+    if(Math.abs(target-current)>0.001){ raf=requestAnimationFrame(tick); } else { raf=null; }
+  }
+  function onScroll(){
+    target=progress();
+    if(reduced){ paint(target); return; }
+    if(!raf) raf=requestAnimationFrame(tick);
+    clearTimeout(fallbackT);
+    // recency, not a latch, so a stalled frame clock cannot freeze the page turn
+    fallbackT=setTimeout(function(){
+      if(Date.now()-lastFrame < 100) return;
+      current=target; paint(current);
+    },120);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',onScroll);
+  onScroll();
+})();
+`;
+
+// ============ RESEARCH / UPDATES (retained; reachable from footer &amp; homepage) ============
+// Public / all-account browse view + (for admins) a full management console.
+// A paper's cover, set from its own title like a published report: a coloured board in the
+// series colour for its category, the title in Besley, the authors and year at the foot, and
+// a band of the flag's stripes down the spine.
+const RP_SERIES = { 'Flagship Report': 'navy', 'Working Paper': 'blue', 'Brief': 'red', 'Policy Brief': 'red', 'Report': 'ink', 'Dataset Note': 'blue', 'Article': 'ink' };
+function rpCover(p) {
+  const year = String(p.published_on || '').slice(0, 4);
+  return `<div class="rp-cover rp-cover--${RP_SERIES[p.tag] || 'navy'}" aria-hidden="true">
+      <span class="rp-cover-spine"></span>
+      <span class="rp-cover-top"><b>NICTD</b><span>${esc(p.tag)}</span></span>
+      <span class="rp-cover-title">${esc(p.title)}</span>
+      <span class="rp-cover-foot"><span>${esc(p.authors)}</span><span>${esc(year)}</span></span>
+    </div>`;
+}
+exports.research = (ctx, { papers = [], canManage = false, canSubmit = false, notice = '' }) => {
+  const paperYear = (p) => String(p.published_on || '').slice(0, 4);
+  // The newest paper leads at full width; the rest sit on the shelf beneath it.
+  const paperCard = (p, i) => `<article class="rp-item${i === 0 ? ' rp-item--lead' : ''}" data-lib-item style="--i:${i}"
+    data-lib-year="${esc(paperYear(p))}"
+    data-lib-search="${esc((p.title + ' ' + p.authors + ' ' + p.abstract + ' ' + p.tag).toLowerCase())}">
+    <a class="rp-cover-link" href="/research/${p.id}" tabindex="-1" aria-hidden="true">${rpCover(p)}</a>
+    <div class="rp-body">
+      <p class="rp-meta"><span class="rp-tag">${esc(p.tag)}</span><time datetime="${esc(String(p.published_on || '').slice(0, 10))}">${esc(updDate(p.published_on))}</time></p>
+      <h3 class="rp-title"><a href="/research/${p.id}">${esc(p.title)}</a></h3>
+      <p class="rp-authors">${esc(p.authors)}</p>
+      <p class="rp-abstract">${esc(p.abstract)}</p>
+      <div class="rp-actions">
+        <a class="rp-read" href="/research/${p.id}">Read the paper ${icon('arrow')}</a>
+        ${p.downloadable ? `<a class="rp-dl" href="/papers/${p.id}/download">${icon('download')} Download</a>` : '<span class="rp-nodl">Read online only</span>'}
+      </div>
+    </div>
+  </article>`;
+
+  if (canManage) return shell(ctx, { title: 'Research Papers', workspaceActive: 'research', body: researchAdminBody(papers, notice) });
+
+  return shell(ctx, {
+    title: 'Research Papers', workspaceActive: 'research', body: `
+  ${videoHero({ src: '/media/research-hero.mp4', poster: '/media/research-hero-poster.jpg',
+    kicker: 'Research', title: 'Liberia ICT Research Hub',
+    sub: 'Published research and reports drawing on the National ICT Database.' })}
+  ${researchPromo()}
+  <div class="wrap section page-black">
+    ${notice ? `<div class="alert alert-ok">${esc(notice)}</div>` : ''}
+    <span id="paper-search"></span>
+    ${papers.length ? libraryFilter('Search papers by title, author or abstract…', [...new Set(papers.map(paperYear).filter(Boolean))].sort((a, b) => b.localeCompare(a)), papers.length) : ''}
+    ${papers.length ? `<div class="rp-shelf" id="rpShelf">${papers.map(paperCard).join('')}</div>
+    <div class="rp-empty" data-lib-empty hidden>
+      <p class="rp-empty-t">No papers match that search.</p>
+      <p>Clear the search box or choose a different year to see the full library.</p>
+    </div>` : '<div class="rp-empty"><p class="rp-empty-t">No research papers are published yet.</p><p>New papers appear here as soon as the Unit publishes them.</p></div>'}
+    ${canSubmit ? `<div class="panel" style="margin-top:2rem">
+      <h2>Submit your research</h2>
+      <p class="muted">Submit a paper or report for the ICT Statistics &amp; Policy Unit to review. Approved submissions are published to this library.</p>
+      <form method="post" action="/research/submit" class="grid-form">
+        <label>Title *<input name="title" required maxlength="240"></label>
+        <label>Author(s) *<input name="authors" required maxlength="200" placeholder="Your name / institution"></label>
+        <label>Category<select name="tag"><option>Report</option><option>Working Paper</option><option>Policy Brief</option><option>Dataset Note</option><option>Article</option></select></label>
+        <label style="grid-column:1/-1">Abstract *<textarea name="abstract" rows="3" required maxlength="1200"></textarea></label>
+        <label style="grid-column:1/-1">Full text (optional)<textarea name="body" rows="5" maxlength="20000"></textarea></label>
+        <button class="btn btn-teal">Submit for review</button>
+      </form>
+    </div>` : ''}
+  </div>
+  <script>${videoHeroScript}${researchPromoScript}${libraryFilterScript}${rpScript}</script>`,
+  });
+};
+
+// The shelf arrives in order as it scrolls in (each paper a beat after the one before), and
+// the newest paper's cover settles into place. Without IntersectionObserver, or with reduced
+// motion, everything is simply there.
+const rpScript = `
+(function(){
+  var shelf=document.getElementById('rpShelf'); if(!shelf) return;
+  if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  shelf.classList.add('is-armed');
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('is-in'); io.unobserve(e.target); } });
+  },{ rootMargin:'0px 0px -10% 0px', threshold:0.12 });
+  [].forEach.call(shelf.querySelectorAll('.rp-item'), function(el){ io.observe(el); });
+})();`;
+
+function statusPill(p) {
+  if (p.deleted) return '<span class="tag" style="background:#F0DADA;color:#8a1f2f">Deleted</span>';
+  if (p.status === 'submitted') return '<span class="tag" style="background:#FBE7DD;color:#C2410C">Awaiting review</span>';
+  if (p.status === 'rejected') return '<span class="tag" style="background:#EAE6E0;color:#5A6A85">Rejected</span>';
+  if (!p.visible) return '<span class="tag" style="background:#EAE6E0;color:#5A6A85">Hidden</span>';
+  return '<span class="tag" style="background:#E4ECF8;color:#14448A">Published · Live</span>';
+}
+function paperRow(p) {
+  const acts = [];
+  if (p.deleted) {
+    acts.push(`<button formaction="/admin/papers/recover" class="btn btn-teal btn-sm">Recover</button>`);
+  } else {
+    if (p.status === 'submitted') {
+      acts.push(`<button formaction="/admin/papers/review" name="action" value="approve" class="btn btn-teal btn-sm">Approve &amp; publish</button>`);
+      acts.push(`<button formaction="/admin/papers/review" name="action" value="reject" class="btn btn-ghost btn-sm">Reject</button>`);
+    } else if (p.status === 'published') {
+      acts.push(`<button formaction="/admin/papers/visibility" name="action" value="${p.visible ? 'hide' : 'show'}" class="btn btn-ghost btn-sm">${p.visible ? 'Turn off display' : 'Turn on display'}</button>`);
+      acts.push(`<button formaction="/admin/papers/visibility" name="action" value="${p.downloadable ? 'lock' : 'unlock'}" class="btn btn-ghost btn-sm">${p.downloadable ? 'Disable download' : 'Enable download'}</button>`);
+    } else if (p.status === 'rejected') {
+      acts.push(`<button formaction="/admin/papers/review" name="action" value="approve" class="btn btn-teal btn-sm">Approve &amp; publish</button>`);
+    }
+    acts.push(`<button formaction="/admin/papers/delete" class="btn btn-ghost btn-sm">Delete</button>`);
+  }
+  return `<tr>
+    <td><a href="/research/${p.id}">${esc(p.title)}</a><br><span class="mono muted" style="font-size:.72rem">${esc(p.authors)}${p.submitter_name ? ' · submitted by ' + esc(p.submitter_name) : ''} · ${esc(p.published_on)}</span>
+      ${p.submitter_email ? `<br><span class="mono muted" style="font-size:.72rem">${icon('mail')} <a href="mailto:${esc(p.submitter_email)}">${esc(p.submitter_email)}</a>${p.submitter_org ? ' · ' + esc(p.submitter_org) : ''}${p.submitter_role ? ' · ' + esc(p.submitter_role) : ''}${p.submitter_country ? ' · ' + esc(p.submitter_country) : ''}</span>` : ''}
+      ${p.submitter_bio ? `<br><span class="muted" style="font-size:.74rem;display:block;max-width:52ch;margin-top:.2rem">${esc(p.submitter_bio)}</span>` : ''}</td>
+    <td><span class="tag">${esc(p.tag)}</span></td>
+    <td>${statusPill(p)}${!p.deleted && p.status === 'published' && p.visible ? (p.downloadable ? ' <span class="mono muted" style="font-size:.68rem">DL on</span>' : ' <span class="mono muted" style="font-size:.68rem">DL off</span>') : ''}</td>
+    <td><form method="post" class="inline-form" style="display:flex;gap:.35rem;flex-wrap:wrap"><input type="hidden" name="id" value="${p.id}">${acts.join('')}</form></td>
+  </tr>`;
+}
+function researchAdminBody(papers, notice) {
+  const submitted = papers.filter((p) => !p.deleted && p.status === 'submitted');
+  const live = papers.filter((p) => !p.deleted && p.status === 'published' && p.visible);
+  const hidden = papers.filter((p) => !p.deleted && p.status === 'published' && !p.visible);
+  const rejected = papers.filter((p) => !p.deleted && p.status === 'rejected');
+  const trash = papers.filter((p) => p.deleted);
+  const section = (title, list, note) => list.length ? `<h2 style="margin-top:1.6rem">${title} <span class="muted" style="font-size:.7em;font-weight:400">${list.length}</span></h2>
+    ${note ? `<p class="muted" style="margin-top:-.3rem">${note}</p>` : ''}
+    <table class="data-table"><thead><tr><th>Paper</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${list.map(paperRow).join('')}</tbody></table>` : '';
+  return `
+  <div class="wrap section">
+    <p class="kicker">Research management</p>
+    <h1>Research papers</h1>
+    <p class="lede-sm">Upload papers, review submissions from users, control what is displayed and downloadable, and manage deletions, all in one place.</p>
+    ${notice ? `<div class="alert alert-ok">${esc(notice)}</div>` : ''}
+
+    <div class="panel">
+      <h2>Upload a paper</h2>
+      <form method="post" action="/admin/papers/create" class="grid-form">
+        <label>Title *<input name="title" required maxlength="240"></label>
+        <label>Author(s)<input name="authors" maxlength="200" placeholder="ICT Statistics &amp; Policy Unit"></label>
+        <label>Category<select name="tag"><option>Report</option><option>Working Paper</option><option>Policy Brief</option><option>Dataset Note</option><option>Article</option></select></label>
+        <label>Downloadable<select name="downloadable"><option value="1">Yes, users can download</option><option value="0">No, read only</option></select></label>
+        <label style="grid-column:1/-1">Abstract *<textarea name="abstract" rows="3" required maxlength="1200"></textarea></label>
+        <label style="grid-column:1/-1">Full text (optional)<textarea name="body" rows="5" maxlength="20000"></textarea></label>
+        <button class="btn btn-teal">Publish paper</button>
+      </form>
+    </div>
+
+    ${submitted.length ? `<div class="alert" style="background:#FBE7DD;color:#7a2e0c;border:1px solid #f0c9b4">${submitted.length} submission(s) awaiting your review.</div>` : ''}
+    ${section('Awaiting review', submitted, 'Papers submitted by users. Approve to publish, or reject.')}
+    ${section('Published &amp; live', live, 'Visible on the public library and downloadable where enabled.')}
+    ${section('Hidden', hidden, 'Approved but display is turned off. Turn display back on to show them.')}
+    ${section('Rejected', rejected)}
+    ${section('Deleted, recoverable', trash, 'Soft-deleted. Recover to restore, in the state it was before deletion.')}
+    ${papers.length === 0 ? '<p class="muted">No papers yet. Upload one above.</p>' : ''}
+  </div>`;
+}
+
+exports.paper = (ctx, p, canManage = false) => shell(ctx, {
+  title: p.title, workspaceActive: 'research', body: `
+  <div class="wrap section narrow">
+    <p class="kicker"><a href="/research">← Research papers</a></p>
+    ${canManage ? `<div class="alert">${statusPill(p)} <span class="muted">Admin preview, this is how the paper reads. Manage it from the Research Papers list.</span></div>` : ''}
+    <div class="paper-detail-head">
+      <div class="paper-cover-wrap paper-cover-lg">${paperCover(p.id)}</div>
+      <div>
+        <h1>${esc(p.title)}</h1>
+        <p class="authors">${esc(p.authors)} · <span class="mono">${esc(p.published_on)}</span></p>
+        ${p.downloadable ? `<a class="btn btn-teal" href="/papers/${p.id}/download">${icon('download')} Download</a>` : '<span class="muted">This paper is read-only, download is not available.</span>'}
+      </div>
+    </div>
+    <h2>Abstract</h2><p class="muted">${esc(p.abstract)}</p>
+    ${p.body ? `<h2>Report</h2><p class="muted">${esc(p.body)}</p>` : ''}
+  </div>`,
+});
+// Words that rise through a mask, each in its own clip. 'rw-in' rises on load (CSS only, so it
+// never hides the words); 'nw-in' waits for its entry to scroll in. A heading set this way keeps
+// its plain text as its accessible name.
+function riseWords(text, inner = 'rw-in') {
+  return String(text || '').split(/\s+/).filter(Boolean)
+    .map((w, i) => `<span class="rw"><span class="${inner}" style="--i:${i}">${esc(w)}</span></span>`).join(' ');
+}
+
+// ============ NEWS & NOTICES (/updates) ============
+// Every update in the record, newest first. Each entry is ruled into the record and then written
+// as it scrolls in; its title (and photo) open the update's own page.
+const UPD_KINDS = [['news', 'News'], ['announcement', 'Announcements'], ['data_refresh', 'Data refresh']];
+exports.updates = (ctx, items) => {
+  const count = (c) => items.filter((u) => (u.category || 'news') === c).length;
+  const kinds = UPD_KINDS.filter(([c]) => count(c) > 0);
+  const filter = items.length > 1 && kinds.length > 1
+    ? `<div class="nn-filter" role="group" aria-label="Show updates by kind">
+        <button type="button" data-kind="" aria-pressed="true">All <span>${items.length}</span></button>
+        ${kinds.map(([c, label]) => `<button type="button" data-kind="${esc(c)}" aria-pressed="false">${esc(label)} <span>${count(c)}</span></button>`).join('')}
+      </div>` : '';
+  const entries = items.map((u, i) => {
+    const slug = updateSlug(u);
+    const href = '/updates/' + slug;
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(u.published_on || ''));
+    const demo = STAT_FIGURE.test(String(u.title || '') + ' ' + String(u.body || ''));
+    return `<li class="nn-entry" data-kind="${esc(u.category || 'news')}" id="${updateAnchor(u)}" style="view-transition-name:nn-entry-${i}; view-transition-class:nn-entry">
+        <span class="nn-rule" aria-hidden="true"></span>
+        <article class="nn-art" aria-labelledby="nn-${esc(slug)}">
+          <div class="nn-rail">
+            <time class="nn-date" datetime="${m ? `${m[1]}-${m[2]}-${m[3]}` : ''}"><span class="nn-mask"><span class="nn-day">${m ? +m[3] : ''}</span></span> <span class="nn-my">${m ? `${UPD_MONTHS[+m[2] - 1]} ${m[1]}` : ''}</span></time>
+            <span class="nn-kind">${esc(updCategory(u.category))}</span>
+          </div>
+          <div class="nn-text">
+            <h2 class="nn-h"><a href="${esc(href)}" id="nn-${esc(slug)}" aria-label="${esc(String(u.title || ''))}">${riseWords(u.title, 'nw-in')}</a></h2>
+            <p class="nn-body">${esc(String(u.body || ''))}</p>
+            <p class="nn-foot">${demo ? `<span class="nn-demo">${icon('info')} Demonstration figures</span>` : ''}<a class="nn-read" href="${esc(href)}" tabindex="-1" aria-hidden="true">Read update ${icon('arrow')}</a></p>
+          </div>
+          <a class="nn-photo" href="${esc(href)}" tabindex="-1" aria-hidden="true"><img src="${esc(updPhoto(items, i))}" alt="" width="1200" height="675" loading="${i < 3 ? 'eager' : 'lazy'}" decoding="async"></a>
+        </article>
+      </li>`;
+  }).join('');
+  return shell(ctx, {
+    title: 'News & notices', body: `
+  <div class="nn wrap" id="newsNotices">
+    <script>(function(r){ if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      r.classList.add('is-armed'); setTimeout(function(){ if(!r.hasAttribute('data-live')) r.classList.remove('is-armed'); }, 3000); })(document.currentScript.parentNode);</script>
+    <nav class="upd-crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">News &amp; notices</span></nav>
+    <header class="nn-head">
+      <h1 class="nn-title" aria-label="News &amp; notices"><span aria-hidden="true">${riseWords('News & notices')}</span></h1>
+      <div class="nn-intro">
+        <p class="nn-lede">News, data refresh notices and project announcements.</p>
+        ${items.length ? `<p class="nn-count">${items.length} ${items.length === 1 ? 'update' : 'updates'} · latest ${esc(updDate(items[0].published_on))}</p>` : ''}
+      </div>
+    </header>
+    ${filter}
+    ${items.length ? `<ol class="nn-list">${entries}</ol>` : '<p class="nn-empty">No updates have been published yet.</p>'}
+  </div>
+  <script>${newsNoticesScript}</script>`,
+  });
+};
+// Rules each entry into the record as it scrolls in, and filters by kind (inside a view
+// transition where the browser has one, so the list closes up smoothly).
+const newsNoticesScript = `
+(function(){
+  var root=document.getElementById('newsNotices'); if(!root) return;
+  var entries=[].slice.call(root.querySelectorAll('.nn-entry'));
+  if(root.classList.contains('is-armed')){
+    root.setAttribute('data-live','');
+    var batch=0, flush=null;
+    var io=new IntersectionObserver(function(list){
+      list.forEach(function(e){
+        if(!e.isIntersecting) return;
+        io.unobserve(e.target);
+        e.target.style.setProperty('--d', Math.min(batch++, 3)*110+'ms');
+        e.target.classList.add('is-in');
+        setTimeout(function(t){ t.classList.add('is-done'); }, 2400, e.target);   // then hover answers at once
+      });
+      clearTimeout(flush); flush=setTimeout(function(){ batch=0; }, 200);
+    },{ rootMargin:'0px 0px -8% 0px', threshold:0.12 });
+    entries.forEach(function(el){ io.observe(el); });
+  }
+  var buttons=[].slice.call(root.querySelectorAll('.nn-filter button'));
+  buttons.forEach(function(b){
+    b.addEventListener('click',function(){
+      var kind=b.getAttribute('data-kind');
+      var apply=function(){
+        buttons.forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+        entries.forEach(function(el){
+          var show=!kind || el.getAttribute('data-kind')===kind;
+          el.hidden=!show; if(show) el.classList.add('is-in','is-done');
+        });
+      };
+      // a transition the browser skips (tab hidden, a second click mid-way) still applies the filter
+      if(document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches){ var t=document.startViewTransition(apply); if(t&&t.ready) t.ready.catch(function(){}); }
+      else apply();
+    });
+  });
+})();`;
+
+// ============ ONE UPDATE ============
+// The page an ICT Trends update opens: a dated entry in NICTD's record, read like a changelog.
+// The date holds a rail of its own beside the entry; the record underneath lists every update
+// with this one's place marked. Text and photo only, by the user's choice.
+// A stated statistic: a percentage, a currency amount, a decimal, or a count in millions or
+// thousands. Bare years and small counts ("30 indicators", "15 counties") are not figures.
+const STAT_FIGURE = /\d(?:[\d,]*\d)?(?:\.\d+)?\s?%|(?:US\$|L\$|\$)\s?\d|\b\d+(?:[.,]\d+)?\s?(?:million|billion|thousand)\b|\b\d+\.\d+\b/i;
+exports.updatePage = (ctx, { items, index }) => {
+  const u = items[index];
+  const title = String(u.title || '').trim();
+  const body = String(u.body || '').trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(u.published_on || ''));
+  const iso = m ? `${m[1]}-${m[2]}-${m[3]}` : '';
+  const day = m ? String(+m[3]) : '';
+  const monthYear = m ? `${UPD_MONTHS[+m[2] - 1]} ${m[1]}` : '';
+  const category = updCategory(u.category);
+  const photo = updPhoto(items, index);
+  const demo = STAT_FIGURE.test(title + ' ' + body);
+  // items run newest first, so the earlier update is the next row and the later one the row before
+  const step = (x, dir, rel) => x ? `<a href="/updates/${esc(updateSlug(x))}" rel="${rel}"><span class="upd-step-dir">${dir}</span><span class="upd-step-title">${esc(String(x.title || ''))}</span></a>` : '';
+  const steps = step(items[index + 1], 'Earlier', 'prev') + step(items[index - 1], 'Later', 'next');
+  const record = items.map((x, i) => {
+    const here = i === index;
+    const row = `<time datetime="${esc(String(x.published_on || '').slice(0, 10))}">${esc(updDate(x.published_on))}</time>
+          <span class="upd-row-title">${esc(String(x.title || ''))}</span>
+          <span class="upd-row-cat">${here ? 'You are reading this' : esc(updCategory(x.category))}</span>`;
+    return here
+      ? `<li class="is-here" aria-current="page"><div class="upd-row">${row}</div></li>`
+      : `<li><a class="upd-row" href="/updates/${esc(updateSlug(x))}">${row}</a></li>`;
+  }).join('');
+  return shell(ctx, {
+    title,
+    body: `
+  <article class="upd wrap" aria-labelledby="updTitle">
+    <nav class="upd-crumbs" aria-label="Breadcrumb">
+      <a href="/">Home</a><span aria-hidden="true">/</span><a href="/updates">News &amp; notices</a><span aria-hidden="true">/</span><span aria-current="page">${esc(title)}</span>
+    </nav>
+    <div class="upd-grid">
+      <aside class="upd-rail" aria-label="About this update">
+        <time class="upd-date" datetime="${esc(iso)}"><span class="upd-day">${esc(day)}</span> <span class="upd-my">${esc(monthYear)}</span></time>
+        <dl class="upd-facts">
+          <div><dt>Category</dt><dd>${esc(category)}</dd></div>
+        </dl>
+        ${steps ? `<nav class="upd-step" aria-label="Neighbouring updates">${steps}</nav>` : ''}
+      </aside>
+      <div class="upd-main">
+        <h1 id="updTitle" aria-label="${esc(title)}"><span aria-hidden="true">${riseWords(title)}</span></h1>
+        <p class="upd-lead">${esc(body)}</p>
+        ${demo ? `<p class="upd-demo" role="note">${icon('info')}<span><strong>Demonstration data.</strong> The figures in this update come from NICTD's demonstration dataset. Live Ministry feeds are not public yet, so they are not official statistics.</span></p>` : ''}
+        <figure class="upd-figure">
+          <img src="${esc(photo)}" alt="" width="1200" height="675" decoding="async">
+          <figcaption>Illustrative photo from the NICTD image library.</figcaption>
+        </figure>
+        <section class="upd-record" aria-labelledby="updRecordTitle">
+          <h2 id="updRecordTitle">The record</h2>
+          <ol class="upd-list">${record}</ol>
+          <a class="upd-all" href="/updates">All updates ${icon('arrow')}</a>
+        </section>
+      </div>
+    </div>
+  </article>`,
+  });
+};
+
+// Size control shown above each visualization so a reader can scale it to fit their screen.
+function vizSize(target, label = 'Size') {
+  return `<div class="dx-viz-bar">
+    <div class="dx-size">
+      <label for="size-${target}">${esc(label)}</label>
+      <input type="range" id="size-${target}" class="dx-size-range" data-viz="${target}" min="45" max="100" value="100" step="5">
+      <span class="dx-size-val" id="size-${target}-val">100%</span>
+    </div>
+    <button type="button" class="dx-expand" data-expand="${target}" title="View full screen" aria-label="View full screen">${icon('expand')}</button>
+  </div>`;
+}
+
+// Full-bleed page header banner. Each page has its own slot in the Image Library, so admins can
+// swap them one at a time. An uploaded banner is centred rather than using the built-in framing.
+function pageHeader(slug, title, sub = '') {
+  const style = slotBg('headers', slug) + (imgs.isCustom('headers', slug) ? ';background-position:center center' : '');
+  return `<section class="page-header ph-${slug}" style="${style}">
+    <div class="ph-scrim"></div>
+    <div class="wrap ph-inner">
+      <h1>${esc(title)}</h1>
+      ${sub ? `<p>${esc(sub)}</p>` : ''}
+    </div>
+  </section>`;
+}
+
+// ============ OUR PARTNERS ============
+// Logo on the left, the institution and its role in the middle, the focal point on the right.
+// Logos and focal-point photographs are supplied by each partner through the Image Library.
+// Where one is absent the card falls back to a lettered monogram or a neutral avatar: the page
+// never invents an institution's branding, and never shows an invented face beside a real name.
+const PARTNER_CATS = ['Government', 'Regulator', 'Statistics', 'Financial', 'Private sector', 'Academic', 'Development partner'];
+
+function monogram(p) {
+  // A real acronym stands in for a missing logo far better than three sliced characters, so use
+  // the short name whole when it already is one (MoPT, LTA, LISGIS). Otherwise build initials.
+  const short = (p.short_name || '').trim();
+  if (/^[A-Za-z]{2,6}$/.test(short)) return short.toUpperCase();
+  const src = (short || p.name || '').replace(/[^A-Za-z ]/g, ' ').trim();
+  const words = src.split(/\s+/).filter(Boolean);
+  const letters = (words.length > 1
+    ? words.slice(0, 3).map((w) => (/^[A-Z]{2,3}$/.test(w) ? w : w[0]))
+    : src.slice(0, 3).split('')).join('').toUpperCase().slice(0, 5);
+  return letters || '?';
+}
+
+function partnerCard(p) {
+  const logo = imgs.url('partnerLogos', p.slug);
+  const face = imgs.url('partnerFocals', p.slug);
+  const st = { proposed: 'Engagement proposed', engaged: 'In discussion', signed: 'Agreement signed' }[p.status] || p.status;
+  return `<article class="pt-card" data-lib-item data-lib-facet="${esc(p.category)}" data-lib-search="${esc((p.name + ' ' + (p.short_name || '') + ' ' + p.category + ' ' + p.role).toLowerCase())}">
+    <div class="pt-logo">
+      ${logo
+        ? `<img src="${esc(logo)}" alt="${esc(p.name)} logo" loading="lazy">`
+        : `<span class="pt-monogram" data-len="${monogram(p).length}" aria-hidden="true">${esc(monogram(p))}</span>
+           <span class="pt-logo-note">Logo to be supplied</span>`}
+    </div>
+
+    <div class="pt-body">
+      <div class="pt-head">
+        <span class="pt-cat">${esc(p.category)}</span>
+        <span class="pt-status is-${esc(p.status)}">${esc(st)}</span>
+      </div>
+      <h3>${esc(p.name)}</h3>
+      ${p.short_name && p.short_name !== p.name ? `<p class="pt-abbr">${esc(p.short_name)}</p>` : ''}
+      <p class="pt-role">${esc(p.role)}</p>
+      ${p.contributes ? `<p class="pt-contrib"><span>Contributes</span>${esc(p.contributes)}</p>` : ''}
+      ${p.website ? `<a class="pt-link" href="${esc(p.website)}" target="_blank" rel="noopener noreferrer">Visit website ${icon('arrow')}</a>` : ''}
+    </div>
+
+    <aside class="pt-focal">
+      <p class="pt-focal-label">Focal point</p>
+      <div class="pt-face">
+        ${face
+          ? `<img src="${esc(face)}" loading="lazy" alt="${p.focal_name
+            ? esc(p.focal_name)
+            : 'Placeholder portrait. No focal point has been nominated for this institution yet.'}">`
+          : `<svg viewBox="0 0 48 48" class="pt-avatar" aria-hidden="true">
+               <circle cx="24" cy="17" r="9"></circle>
+               <path d="M6 46c0-9.4 8.1-15 18-15s18 5.6 18 15"></path>
+             </svg>`}
+      </div>
+      ${p.focal_name
+        ? `<p class="pt-focal-name">${esc(p.focal_name)}</p>
+           ${p.focal_title ? `<p class="pt-focal-title">${esc(p.focal_title)}</p>` : ''}
+           ${p.focal_unit ? `<p class="pt-focal-unit">${esc(p.focal_unit)}</p>` : ''}
+           ${p.focal_email ? `<a class="pt-focal-mail" href="mailto:${esc(p.focal_email)}">${esc(p.focal_email)}</a>` : ''}`
+        : `<p class="pt-focal-tbc">To be nominated</p>
+           <p class="pt-focal-hint">Each partner names one focal point who submits and signs off that institution's data.</p>`}
+    </aside>
+  </article>`;
+}
+
+exports.partners = (ctx, { partners = [] }) => {
+  const counts = PARTNER_CATS.map((c) => ({ cat: c, n: partners.filter((p) => p.category === c).length }))
+    .filter((x) => x.n > 0);
+  return shell(ctx, {
+    title: 'Our Partners', active: '/partners', workspaceActive: 'partners', body: `
+  ${partnerBook(partners)}
+
+  <div class="wrap section page-black">
+    ${filterBar({
+      placeholder: 'Search partners by name, sector or role…',
+      facetLabel: 'Sector',
+      facetAll: 'All sectors',
+      options: counts.map((c) => ({ value: c.cat, label: c.cat + ' (' + c.n + ')' })),
+      total: partners.length,
+      noun: 'shown',
+    })}
+
+    <div class="pt-list">
+      ${partners.map(partnerCard).join('')}
+    </div>
+
+    <section class="pt-join">
+      <h3>Becoming a partner</h3>
+      <p>Institutions that hold ICT related data and wish to contribute to the national database are welcome to
+        approach the ICT Statistics and Policy Unit. Partnership means supplying an agreed set of indicators on a
+        published schedule, under a written data sharing agreement, with a named focal point on each side.</p>
+      <a class="btn btn-teal" href="/about">${icon('mail')} Contact the ICT Statistics and Policy Unit</a>
+    </section>
+
+    <p class="pt-note">Logos are the property of their respective organisations and are shown to identify
+      them. Partnership is at various stages of discussion and is confirmed institution by institution.
+      Focal point portraits are placeholders until each institution nominates its own.</p>
+  </div>
+  <script>
+  ${partnerBookScript}
+  ${libraryFilterScript}
+  </script>`,
+  });
+};
+
+// ============ ICT REPORTS ============
+exports.reports = (ctx) => shell(ctx, {
+  title: 'ICT Reports', active: '/reports', workspaceActive: 'reports', body: `
+  ${pageHeader('reports', 'ICT Reports', 'Official statistical and sector reports from the ICT Statistics & Policy Unit.')}
+  <div class="wrap section page-black">
+    ${libraryFilter('Search reports by title, topic or category…', [...new Set(NATIONAL_REPORTS.map((r) => r.year))].sort((a, b) => b - a), NATIONAL_REPORTS.length)}
+    <div class="fp-grid">
+      ${NATIONAL_REPORTS.map((r) => `<article class="fp-card" data-lib-item
+        data-lib-year="${r.year}"
+        data-lib-search="${esc((r.title + ' ' + r.tag + ' ' + r.desc + ' ' + r.date).toLowerCase())}">
+        <div class="fp-thumb" style="${slotBg('reports', r.img, true)}"></div>
+        <div class="fp-body">
+          <span class="tag">${esc(r.tag)}</span>
+          <h4>${esc(r.title)}</h4>
+          <p style="font-size:.86rem;margin:0 0 .6rem">${esc(r.desc)}</p>
+          <div class="fp-meta">${esc(r.date)}</div>
+        </div>
+      </article>`).join('')}
+    </div>
+    <p class="lib-empty" data-lib-empty style="display:none">No reports match that search. Clear the box or pick a different year.</p>
+  </div>
+  <script>${libraryFilterScript}</script>`,
+});
+
+// ============ CAREERS ============
+const CAREER_ROLES = [
+  { title: 'Field Enumerator (CAPI)', unit: 'Data Collection', type: 'Contract', place: 'Nationwide', year: '2026',
+    desc: 'Collect household and facility ICT data on tablets across assigned enumeration areas. Full training provided, no prior survey experience needed.' },
+  { title: 'Field Supervisor', unit: 'Data Collection', type: 'Contract', place: 'County-based', year: '2026',
+    desc: 'Lead an enumerator team, run spot checks and back-checks, and clear daily uploads from the field.' },
+  { title: 'County Research Lead', unit: 'Research', type: 'Contract', place: '15 counties', year: '2026',
+    desc: 'Own sampling, stakeholder liaison and data quality for one county, and conduct key-informant interviews.' },
+  { title: 'Data Engineer', unit: 'Data Team', type: 'Full-time', place: 'Monrovia', year: '2026',
+    desc: 'Build the collection-to-database pipeline, sync services and the publishing path into NICTD.' },
+  { title: 'GIS / Mapping Analyst', unit: 'Data Team', type: 'Full-time', place: 'Monrovia', year: '2026',
+    desc: 'Maintain enumeration-area frames, geocode incoming records and prepare county map layers.' },
+];
+const CAREER_TEAMS = ['Data Collection', 'Research', 'Data Team'];
+const careerSlug = (r) => String(r.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+exports.CAREER_ROLES = CAREER_ROLES;
+exports.careerSlug = careerSlug;
+// Three.js comes from jsDelivr, as in niip-3d; careers.js draws the star only when it loads.
+const CAREERS_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module" src="/assets/careers.js?v=${ASSET_V}"></script>`;
+const csBtn = (href, label, cls = '') => `<a class="cs-btn${cls ? ' ' + cls : ''}" href="${esc(href)}"><span>${esc(label)}</span><i aria-hidden="true">${icon('arrow')}</i></a>`;
+// A line whose letters arrive in random order (careers.js); the parent heading carries the words.
+const csDecode = (text, cls = '') => `<span class="cs-line${cls ? ' ' + cls : ''}" data-decode aria-hidden="true">${esc(text)}</span>`;
+
+// ============ CAREERS PAGE ============
+// The art the 3D seal is built from: a larger copy saved as public/img/brand/seal-large.webp (or .png) when
+// there is one, otherwise the Image Library's seal (the footer's).
+const sealArt = () => {
+  const has = (f) => require('node:fs').existsSync(require('node:path').join(__dirname, 'public', 'img', 'brand', f));
+  return has('seal-large.webp') ? '/img/brand/seal-large.webp' : has('seal-large.png') ? '/img/brand/seal-large.png' : imgs.url('brand', 'seal');
+};
+// One chrome star (careers.js, WebGL) travels the page as the sections pass from black through
+// NICTD blue to ice. The roles are a scroll-pinned list: the role at the centre brightens and
+// turns its own point of the star forward. Applying happens on each role's own page.
+exports.careers = (ctx) => {
+  const n = CAREER_ROLES.length;
+  const monrovia = CAREER_ROLES.filter((r) => r.place === 'Monrovia').map((r) => r.title);
+  const roles = CAREER_ROLES.map((r, i) => `<li class="cs-role${i === 0 ? ' is-on' : ''}" data-role="${i}">
+          <div class="cs-role-l">
+            <h3 class="cs-role-t" aria-label="${esc(r.title)}">${csDecode(r.title)}</h3>
+            <p class="cs-role-m"><span>${esc(r.unit)}</span><span>${esc(r.type)}</span><span>${esc(r.place)}</span></p>
+          </div>
+          <div class="cs-role-r">
+            <p>${esc(r.desc)}</p>
+            ${csBtn('/careers/apply/' + careerSlug(r), 'Apply for this role', 'cs-btn-sm')}
+          </div>
+        </li>`).join('');
+  const faq = [
+    ['Do I need survey experience to become a Field Enumerator?', 'No. Full training is provided, and no prior survey experience is needed.'],
+    ['Is the training paid?', 'Yes. Field roles begin with paid training before a county wave opens.'],
+    ['When are field roles open?', 'Field roles are recruited county by county as each data-collection wave opens, so check back if nothing fits today.'],
+    ['What happens after I apply?', 'Shortlisted applicants are contacted for a short interview, plus a practical exercise for data and platform roles.'],
+    monrovia.length ? ['Where are the data roles based?', `${monrovia.join(' and ')} ${monrovia.length > 1 ? 'are full-time roles' : 'is a full-time role'} in Monrovia.`] : null,
+    ['What do I need to apply?', 'Your CV as a PDF or Word file, up to 5 MB, and your county. A cover note is optional.'],
+    ['Who handles applications?', 'The ICT Statistics & Policy Unit at the Ministry of Posts & Telecommunications.'],
+  ].filter(Boolean);
+  const steps = [
+    ['search', 'Find a role', 'Read the open roles above and pick the one that fits your team, type and place.'],
+    ['doc', 'Apply online', 'Open the role’s application page and send it with your CV and your county.'],
+    ['chat', 'Screening', 'Shortlisted applicants are contacted for a short interview, plus a practical exercise for data and platform roles.'],
+    ['book', 'Training', 'Field roles begin with paid training before a county wave opens.'],
+  ];
+  return shell(ctx, {
+    title: 'Careers', active: '/careers', workspaceActive: 'careers', extraHead: CAREERS_HEAD, body: `
+  <div class="cs" id="csPage">
+    <canvas class="cs-star" id="csStar" aria-hidden="true" data-seal="${esc(sealArt())}"></canvas>
+
+    <section class="cs-hero" data-star="hero" aria-labelledby="csTitle">
+      <div class="cs-wrap cs-hero-in">
+        <h1 id="csTitle" class="cs-h1" aria-label="Careers at NICTD. Built and run by Liberians.">${csDecode('Careers at NICTD.')}${csDecode('Built and run by Liberians.', 'cs-dim')}</h1>
+        <div class="cs-ctas">
+          ${csBtn('#csRoles', 'See open roles')}
+          <a class="cs-btn cs-btn-dark" href="#csJoin"><span>How to join</span></a>
+        </div>
+        <p class="cs-hero-sub">${n} open roles across field collection, research and the data team, with paid training for field roles.</p>
+      </div>
+    </section>
+
+    <section class="cs-mission" data-star="mission" aria-labelledby="csMissionTitle">
+      <div class="cs-wrap">
+        <span class="cs-mark" aria-hidden="true"></span>
+        <h2 id="csMissionTitle" class="cs-h2" aria-label="Every phase staffed and skilled locally">${csDecode('Every phase staffed and skilled locally')}</h2>
+        <figure class="cs-people">
+          <img src="${esc(imgs.url('headers', 'careers'))}" alt="A group of young professionals celebrating together" loading="lazy" decoding="async">
+        </figure>
+        <dl class="cs-rows">
+          <div class="cs-row"><dt><span class="cs-tag">The mission</span></dt><dd data-fill>Creating jobs and opportunities for young Liberians is part of what this programme is for.</dd></div>
+          <div class="cs-row"><dt><span class="cs-tag">The work</span></dt><dd data-fill>The National ICT Database is built and run by Liberians. Every phase, from field collection to data engineering and the platform itself, is staffed and skilled locally.</dd></div>
+          <div class="cs-row"><dt><span class="cs-tag">The path</span></dt><dd data-fill>Training is provided for field roles, and the experience carries forward into ICT research, statistics and data careers well beyond this programme.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="cs-roles" id="csRoles" data-star="roles" aria-labelledby="csRolesTitle">
+      <div class="cs-wrap">
+        <header class="cs-roles-head">
+          <h2 id="csRolesTitle" class="cs-h2">Open roles</h2>
+          <p class="cs-count">${n}<span class="sr-only"> roles open</span></p>
+        </header>
+        <ol class="cs-list">${roles}</ol>
+      </div>
+    </section>
+
+    <section class="cs-dark" data-star="dark" aria-labelledby="csDarkTitle">
+      <div class="cs-wrap cs-dark-in">
+        <span class="cs-frame" aria-hidden="true"></span>
+        <h2 id="csDarkTitle" class="cs-h2 cs-h2-lg" aria-label="Recruited county by county, as each data-collection wave opens.">${csDecode('Recruited county by county,')}${csDecode('as each data-collection wave opens.', 'cs-dim')}</h2>
+        <div class="cs-ctas">${csBtn('/about', 'Contact the Unit')}</div>
+      </div>
+    </section>
+
+    <section class="cs-join" id="csJoin" data-star="join" aria-labelledby="csJoinTitle">
+      <div class="cs-wrap">
+        <span class="cs-mark" aria-hidden="true"></span>
+        <h2 id="csJoinTitle" class="cs-h2" aria-label="How joining works">${csDecode('How joining works')}</h2>
+        <ol class="cs-steps">${steps.map(([ic, t, d]) => `<li><span class="cs-step-ic" aria-hidden="true">${icon(ic)}</span><div><h3>${esc(t)}</h3><p>${esc(d)}</p></div></li>`).join('')}</ol>
+      </div>
+    </section>
+
+    <section class="cs-faq" data-star="faq" aria-labelledby="csFaqTitle">
+      <div class="cs-wrap cs-faq-in">
+        <div class="cs-faq-head">
+          <span class="cs-mark" aria-hidden="true"></span>
+          <h2 id="csFaqTitle" class="cs-h2 cs-h2-xl">FAQ</h2>
+          <p class="cs-faq-more"><span>Got more questions?</span> ${csBtn('/about', 'Contact the Unit', 'cs-btn-light')}</p>
+        </div>
+        <div class="cs-faq-list">${faq.map(([q, a], i) => `<details class="cs-q"><summary><span class="cs-q-n" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><span class="cs-q-t">${esc(q)}</span><span class="cs-q-x" aria-hidden="true"></span></summary><div class="cs-q-a"><p>${esc(a)}</p></div></details>`).join('')}</div>
+      </div>
+    </section>
+
+    <section class="cs-outro" data-star="outro" aria-hidden="true"><div class="cs-word">NIIS</div></section>
+  </div>`,
+  });
+};
+
+// ============ APPLICATION SENT ============
+// The end of the process: a drawn check, a burst of the page's blue squares, the headline, and
+// the reference the applicant keeps. The reference carries the date it was sent (NICTD-YYMMDD-XXXX).
+function careerSent(ctx, role, reference) {
+  const m = /^NICTD-(\d{2})(\d{2})(\d{2})-/.exec(reference || '');
+  const sentOn = m ? `${+m[3]} ${UPD_MONTHS[+m[2] - 1]} 20${m[1]}` : '';
+  const field = role.unit === 'Data Collection';
+  const burst = Array.from({ length: 14 }, (_, i) => `<i style="--a:${Math.round(i * (360 / 14) + (i % 2) * 9)}deg;--d:${i % 3 === 0 ? 7.4 : i % 3 === 1 ? 5.6 : 6.4}rem;--s:${i % 2 ? 5 : 7}px;--t:${(i % 4) * 40}ms"></i>`).join('');
+  return shell(ctx, {
+    title: 'Application sent: ' + role.title, active: '/careers', workspaceActive: 'careers', extraHead: CAREERS_HEAD, body: `
+  <div class="cs cs-ap cs-sent" id="csApply">
+    <section class="cs-ok" aria-labelledby="csOkTitle">
+      <div class="cs-wrap cs-ok-in">
+        <div class="cs-ok-mark" aria-hidden="true">
+          <span class="cs-ok-burst">${burst}</span>
+          <svg viewBox="0 0 48 48" class="cs-ok-check"><polyline points="13 25 21 33 36 16"/></svg>
+        </div>
+        <h1 id="csOkTitle" class="cs-h1 cs-ok-h" aria-label="Congratulations! Application sent.">${csDecode('Congratulations!')}${csDecode('Application sent.', 'cs-dim')}</h1>
+        <p class="cs-ok-sub" role="status">Your application for <strong>${esc(role.title)}</strong> is with the ICT Statistics &amp; Policy Unit.</p>
+        <dl class="cs-ap-meta cs-ok-meta">
+          ${reference ? `<div><dt>Your reference</dt><dd class="cs-ok-ref">${esc(reference)}</dd></div>` : ''}
+          <div><dt>Role</dt><dd>${esc(role.title)}</dd></div>
+          <div><dt>Team</dt><dd>${esc(role.unit)}</dd></div>
+          ${sentOn ? `<div><dt>Sent</dt><dd>${esc(sentOn)}</dd></div>` : ''}
+        </dl>
+        ${reference ? '<p class="cs-ok-keep">Keep this reference. Quote it if you contact the Unit about your application.</p>' : ''}
+      </div>
+    </section>
+    <section class="cs-ap-body cs-ok-body" aria-labelledby="csNextTitle">
+      <div class="cs-wrap">
+        <span class="cs-mark" aria-hidden="true"></span>
+        <h2 id="csNextTitle" class="cs-h2">What happens next</h2>
+        <ol class="cs-ok-steps">
+          <li><span aria-hidden="true">${icon('check')}</span><div><h3>Application sent</h3><p>Your details and CV have reached the Unit.</p></div></li>
+          <li><span aria-hidden="true">${icon('chat')}</span><div><h3>Screening</h3><p>Shortlisted applicants are contacted for a short interview${role.unit === 'Data Team' ? ', plus a practical exercise' : ''}.</p></div></li>
+          ${field ? `<li><span aria-hidden="true">${icon('book')}</span><div><h3>Training</h3><p>Field roles begin with paid training before a county wave opens.</p></div></li>` : ''}
+        </ol>
+        <div class="cs-ctas">
+          ${csBtn('/careers#csRoles', 'See other roles', 'cs-btn-ink')}
+          <a class="cs-btn cs-btn-light" href="/"><span>Back to home</span></a>
+        </div>
+      </div>
+    </section>
+  </div>`,
+  });
+}
+
+// ============ APPLY FOR A ROLE (/careers/apply/<role>) ============
+// The role's own application page: the role on the left, kept in view; the application on the
+// right, in three short parts. A returned form keeps what was typed (except the file).
+exports.careerApply = (ctx, { role, counties = [], errors = [], values = {}, failed = false, sent = false, notice = '', reference = '' }) => {
+  if (sent) return careerSent(ctx, role, reference);
+  const errOf = (f) => errors.find((e) => e.field === f);
+  const errText = (f) => (errOf(f) ? `<p class="cs-err" id="cs-err-${f}">${esc(errOf(f).message)}</p>` : '');
+  const invalid = (f) => (errOf(f) ? ` aria-invalid="true" aria-describedby="cs-err-${f}"` : '');
+  const val = (k) => esc(values[k] || '');
+  const others = CAREER_ROLES.filter((r) => r !== role);
+  const field = role.unit === 'Data Collection';
+  const panel = `
+        ${notice ? `<p class="cs-alert" role="alert">${esc(notice)}</p>` : ''}
+        ${failed ? `<p class="cs-alert" role="alert">We could not receive applications online just now, so nothing was sent. Please try again later, or <a href="/about">contact the Unit</a>.</p>` : ''}
+        ${errors.length ? `<p class="cs-alert" role="alert">Please check the highlighted fields.${values.cv_lost ? ' Choose your CV again: a file is never kept when the form comes back.' : ''}</p>` : ''}
+        <form class="cs-form" id="csForm" method="post" action="/careers/apply" enctype="multipart/form-data" novalidate>
+          <input type="hidden" name="role" value="${esc(role.title)}">
+          <fieldset class="cs-part">
+            <legend>About you</legend>
+            <div class="cs-two">
+              <label class="cs-field"><span class="cs-label">Full name</span>
+                <input name="full_name" autocomplete="name" maxlength="120" required value="${val('full_name')}"${invalid('full_name')}>${errText('full_name')}</label>
+              <label class="cs-field"><span class="cs-label">Email</span>
+                <input name="email" type="email" autocomplete="email" maxlength="180" required value="${val('email')}"${invalid('email')}>${errText('email')}</label>
+            </div>
+            <div class="cs-two">
+              <label class="cs-field"><span class="cs-label">Phone <em>optional</em></span>
+                <input name="phone" type="tel" autocomplete="tel" maxlength="40" value="${val('phone')}"${invalid('phone')}>${errText('phone')}</label>
+              <label class="cs-field"><span class="cs-label">County</span>
+                <select name="county" required${invalid('county')}><option value="">Choose your county</option>${counties.map((c) => `<option${values.county === c ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>${errText('county')}</label>
+            </div>
+          </fieldset>
+          <fieldset class="cs-part">
+            <legend>Your CV</legend>
+            <label class="cs-drop${errOf('cv') ? ' is-invalid' : ''}" data-drop>
+              <input class="sr-only" type="file" name="cv" required accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"${invalid('cv')}>
+              <span class="cs-drop-ic" aria-hidden="true">${icon('upload')}</span>
+              <span class="cs-drop-t"><strong data-file-name>Drop your CV here, or choose a file</strong><span data-file-meta>PDF or Word, up to 5 MB</span></span>
+            </label>
+            <button type="button" class="cs-drop-clear" data-file-clear hidden>Remove file</button>
+            ${errText('cv')}
+          </fieldset>
+          <fieldset class="cs-part">
+            <legend>A note <em>optional</em></legend>
+            <label class="cs-field"><span class="sr-only">Cover note</span>
+              <textarea name="cover_note" rows="4" maxlength="2000" data-count${invalid('cover_note')}>${val('cover_note')}</textarea>
+              <span class="cs-hint"><span data-count-out>${(values.cover_note || '').length}</span> of 2000 characters</span>${errText('cover_note')}</label>
+            <label class="cs-consent"><input type="checkbox" name="consent" value="yes" required${values.consent ? ' checked' : ''}${invalid('consent')}>
+              <span>NICTD may keep my application and CV to assess me for this role.</span></label>${errText('consent')}
+          </fieldset>
+          <div class="cs-hp" aria-hidden="true"><label>Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label></div>
+          <button type="submit" class="cs-btn cs-btn-submit"><span data-submit-label>Send application</span><i aria-hidden="true">${icon('arrow')}</i></button>
+        </form>`;
+  return shell(ctx, {
+    title: 'Apply: ' + role.title, active: '/careers', workspaceActive: 'careers', extraHead: CAREERS_HEAD, body: `
+  <div class="cs cs-ap" id="csApply">
+    <section class="cs-ap-hero" aria-labelledby="csApTitle">
+      <div class="cs-wrap">
+        <a class="cs-back" href="/careers#csRoles">${icon('arrow')}<span>All open roles</span></a>
+        <h1 id="csApTitle" class="cs-h1 cs-h1-ap" aria-label="${esc(role.title)}">${csDecode(role.title)}</h1>
+        <dl class="cs-ap-meta">
+          <div><dt>Team</dt><dd>${esc(role.unit)}</dd></div>
+          <div><dt>Type</dt><dd>${esc(role.type)}</dd></div>
+          <div><dt>Place</dt><dd>${esc(role.place)}</dd></div>
+        </dl>
+      </div>
+    </section>
+    <section class="cs-ap-body">
+      <div class="cs-wrap cs-ap-grid">
+        <aside class="cs-ap-role" aria-label="About this role">
+          <h2>The role</h2>
+          <p>${esc(role.desc)}</p>
+          <h2>What happens next</h2>
+          <ol class="cs-ap-next">
+            <li><strong>Screening.</strong> Shortlisted applicants are contacted for a short interview${role.unit === 'Data Team' ? ', plus a practical exercise' : ''}.</li>
+            ${field ? '<li><strong>Training.</strong> Field roles begin with paid training before a county wave opens.</li>' : ''}
+          </ol>
+          ${field ? '<p class="cs-ap-note">Field roles are recruited county by county as each data-collection wave opens.</p>' : ''}
+          ${others.length ? `<p class="cs-ap-other">Not quite right? <a href="/careers#csRoles">See the ${others.length} other open roles</a>.</p>` : ''}
+        </aside>
+        <div class="cs-ap-panel" id="apply">${panel}
+        </div>
+      </div>
+    </section>
+  </div>`,
+  });
+};
+
+// ============ AUTH ============
+exports.login = (ctx, { error }) => publicLayout(ctx, {
+  title: 'Log In', body: `
+  ${pageHeader('login', 'Log In', 'Access the secured NICTD workspace.')}
+  <div class="auth-wrap"><div class="auth-card">
+    <h1>${icon('shield')} Log in</h1>
+    <p class="muted">Access to the secured workspace is role-based: authorized public users, stakeholders and administrators each see what their role permits.</p>
+    ${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
+    <form method="post" action="/login">
+      <label>Email<input name="email" type="email" required autofocus></label>
+      <label>Password<input name="password" type="password" required></label>
+      <button class="btn btn-teal" type="submit" style="margin-top:1rem">Log in</button>
+    </form>
+    <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--line)">
+      <p class="muted" style="margin-bottom:.6rem">Don't have an account? Submit your details and the administration team will create one for you.</p>
+      <a class="btn btn-outline" href="/register">Request Access</a>
+    </div>
+    <details class="demo-creds"><summary>Demonstration accounts</summary>
+      <table class="mono"><tr><td>admin@nictd.gov.lr</td><td>Admin!2026</td></tr>
+      <tr><td>stakeholder@partner.org</td><td>Stake!2026</td></tr>
+      <tr><td>researcher@example.com</td><td>Research!2026</td></tr></table>
+      <p style="margin-top:.5rem">All 50 accounts: <span class="mono">docs/USER-CREDENTIALS.md</span></p>
+    </details>
+  </div></div>`,
+});
+exports.register = (ctx, { error, success, form = {} }) => publicLayout(ctx, {
+  title: 'Request Access', body: `
+  <div class="auth-wrap"><div class="auth-card">
+    <h1>${icon('users')} Request Access</h1>
+    <p class="muted">Provide the details needed for your credentials. Your request goes to the administration team, who will review it and create your account, you'll receive your login credentials from them directly.</p>
+    ${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
+    ${success ? `<div class="alert alert-ok">${esc(success)}</div><p style="margin-top:1rem"><a class="btn btn-teal" href="/">Back to Home</a></p>` : `
+    <form method="post" action="/register">
+      <label>Full name *<input name="name" required maxlength="120" value="${esc(form.name || '')}"></label>
+      <label>Email *<input name="email" type="email" required maxlength="160" value="${esc(form.email || '')}"></label>
+      <label>Organization / affiliation *<input name="organization" required maxlength="160" placeholder="University, newsroom, ministry, NGO…" value="${esc(form.organization || '')}"></label>
+      <label>Phone (optional)<input name="phone" maxlength="40" placeholder="+231 …" value="${esc(form.phone || '')}"></label>
+      <label>Access level requested
+        <select name="role_requested">
+          <option value="public" ${form.role_requested !== 'stakeholder' ? 'selected' : ''}>Public user, researcher, journalist, citizen</option>
+          <option value="stakeholder" ${form.role_requested === 'stakeholder' ? 'selected' : ''}>Stakeholder, government, donor, institutional partner</option>
+        </select></label>
+      <label>What data do you need, and why? (optional)<textarea name="purpose" rows="3" maxlength="1000" placeholder="e.g. county-level connectivity series for a reporting project…">${esc(form.purpose || '')}</textarea></label>
+      <button class="btn btn-teal" type="submit" style="margin-top:1rem">Submit request</button>
+    </form>
+    <p class="muted" style="margin-top:1rem">Already have an account? <a href="/login">Log in</a>.</p>`}
+  </div></div>`,
+});
+
+// ============ WORKSPACE (signed-in) ============
+exports.portal = (ctx, stats) => {
+  const u = ctx.user; const has = (p) => ctx.perms.includes(p);
+  const cards = [
+    ['/data', 'database', 'Data Explorer', 'Map, trend and county table for every indicator you are authorized to see.', true],
+    ['/indicators', 'layers', 'Indicator Catalogue', 'Full metadata: definitions, methodology, source and coverage.', true],
+    ['/query', 'sliders', 'Data Query builder', 'Build a custom multi-indicator, multi-county extract.', true],
+    ['/dashboards', 'gauge', 'Dashboards', 'Six curated topic dashboards with live sync status.', true],
+    ['/media', 'image', 'Media Library', 'Images, research papers and embedded video from the project.', true],
+    ['/analytics', 'chart', 'Platform Analytics', 'Usage and trend analysis across the stored data.', has('analytics')],
+    ['/messages', 'chat', 'Messages', 'Your direct line to the ICT Statistics & Policy Unit.', has('messaging')],
+    ['/admin', 'shield', 'Admin Panel', 'Users, quality review queue, content and platform settings.', has('manage_users')],
+    ['/admin/inbox', 'inbox', 'Team Inbox', 'All user conversations, shared across the admin team.', has('admin_inbox')],
+  ];
+  const stat = (label, val, accent) => `<div class="kpi"><div class="kpi-label">${label}</div><div class="kpi-value" ${accent ? 'style="color:var(--clay)"' : ''}>${val}</div></div>`;
+  return appLayout(ctx, {
+    title: 'Overview', active: 'portal', body: `
+    <p class="kicker">Workspace</p>
+    <h1>Welcome back, ${esc(u.name.split(' ')[0])}</h1>
+    <p class="lede-sm">Here is the current state of NICTD.</p>
+    <div class="kpi-grid">
+      ${stat('Data points published', fmt(stats.dataPoints))}
+      ${stat('Indicators tracked', fmt(stats.indicators))}
+      ${stat('Counties covered', '15')}
+      ${stat('Series updated', `<span style="font-size:1.1rem">${esc(String(stats.lastUpdated).slice(0, 10))}</span>`)}
+      ${stats.pendingRequests != null ? stat('Pending access requests', fmt(stats.pendingRequests), stats.pendingRequests > 0) : ''}
+      ${stats.pendingSubs != null ? stat('Submissions in review queue', fmt(stats.pendingSubs), stats.pendingSubs > 0) : ''}
+      ${stats.unread ? stat('Unread messages', fmt(stats.unread), true) : ''}
+    </div>
+    <h2>Your workspace</h2>
+    <div class="card-grid">
+      ${cards.filter((c) => c[4]).map(([href, icn, t, d]) => `<a class="portal-card" href="${href}"><h3>${icon(icn)} ${esc(t)}</h3><p>${esc(d)}</p></a>`).join('')}
+    </div>`,
+  });
+};
+
+exports.media = (ctx, items) => {
+  const section = (kind, title, note) => {
+    const list = items.filter((m) => m.kind === kind);
+    if (!list.length) return '';
+    return `<h2>${title} <span class="muted" style="font-size:.75em;font-weight:400">${note}</span></h2>
+    <div class="card-grid">${list.map((m) => `<div class="media-card">
+      ${kind === 'image' ? `<div class="media-thumb"><img src="${esc(m.file_path)}" alt="${esc(m.title)}"></div>` : ''}
+      ${kind === 'video' ? (m.file_path && m.file_path.endsWith('.mp4')
+        ? `<div class="media-thumb video"><video src="${esc(m.file_path)}" controls preload="metadata" playsinline style="width:100%;height:100%;object-fit:cover;background:#000"></video></div>`
+        : (m.video_embed_id && m.video_embed_id !== 'CONFIGURE_EMBED_ID'
+          ? `<div class="media-thumb video"><iframe src="https://www.youtube-nocookie.com/embed/${esc(m.video_embed_id)}" title="${esc(m.title)}" allowfullscreen loading="lazy"></iframe></div>`
+          : `<div class="media-thumb video-placeholder"><div>${nodeMark(28)}<p>Hosted on ${esc(m.video_provider || 'external service')}</p><p class="mono muted">Embed ID pending admin configuration</p></div></div>`)) : ''}
+      <h3>${esc(m.title)}</h3><p>${esc(m.description || '')}</p>
+      <div class="media-meta"><span class="tag">${esc(m.access_level)}</span>
+      ${m.video_provider === 'NICTD AI (Seedance)' ? '<span class="tag" style="background:#1C5BB8;color:#fff">AI-generated</span>' : ''}
+      ${m.file_path && !m.file_path.endsWith('.mp4') ? `<a href="${esc(m.file_path)}">${kind === 'paper' ? 'Download' : 'Open'}</a>` : ''}</div>
+    </div>`).join('')}</div>`;
+  };
+  return appLayout(ctx, {
+    title: 'Media Library', active: 'media', body: `
+    <p class="kicker">Media library</p>
+    <h1>Media library</h1>
+    <p class="lede-sm">Images and research papers are stored on the platform. Video is hosted through a dedicated video service and embedded here, not stored in the primary database, for cost and performance.</p>
+    ${section('image', 'Images', 'stored on-platform')}
+    ${section('paper', 'Research papers', 'stored on-platform')}
+    ${section('video', 'Video', 'externally hosted, embedded')}`,
+  });
+};
+
+exports.analytics = (ctx, { daily, byKind, topPaths, growth, gaps }) => appLayout(ctx, {
+  title: 'Platform Analytics', active: 'analytics', body: `
+  <p class="kicker">Analytics, administrators &amp; stakeholders</p>
+  <h1>Usage &amp; trend analytics</h1>
+  <div class="kpi-grid">
+    ${byKind.map((k) => `<div class="kpi"><div class="kpi-label">${esc(k.kind.replace('_', ' '))}s · 30 days</div><div class="kpi-value">${fmt(k.n)}</div></div>`).join('')}
+  </div>
+  <div class="two-col">
+    <div class="chart-card"><h3>Platform activity · last 60 days</h3><div id="analytics-daily" class="chart-dh"></div></div>
+    <div class="chart-card"><h3>Most viewed pages · 30 days</h3><div id="analytics-paths" class="chart-dh"></div></div>
+  </div>
+  <div class="two-col" style="margin-top:1.1rem">
+    <div class="panel"><h3>Fastest-growing counties, internet penetration (pp, 2018→2025)</h3>
+      <table class="data-table"><thead><tr><th>County</th><th class="num">2018</th><th class="num">2025</th><th class="num">Growth</th></tr></thead>
+      <tbody>${growth.slice(0, 8).map((g) => `<tr><td>${esc(g.county)}</td><td class="num mono">${fmt(g.v2018)}</td><td class="num mono">${fmt(g.v2025)}</td><td class="num mono up">▲ ${fmt(g.growth_pp)}</td></tr>`).join('')}</tbody></table>
+    </div>
+    <div class="panel"><h3>Widest urban-rural gaps · 2025 (pp)</h3>
+      <table class="data-table"><thead><tr><th>County</th><th class="num">Urban</th><th class="num">Rural</th><th class="num">Gap</th></tr></thead>
+      <tbody>${gaps.slice(0, 8).map((g) => `<tr><td>${esc(g.county)}</td><td class="num mono">${fmt(g.urban)}</td><td class="num mono">${fmt(g.rural)}</td><td class="num mono down">${fmt(g.gap)}</td></tr>`).join('')}</tbody></table>
+    </div>
+  </div>
+  <script>window.__NICTD_PAGE__='analytics-legacy';window.__ANALYTICS__=${JSON.stringify({ daily, topPaths })};</script>`,
+});
+
+function messageThread(msgs) {
+  if (!msgs.length) return '<p class="muted">No messages yet. Start the conversation below.</p>';
+  return `<div class="thread">${msgs.map((m) => `
+    <div class="msg ${m.from_admin_team ? 'msg-admin' : 'msg-user'}">
+      <div class="msg-head mono">${m.from_admin_team ? 'ICT Statistics & Policy Unit' : esc(m.sender_name)} · ${esc(fmtTs(m.created_at))}</div>
+      <div class="msg-body">${esc(m.body)}</div>
+    </div>`).join('')}</div>`;
+}
+exports.messages = (ctx, { conv, msgs }) => appLayout(ctx, {
+  title: 'Messages', active: 'messages', body: `
+  <p class="kicker">Messaging</p>
+  <h1>Message box</h1>
+  <p class="lede-sm">A direct line between your account and the ICT Statistics &amp; Policy Unit, no outside email needed. Messages are answered from a shared team inbox (checked regularly, not real-time chat).</p>
+  ${conv && conv.subject ? `<p class="mono muted">Subject: ${esc(conv.subject)}</p>` : ''}
+  ${messageThread(msgs)}
+  <form method="post" action="/messages" class="msg-form">
+    ${!conv ? '<label>Subject<input name="subject" maxlength="120" placeholder="What is this about?"></label>' : ''}
+    <label>Message<textarea name="body" rows="4" required maxlength="4000" placeholder="Write to the team…"></textarea></label>
+    <button class="btn btn-teal" type="submit" style="margin-top:.8rem">Send</button>
+  </form>`,
+});
+exports.adminInbox = (ctx, convs) => appLayout(ctx, {
+  title: 'Team Inbox', active: 'inbox', body: `
+  <p class="kicker">Administration · shared team inbox</p>
+  <h1>Team inbox</h1>
+  <p class="lede-sm">Every conversation is visible to the whole administration team for accountability and continuity.</p>
+  ${convs.length ? `<table class="data-table"><thead><tr><th>User</th><th>Role</th><th>Subject</th><th>Updated</th><th></th></tr></thead>
+  <tbody>${convs.map((c) => `<tr class="${c.unread ? 'unread' : ''}">
+    <td>${esc(c.user_name)}<br><span class="mono muted">${esc(c.email)}</span></td>
+    <td><span class="tag">${esc(c.role)}</span></td>
+    <td>${esc(c.subject || ', ')} ${c.unread ? `<span class="badge">${c.unread} new</span>` : ''}</td>
+    <td class="mono muted">${esc(fmtTs(c.updated_at))}</td>
+    <td><a href="/admin/inbox/${c.id}">Open →</a></td></tr>`).join('')}</tbody></table>` : '<p class="muted">No conversations yet.</p>'}`,
+});
+exports.adminConversation = (ctx, { conv, msgs }) => appLayout(ctx, {
+  title: `Conversation, ${conv.user_name}`, active: 'inbox', body: `
+  <p class="kicker"><a href="/admin/inbox">← Team inbox</a></p>
+  <h1>${esc(conv.user_name)} <span class="mono muted" style="font-size:.5em">${esc(conv.email)}</span></h1>
+  ${conv.subject ? `<p class="mono muted">Subject: ${esc(conv.subject)}</p>` : ''}
+  ${messageThread(msgs)}
+  <form method="post" action="/admin/inbox/${conv.id}" class="msg-form">
+    <label>Reply as ICT Statistics &amp; Policy Unit<textarea name="body" rows="4" required maxlength="4000"></textarea></label>
+    <button class="btn btn-teal" type="submit" style="margin-top:.8rem">Send reply</button>
+  </form>`,
+});
+
+exports.admin = (ctx, { users, pending, reviewed, indicators, counties, settings, rolePerms, unreadInbox, accessRequests = [], papersList = [], updatesList = [], mediaList = [], siteContent = {}, notice = '', generations = [], seedanceReady = false }) => {
+  const permHas = (role, perm) => rolePerms.some((r) => r.role === role && r.permission === perm);
+  const editablePerms = ['view_registered_data', 'view_stakeholder_data', 'analytics', 'messaging', 'download_open_data'];
+  return appLayout(ctx, {
+    title: 'Admin Panel', active: 'admin', body: `
+  <p class="kicker">Administration</p>
+  <h1>Platform administration</h1>
+  <p class="lede-sm"><a href="/admin/inbox">Team inbox${unreadInbox ? ` <span class="badge">${unreadInbox} new</span>` : ''}</a> · jump to
+    <a href="#requests">access requests${accessRequests.length ? ` <span class="badge">${accessRequests.length}</span>` : ''}</a> ·
+    <a href="#users">users</a> · <a href="#review">quality review</a> · <a href="#studio">content studio</a> · <a href="#ai-video">AI video</a> · <a href="#settings">settings</a></p>
+  ${notice ? `<div class="alert alert-ok">${esc(notice)}</div>` : ''}
+
+  <h2 id="requests">Access requests</h2>
+  <p class="muted">Submitted through “Request Access” under the login form. Review the applicant's details, set a temporary password, and create the account, then share the credentials with the applicant.</p>
+  ${accessRequests.length ? accessRequests.map((r) => `<div class="panel">
+    <div class="two-col" style="grid-template-columns:1.4fr 1fr">
+      <div>
+        <h3 style="margin-bottom:.2rem">${esc(r.name)} <span class="tag">${esc(r.role_requested)}</span></h3>
+        <p class="mono muted" style="margin-bottom:.3rem">${esc(r.email)}${r.phone ? ' · ' + esc(r.phone) : ''}</p>
+        <p class="muted" style="margin-bottom:.3rem"><strong>Organization:</strong> ${esc(r.organization || ', ')}</p>
+        ${r.purpose ? `<p class="muted" style="margin-bottom:.3rem"><strong>Purpose:</strong> ${esc(r.purpose)}</p>` : ''}
+        <p class="mono muted" style="font-size:.75rem">Requested ${esc(fmtTs(r.created_at))}</p>
+      </div>
+      <div>
+        <form method="post" action="/admin/requests/action" class="grid-form">
+          <input type="hidden" name="id" value="${r.id}"><input type="hidden" name="action" value="approve">
+          <label>Role<select name="role"><option ${r.role_requested === 'public' ? 'selected' : ''}>public</option><option ${r.role_requested === 'stakeholder' ? 'selected' : ''}>stakeholder</option></select></label>
+          <label>Temporary password<input name="password" required minlength="8" placeholder="min. 8 characters"></label>
+          <button class="btn btn-teal">Create account</button>
+        </form>
+        <form method="post" action="/admin/requests/action" class="inline-form" style="margin-top:.5rem">
+          <input type="hidden" name="id" value="${r.id}"><input type="hidden" name="action" value="reject">
+          <button class="btn btn-ghost btn-sm">Reject request</button>
+        </form>
+      </div>
+    </div>
+  </div>`).join('') : '<p class="muted">No pending requests.</p>'}
+
+  <h2 id="users">User accounts</h2>
+  <table class="data-table"><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+    ${users.map((u) => `<tr>
+      <td>${esc(u.name)}<br><span class="mono muted">${esc(u.email)}</span>${u.organization ? `<br><span class="muted">${esc(u.organization)}</span>` : ''}</td>
+      <td><form method="post" action="/admin/users/role" class="inline-form"><input type="hidden" name="id" value="${u.id}">
+        <select name="role" onchange="this.form.submit()">${['public', 'stakeholder', 'admin'].map((r) => `<option ${r === u.role ? 'selected' : ''}>${r}</option>`).join('')}</select></form></td>
+      <td><span class="tag tag-${esc(u.status)}">${esc(u.status)}</span></td>
+      <td>${u.status === 'pending' ? `<form method="post" action="/admin/users/status" class="inline-form"><input type="hidden" name="id" value="${u.id}"><input type="hidden" name="status" value="active"><button class="btn btn-sm btn-teal">Verify &amp; activate</button></form>` : ''}
+        ${u.status === 'active' && u.role !== 'admin' ? `<form method="post" action="/admin/users/status" class="inline-form"><input type="hidden" name="id" value="${u.id}"><input type="hidden" name="status" value="suspended"><button class="btn btn-sm btn-ghost">Suspend</button></form>` : ''}
+        ${u.status === 'suspended' ? `<form method="post" action="/admin/users/status" class="inline-form"><input type="hidden" name="id" value="${u.id}"><input type="hidden" name="status" value="active"><button class="btn btn-sm btn-ghost">Reinstate</button></form>` : ''}</td>
+    </tr>`).join('')}
+  </tbody></table>
+  <div class="panel">
+    <h3>Provision an account <span class="muted" style="font-weight:400;font-size:.8em">(stakeholders are provisioned here, per policy)</span></h3>
+    <form method="post" action="/admin/users/create" class="grid-form">
+      <label>Name<input name="name" required></label>
+      <label>Email<input name="email" type="email" required></label>
+      <label>Organization<input name="organization"></label>
+      <label>Role<select name="role"><option>stakeholder</option><option>public</option><option>admin</option></select></label>
+      <label>Temporary password<input name="password" required minlength="8"></label>
+      <button class="btn btn-teal">Create account</button>
+    </form>
+  </div>
+
+  <h2 id="review">Data quality review queue</h2>
+  <p class="muted">Submissions from survey tools, operator feeds and manual templates pass automated validation, then await human review here before publication into the database.</p>
+  ${pending.length ? `<table class="data-table"><thead><tr><th>Indicator</th><th>County</th><th class="num">Year</th><th class="num">Value</th><th>Channel</th><th>Validation</th><th>Actions</th></tr></thead><tbody>
+    ${pending.map((s) => `<tr>
+      <td>${esc(s.indicator_name)}</td><td>${esc(s.county_name || 'National')}</td><td class="num mono">${s.year}</td><td class="num mono">${fmt(s.value)}</td>
+      <td><span class="tag">${esc(s.channel)}</span></td>
+      <td class="${String(s.validation_note).startsWith('FLAG') ? 'flag' : 'muted'}">${esc(s.validation_note)}</td>
+      <td><form method="post" action="/admin/review" class="inline-form"><input type="hidden" name="id" value="${s.id}"><input type="hidden" name="action" value="approve"><button class="btn btn-sm btn-teal">Approve</button></form>
+      <form method="post" action="/admin/review" class="inline-form"><input type="hidden" name="id" value="${s.id}"><input type="hidden" name="action" value="reject"><button class="btn btn-sm btn-ghost">Reject</button></form></td></tr>`).join('')}
+  </tbody></table>` : '<p class="muted">Queue is clear, no pending submissions.</p>'}
+  ${reviewed.length ? `<p class="mono muted">Recently reviewed: ${reviewed.map((r) => `${esc(r.indicator_name)} (${esc(r.status)})`).join(' · ')}</p>` : ''}
+  <div class="panel">
+    <h3>Manual upload template (new submission)</h3>
+    <form method="post" action="/admin/submissions/create" class="grid-form">
+      <label>Indicator<select name="indicator_code">${indicators.map((i) => `<option value="${i.code}">${esc(i.name)}</option>`).join('')}</select></label>
+      <label>County<select name="county_id"><option value="">National</option>${counties.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>
+      <label>Year<input name="year" type="number" min="2018" max="2030" value="2026" required></label>
+      <label>Value<input name="value" type="number" step="0.1" required></label>
+      <label>Source<input name="source" placeholder="e.g. 2026 survey wave 1"></label>
+      <button class="btn btn-teal">Submit for validation &amp; review</button>
+    </form>
+  </div>
+
+  <h2 id="studio">Content Studio, front-end data</h2>
+  <p class="muted">Everything the public front end shows is controlled here: hero text, key numbers, datasets, publications, updates and media. Changes go live immediately for all visitors and users.</p>
+
+  <div class="panel"><h3>Site text &amp; key numbers</h3>
+    <form method="post" action="/admin/content" class="grid-form">
+      <label>Homepage hero title<input name="hero_title" maxlength="300" value="${esc(siteContent.hero_title || '')}"></label>
+      <label>Homepage hero subtitle<textarea name="hero_sub" rows="2" maxlength="1000">${esc(siteContent.hero_sub || '')}</textarea></label>
+      <label>About, mission paragraph<textarea name="about_mission" rows="3" maxlength="2000">${esc(siteContent.about_mission || '')}</textarea></label>
+      <label>Key numbers strip, exactly 4 indicator codes, comma-separated<input name="key_numbers" class="mono" value="${esc(siteContent.key_numbers || '')}" placeholder="mobile_subscriptions,internet_penetration,…"></label>
+      <label>Homepage video, YouTube link/ID, or an on-platform path
+        <input name="home_video" class="mono" value="${esc(siteContent.home_video || '')}" placeholder="https://youtu.be/XXXXXXXX  ·  or  /media/generated/hero.mp4"></label>
+      <label>Video section title<input name="home_video_title" maxlength="140" value="${esc(siteContent.home_video_title || '')}" placeholder="About the National ICT Database Project"></label>
+      <label>Video caption (optional)<textarea name="home_video_caption" rows="2" maxlength="600">${esc(siteContent.home_video_caption || '')}</textarea></label>
+      <label>Video playlist, one per line as <code>Title | YouTube link or /path.mp4</code>, or
+        <code>Title | Channel | link</code> to credit a third-party channel (first line is the main player)
+        <textarea name="home_video_playlist" class="mono" rows="6" maxlength="2000" placeholder="Launch briefing | https://youtu.be/XXXXXXXX&#10;What Is Data Sovereignty? | TechRound | https://youtu.be/XXXXXXXX">${esc(siteContent.home_video_playlist || '')}</textarea></label>
+      <button class="btn btn-teal">Save &amp; publish</button>
+    </form>
+    <p class="muted mono" style="font-size:.75rem">Available codes: ${indicators.map((i) => esc(i.code)).join(' · ')}</p>
+  </div>
+
+  <div class="panel"><h3>Bulk data upload (CSV → published immediately)</h3>
+    <form method="post" action="/admin/data/bulk" class="grid-form">
+      <label>Rows, one per line: <span class="mono">indicator_code, county (or National), year, value[, source]</span>
+        <textarea name="csv" rows="6" class="mono" placeholder="internet_penetration, Nimba, 2026, 32.5, 2026 survey wave 2&#10;internet_penetration, National, 2026, 36.9"></textarea></label>
+      <button class="btn btn-gold">Publish rows</button>
+    </form>
+    <p class="muted">Rows upsert into the published dataset (existing indicator/county/year values are overwritten). Use the quality-review queue below for submissions that need human sign-off instead.</p>
+  </div>
+
+  <div class="two-col">
+    <div class="panel"><h3>New update</h3>
+      <form method="post" action="/admin/updates/create" class="grid-form">
+        <label>Title<input name="title" required></label>
+        <label>Category<select name="category"><option>news</option><option>data_refresh</option><option>announcement</option></select></label>
+        <label>Body<textarea name="body" rows="3" required></textarea></label>
+        <button class="btn btn-teal">Publish update</button>
+      </form>
+      ${updatesList.length ? `<table class="data-table" style="margin-top:.8rem"><thead><tr><th>Published updates</th><th></th></tr></thead><tbody>
+        ${updatesList.map((u) => `<tr><td>${esc(u.title)} <span class="tag tag-${esc(u.category)}">${esc(u.category.replace('_', ' '))}</span><br><span class="mono muted">${esc(u.published_on)}</span></td>
+        <td><form method="post" action="/admin/updates/delete" class="inline-form"><input type="hidden" name="id" value="${u.id}"><button class="btn btn-ghost btn-sm">Delete</button></form></td></tr>`).join('')}
+      </tbody></table>` : ''}
+    </div>
+    <div class="panel"><h3>New research paper</h3>
+      <form method="post" action="/admin/papers/create" class="grid-form">
+        <label>Title<input name="title" required></label>
+        <label>Authors<input name="authors"></label>
+        <label>Tag<select name="tag"><option>Report</option><option>Flagship Report</option><option>Working Paper</option><option>Brief</option></select></label>
+        <label>Abstract<textarea name="abstract" rows="3" required></textarea></label>
+        <button class="btn btn-teal">Publish paper</button>
+      </form>
+      ${papersList.length ? `<table class="data-table" style="margin-top:.8rem"><thead><tr><th>Published papers</th><th></th></tr></thead><tbody>
+        ${papersList.map((pp) => `<tr><td>${esc(pp.title)} <span class="tag">${esc(pp.tag)}</span><br><span class="mono muted">${esc(pp.published_on)}</span></td>
+        <td><form method="post" action="/admin/papers/delete" class="inline-form"><input type="hidden" name="id" value="${pp.id}"><button class="btn btn-ghost btn-sm">Delete</button></form></td></tr>`).join('')}
+      </tbody></table>` : ''}
+    </div>
+  </div>
+  <div class="panel"><h3>Add media item</h3>
+    <form method="post" action="/admin/media/create" class="grid-form">
+      <label>Kind<select name="kind"><option>image</option><option>paper</option><option>video</option></select></label>
+      <label>Title<input name="title" required></label>
+      <label>Description<input name="description"></label>
+      <label>File path (image/paper)<input name="file_path" placeholder="/media/example.svg"></label>
+      <label>Video embed ID (video)<input name="video_embed_id" placeholder="hosted-service video ID"></label>
+      <label>Access level<select name="access_level"><option>public</option><option>registered</option><option>stakeholder</option></select></label>
+      <button class="btn btn-teal">Add to library</button>
+    </form>
+    <p class="muted">Video is embedded from the dedicated hosting service, only the embed reference is stored here.</p>
+    ${mediaList.length ? `<table class="data-table" style="margin-top:.8rem"><thead><tr><th>Library</th><th>Kind</th><th>Access</th><th></th></tr></thead><tbody>
+      ${mediaList.map((m) => `<tr><td>${esc(m.title)}</td><td><span class="tag">${esc(m.kind)}</span></td><td>${esc(m.access_level)}</td>
+      <td><form method="post" action="/admin/media/delete" class="inline-form"><input type="hidden" name="id" value="${m.id}"><button class="btn btn-ghost btn-sm">Delete</button></form></td></tr>`).join('')}
+    </tbody></table>` : ''}
+  </div>
+
+  <div class="panel" id="ai-video">
+    <h3>AI video generation <span class="tag" style="background:#1C5BB8;color:#fff">Seedance</span></h3>
+    ${seedanceReady
+      ? `<p class="muted">Generate a short video from a text prompt, preview it, then publish it into the Media Library. The <strong>mini</strong> tier is the free default, higher tiers spend real Seedance credits.</p>
+    <div class="grid-form">
+      <label style="grid-column:1/-1">Prompt<textarea id="sd-prompt" rows="3" placeholder="e.g. Aerial drone shot over Monrovia at sunrise, fibre-optic light trails connecting all 15 counties, cinematic, hopeful"></textarea></label>
+      <label>Model<select id="sd-model"><option value="seedance2">Seedance 2 (tiered)</option><option value="seedance25">Seedance 2.5</option></select></label>
+      <label>Quality tier<select id="sd-tier"><option value="mini">mini, free</option><option value="standard">standard, paid</option><option value="pro">pro, paid</option></select></label>
+      <label>Aspect ratio<select id="sd-aspect"><option>16:9</option><option>9:16</option><option>1:1</option></select></label>
+      <label>Duration (s)<select id="sd-duration"><option>5</option><option>10</option></select></label>
+      <label>Resolution<select id="sd-res"><option>480p</option><option selected>720p</option><option>1080p</option></select></label>
+      <label>Reference image URL (optional, image→video)<input id="sd-image" placeholder="https://… public https image"></label>
+    </div>
+    <button class="btn btn-teal" id="sd-generate" style="margin-top:.6rem">Generate video</button>
+    <div id="sd-status" class="mono" style="margin-top:.8rem;display:none;padding:.7rem .9rem;border-radius:8px;background:#F7F4EE;border:1px solid #e3ddd0"></div>
+    <div id="sd-result" style="margin-top:.8rem;display:none">
+      <video id="sd-video" controls playsinline style="width:100%;max-width:520px;border-radius:10px;background:#000"></video>
+      <div class="grid-form" style="margin-top:.6rem">
+        <label>Library title<input id="sd-title" placeholder="AI video · Monrovia connectivity"></label>
+        <label>Access level<select id="sd-access"><option>public</option><option>registered</option><option>stakeholder</option></select></label>
+      </div>
+      <div style="margin-top:.4rem;display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-teal" id="sd-publish">Publish to Media Library</button>
+        <button class="btn btn-ghost" id="sd-sethero">Set as homepage hero</button>
+      </div>
+    </div>`
+      : `<p class="muted">Video generation is not configured on the server. Add your Seedance API key to <code>seedance-key.txt</code> in the project root and restart the app.</p>`}
+    ${generations.length ? `<table class="data-table" style="margin-top:1rem"><thead><tr><th>Recent generations</th><th>Model</th><th>Status</th><th></th></tr></thead><tbody>
+      ${generations.map((g) => `<tr><td>${esc(g.prompt.slice(0, 60))}${g.prompt.length > 60 ? '…' : ''}<br><span class="mono muted">${esc(String(g.created_at).slice(0, 16).replace('T', ' '))}</span></td>
+      <td><span class="tag">${esc(g.model)}${g.quality_tier ? ' · ' + esc(g.quality_tier) : ''}</span></td>
+      <td><span class="tag" style="background:${g.status === 'completed' || g.status === 'published' ? '#1C5BB8' : g.status === 'failed' ? '#C8102E' : '#5A6A85'};color:#fff">${esc(g.status)}</span></td>
+      <td>${g.local_path ? `<a href="${esc(g.local_path)}" target="_blank">view</a>${g.status === 'completed' || g.status === 'published' ? ` · <a href="#" data-sethero="${g.id}">set as hero</a>` : ''}` : ''}</td></tr>`).join('')}
+    </tbody></table>` : ''}
+  </div>
+
+  <h2 id="settings">Platform settings</h2>
+  <div class="two-col">
+    <div class="panel"><h3>Access policies <span class="muted" style="font-weight:400;font-size:.8em">(configurable, not hard-coded)</span></h3>
+      <form method="post" action="/admin/settings" class="grid-form">
+        <label>Public registration
+          <select name="registration_mode">
+            <option value="verified" ${settings.registration_mode === 'verified' ? 'selected' : ''}>Verified, admin approves each account</option>
+            <option value="open" ${settings.registration_mode === 'open' ? 'selected' : ''}>Open, immediate activation</option>
+            <option value="closed" ${settings.registration_mode === 'closed' ? 'selected' : ''}>Closed, no self-service sign-up</option>
+          </select></label>
+        <label>Stakeholder provisioning
+          <select name="stakeholder_provisioning">
+            <option value="admin_only" ${settings.stakeholder_provisioning === 'admin_only' ? 'selected' : ''}>Admin-provisioned only</option>
+            <option value="request" ${settings.stakeholder_provisioning === 'request' ? 'selected' : ''}>Users may request upgrade</option>
+          </select></label>
+        <label>Messaging model
+          <select name="messaging_model">
+            <option value="inbox" ${settings.messaging_model === 'inbox' ? 'selected' : ''}>Inbox (checked &amp; answered)</option>
+            <option value="realtime" ${settings.messaging_model === 'realtime' ? 'selected' : ''}>Real-time (future)</option>
+          </select></label>
+        <button class="btn btn-teal">Save policies</button>
+      </form>
+    </div>
+    <div class="panel"><h3>Role permissions</h3>
+      <form method="post" action="/admin/permissions">
+        <table class="data-table"><thead><tr><th>Permission</th><th>Public</th><th>Stakeholder</th></tr></thead><tbody>
+          ${editablePerms.map((perm) => `<tr><td class="mono">${esc(perm)}</td>
+            <td><input type="checkbox" name="perm_public_${perm}" ${permHas('public', perm) ? 'checked' : ''}></td>
+            <td><input type="checkbox" name="perm_stakeholder_${perm}" ${permHas('stakeholder', perm) ? 'checked' : ''}></td></tr>`).join('')}
+        </tbody></table>
+        <button class="btn btn-teal" style="margin-top:.7rem">Save permissions</button>
+      </form>
+      <p class="muted">Administrator permissions are fixed. Changes take effect immediately for all sessions.</p>
+    </div>
+  </div>
+  <script>${adminVideoScript}</script>`,
+  });
+};
+
+// Client-side driver for the Seedance AI video panel: submit → poll → preview → publish.
+const adminVideoScript = `
+(function(){
+  var gen=document.getElementById('sd-generate'); if(!gen) return;
+  var statusEl=document.getElementById('sd-status'), resultEl=document.getElementById('sd-result'), video=document.getElementById('sd-video');
+  var pub=document.getElementById('sd-publish'); var curId=null, timer=null;
+  function show(msg,kind){ statusEl.style.display='block'; statusEl.textContent=msg; statusEl.style.borderColor=(kind==='err'?'#C8102E':kind==='ok'?'#1C5BB8':'#e3ddd0'); }
+  function val(id){ var e=document.getElementById(id); return e?e.value:''; }
+  gen.addEventListener('click', function(){
+    var prompt=val('sd-prompt').trim(); if(prompt.length<6){ show('Enter a prompt of at least 6 characters.','err'); return; }
+    gen.disabled=true; resultEl.style.display='none'; show('Submitting to Seedance…');
+    var body=new URLSearchParams({prompt:prompt,model:val('sd-model'),quality_tier:val('sd-tier'),aspect_ratio:val('sd-aspect'),duration:val('sd-duration'),resolution:val('sd-res'),image_url:val('sd-image').trim()});
+    fetch('/admin/media/generate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();}).then(function(d){
+      if(!d.ok){ show(d.error||'Generation failed.','err'); gen.disabled=false; return; }
+      curId=d.id; show('Generating… this can take 1-3 minutes. Task '+d.task_id); poll();
+    }).catch(function(){ show('Network error submitting the job.','err'); gen.disabled=false; });
+  });
+  function poll(){
+    if(timer) clearTimeout(timer);
+    fetch('/admin/media/gen-status?id='+curId).then(function(r){return r.json();}).then(function(d){
+      if(!d.ok){ show(d.error||'Status check failed.','err'); gen.disabled=false; return; }
+      if(d.status==='completed'||d.status==='published'){
+        show('Video ready.'+(d.credits_used?(' Credits used: '+d.credits_used):''),'ok');
+        video.src=d.video_url; resultEl.style.display='block'; gen.disabled=false;
+        var t=document.getElementById('sd-title'); if(t&&!t.value) t.value='AI video · '+val('sd-prompt').trim().slice(0,50);
+        return;
+      }
+      if(d.status==='failed'){ show('Generation failed: '+(d.error||'unknown error'),'err'); gen.disabled=false; return; }
+      show('Generating… '+(d.note||d.raw_status||'processing')+' (auto-refreshing)');
+      timer=setTimeout(poll,6000);
+    }).catch(function(){ timer=setTimeout(poll,8000); });
+  }
+  if(pub) pub.addEventListener('click', function(){
+    if(!curId) return; pub.disabled=true;
+    var body=new URLSearchParams({id:curId,title:val('sd-title'),access_level:val('sd-access')});
+    fetch('/admin/media/gen-publish',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();}).then(function(d){
+      if(d.ok){ show('Published to the Media Library. Reloading…','ok'); setTimeout(function(){location.reload();},900); }
+      else { show(d.error||'Publish failed.','err'); pub.disabled=false; }
+    }).catch(function(){ show('Network error publishing.','err'); pub.disabled=false; });
+  });
+  function setHero(id, cb){
+    fetch('/admin/media/set-hero',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({id:id})}).then(function(r){return r.json();}).then(function(d){ cb(d); }).catch(function(){ cb({ok:false,error:'Network error.'}); });
+  }
+  var sh=document.getElementById('sd-sethero');
+  if(sh) sh.addEventListener('click', function(){ if(!curId) return; sh.disabled=true;
+    setHero(curId, function(d){ if(d.ok){ show('This clip is now the homepage hero video.','ok'); } else { show(d.error||'Could not set hero.','err'); } sh.disabled=false; }); });
+  document.querySelectorAll('[data-sethero]').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault();
+    setHero(a.getAttribute('data-sethero'), function(d){ alert(d.ok?'Homepage hero updated. Open the home page to see it.':(d.error||'Failed.')); }); }); });
+})();
+`;
+
+const apiDocsBody = `
+  <p class="kicker">Open data programme</p>
+  <h1>Public API · v1</h1>
+  <p class="lede-sm">Free JSON API over NICTD. No key required for public series; authenticated sessions automatically unlock deeper series permitted by their role.</p>
+  ${[
+    ['GET /api/v1/indicators', 'List indicators visible at your access level, with catalogue metadata.', '{ "data": [ { "code": "internet_penetration", "name": "Internet penetration", "domain": "connectivity", "unit": "% of population", ... } ] }'],
+    ['GET /api/v1/counties', 'List the 15 counties with population and area.', '{ "data": [ { "id": 11, "name": "Montserrado", "capital": "Bensonville", ... } ] }'],
+    ['GET /api/v1/data', 'Query data points. Filters: indicator, county (name), year. Rows with county=null are national aggregates.', 'GET /api/v1/data?indicator=internet_penetration&county=Nimba\n{ "count": 8, "data": [ { "indicator_code": "internet_penetration", "county": "Nimba", "year": 2018, "value": 8.3, ... } ] }'],
+    ['GET /api/v1/explorer', 'The payload behind the Data Explorer: map values, national/focus trend, comparison trend, YoY table. Params: indicator, year, focus, compare.', '{ "indicator": {...}, "trend": {...}, "table": [ { "county": "Bomi", "value": 27.4, "yoy": 2.1 } ] }'],
+    ['GET /api/v1/dashboards/:topic', 'The aggregated payload behind a topic dashboard. Optional: county.', '{ "topic": "connectivity", "heroStats": [...], "trend": {...}, "ranking": { "top": [...], "bottom": [...] } }'],
+    ['GET /api/v1/query', 'Run a Data Query builder extract. Params: indicators (comma list), counties (comma list or "all"), year_from, year_to, format (csv|json|xlsx).', 'GET /api/v1/query?indicators=internet_penetration,mobile_subscriptions&counties=all&year_from=2020&year_to=2025&format=csv'],
+    ['GET /api/v1/download/data.csv', 'Full open dataset as CSV (same filters as /data). Also available as data.json.', 'indicator_code,indicator,domain,unit,county,year,value,source'],
+  ].map(([sig, desc, ex]) => `<div class="api-block">
+    <h3 class="mono">${esc(sig)}</h3><p class="muted">${esc(desc)}</p><pre class="mono">${esc(ex)}</pre>
+  </div>`).join('')}
+  <h2>Errors</h2>
+  <p class="muted"><span class="mono">403 access_restricted</span>, the indicator requires a registered or stakeholder account. <span class="mono">404 unknown_indicator</span>, check <span class="mono">/api/v1/indicators</span>.</p>
+  <h2>Schema</h2>
+  <p class="muted">The full relational schema is documented in the project's <span class="mono">docs/SCHEMA.md</span>.</p>`;
+// ============ IMAGE LIBRARY (admin) ============
+// One card per image slot on the site. Upload replaces whatever is in the slot; Delete puts the
+// slot back to the image the platform ships with. Collections are kept apart on purpose so the
+// hero slider, research papers, ICT reports and news never share a picture.
+exports.adminImages = (ctx, { groups = [], notice = '' }) => {
+  const card = (collection, s) => `<div class="imglib-card">
+    <div class="imglib-thumb" style="${slotBg(collection, s.key, false)}"></div>
+    <div class="imglib-info">
+      <strong>${esc(s.label)}</strong>
+      ${s.hint ? `<span class="imglib-hint">${esc(s.hint)}</span>` : ''}
+      <span class="imglib-state ${s.custom ? 'is-custom' : ''}">${s.custom ? 'Uploaded' : (s.url ? 'Built-in image' : 'Empty slot')}</span>
+    </div>
+    <form class="imglib-form" method="post" action="/admin/images/upload" enctype="multipart/form-data">
+      <input type="hidden" name="collection" value="${esc(collection)}">
+      <input type="hidden" name="key" value="${esc(s.key)}">
+      <label class="imglib-pick">
+        <input type="file" name="file" accept="image/jpeg,image/png,image/webp" required>
+        <span class="imglib-pick-label">Choose image…</span>
+      </label>
+      <div class="imglib-actions">
+        <button class="btn btn-teal btn-sm" type="submit">${s.custom ? 'Replace' : 'Upload'}</button>
+      </div>
+    </form>
+    ${s.custom ? `<form method="post" action="/admin/images/delete" class="imglib-del"
+        onsubmit="return confirm('Delete this upload and go back to the built-in image?')">
+      <input type="hidden" name="collection" value="${esc(collection)}">
+      <input type="hidden" name="key" value="${esc(s.key)}">
+      <button class="btn btn-ghost btn-sm" type="submit">Delete upload</button>
+    </form>` : '<div class="imglib-del imglib-del-empty">Nothing uploaded yet</div>'}
+  </div>`;
+
+  const sections = groups.map((g) => `<section class="card imglib-group">
+    <div class="imglib-head">
+      <h3>${esc(g.label)}</h3>
+      <p>${esc(g.note)}</p>
+    </div>
+    <div class="imglib-grid">${g.slots.map((s) => card(g.collection, s)).join('')}</div>
+  </section>`).join('');
+
+  return shell(ctx, { title: 'Image Library', workspaceActive: 'images', body: `
+  <div class="pad">
+    <div class="page-head">
+      <div>
+        <h1>Image Library</h1>
+        <p class="lede-sm">Every picture on the public site, in one place. Each collection is separate, so an
+          image used on a report never turns up on a research paper or in the hero slider.
+          JPG, PNG or WebP, up to 8 MB. Changes go live immediately.</p>
+      </div>
+    </div>
+    ${notice ? `<div class="alert alert-ok">${esc(notice)}</div>` : ''}
+    ${sections}
+  </div>
+  <script>
+  (function(){
+    document.querySelectorAll('.imglib-pick input[type=file]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var lbl = inp.parentNode.querySelector('.imglib-pick-label');
+        var f = inp.files && inp.files[0];
+        lbl.textContent = f ? f.name : 'Choose image…';
+        inp.parentNode.classList.toggle('has-file', !!f);
+      });
+    });
+  })();
+  </script>` });
+};
+
+exports.apiDocs = (ctx) => shell(ctx, { title: 'API Documentation', workspaceActive: 'apidocs', body: `<div class="wrap section narrow">${apiDocsBody}</div>` });
+
+// ============ misc ============
+const wrapMisc = (ctx, title, inner) => shell(ctx || { user: null, perms: [] }, { title, body: `<div class="wrap section narrow">${inner}</div>` });
+exports.forbidden = (ctx) => wrapMisc(ctx, 'Access restricted', `<h1>Access restricted</h1><p class="muted">Your role does not include permission for this area. Contact the ICT Statistics &amp; Policy Unit via <a href="/messages">messaging</a> if you believe this is an error.</p>`);
+exports.notFound = (ctx) => wrapMisc(ctx, 'Not found', `<h1>Page not found</h1><p class="muted">The page you requested does not exist. <a href="/">Return home</a>.</p>`);
+exports.errorPage = (ctx, msg) => wrapMisc(ctx, 'Error', `<h1>Something went wrong</h1><p class="muted">${esc(msg)}</p>`);

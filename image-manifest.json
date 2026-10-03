@@ -1,0 +1,49 @@
+{
+  "news": {
+    "news-1": "news-1-mtp902ww.jpg",
+    "news-2": "news-2-mtp902ww.jpg",
+    "news-3": "news-3-mtp902ww.jpg",
+    "news-4": "news-4-mtp902ww.jpg",
+    "news-5": "news-5-mtp902ww.jpg"
+  },
+  "partnerLogos": {
+    "mopt": "mopt-mtp2i2kf.png",
+    "lta": "lta-mtp2i2kf.png",
+    "lisgis": "lisgis-mtp2i2kf.png",
+    "cbl": "cbl-mtp2i2kf.png",
+    "moe": "moe-mtp2i2kf.png",
+    "moh": "moh-mtp2i2kf.png",
+    "moa": "moa-mtp2i2kf.png",
+    "epa": "epa-mtp2i2kf.png",
+    "lra": "lra-mtp2i2kf.png",
+    "nic": "nic-mtp2i2kf.png",
+    "orange": "orange-mtpa731s.png",
+    "lonestar": "lonestar-mtpa731s.png",
+    "undp": "undp-mtpa731s.png",
+    "itu": "itu-mtpa731s.png",
+    "sdg": "sdg-mtpa731s.png",
+    "moys": "moys-mtpaj7jn.png"
+  },
+  "partnerFocals": {
+    "mopt": "mopt-mtp2pbhn.jpg",
+    "lta": "lta-mtp2pbhn.jpg",
+    "lisgis": "lisgis-mtp2pbhn.jpg",
+    "cbl": "cbl-mtp2pbhn.jpg",
+    "moe": "moe-mtp2pbhn.jpg",
+    "moh": "moh-mtp2pbhn.jpg",
+    "moa": "moa-mtp2pbhn.jpg",
+    "epa": "epa-mtp2pbhn.jpg",
+    "lra": "lra-mtp2pbhn.jpg",
+    "nic": "nic-mtp2pbhn.jpg",
+    "operators": "operators-mtp2pbhn.jpg",
+    "isps": "isps-mtp2pbhn.jpg",
+    "datacentres": "datacentres-mtp2pbhn.jpg",
+    "universities": "universities-mtp2pbhn.jpg",
+    "nir": "nir-mtp2pbhn.jpg",
+    "cert": "cert-mtp2pbhn.jpg",
+    "hubs": "hubs-mtp2pbhn.jpg"
+  },
+  "papers": {
+    "national": "national-mtr1potg.jpg"
+  }
+}

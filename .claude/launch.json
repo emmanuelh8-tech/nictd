@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "nicd",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 4310,
+      "autoPort": true
+    },
+    {
+      "name": "niip-3d",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["niip-3d/serve.mjs"],
+      "port": 4400,
+      "autoPort": true
+    }
+  ]
+}

@@ -1,0 +1,270 @@
+<title>NIIP Brand Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a government spec sheet — one narrow reading column, specimen panels that break wider. */
+:root {
+  --bg: #F5F7FB;
+  --paper: #FFFFFF;
+  --ink: #17233A;
+  --muted: #5A6A85;
+  --line: rgba(11, 44, 99, .14);
+  --navy: #0B2C63;
+  --blue: #1C5BB8;
+  --sky: #7FA0CE;
+  --red: #C8102E;
+  --stage: #0B0D0F;
+  --stage-ink: #E8EEEC;
+  --cyan: #3DFFC8;
+  --amber: #FFC35A;
+  --graphite: #6B737C;
+  --panel-tint: #EAF0F8;
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1222; --paper: #111B30; --ink: #E6ECF6; --muted: #9AAAC4; --line: rgba(160, 185, 225, .16);
+    --navy: #A9C2EA; --panel-tint: #16233D; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1222; --paper: #111B30; --ink: #E6ECF6; --muted: #9AAAC4; --line: rgba(160, 185, 225, .16);
+  --navy: #A9C2EA; --panel-tint: #16233D; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--sans); padding-inline: 20px; padding-block: 0 80px; }
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 72px; }
+header.top { padding-block: 56px 8px; display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 40px; }
+header.top svg { width: 112px; height: 112px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 clamp(2.2rem, 5vw, 3.4rem)/1.05 var(--serif); color: var(--navy); margin: 10px 0 10px; text-wrap: balance; }
+h2 { font: 600 1.7rem/1.15 var(--serif); color: var(--navy); margin: 0; text-wrap: balance; }
+h3 { font: 600 1rem/1.3 var(--sans); margin: 0; }
+p { margin: 0; max-width: 65ch; }
+.lede { color: var(--muted); font-size: 1.08rem; }
+section { display: flex; flex-direction: column; gap: 24px; }
+.sec-head { display: flex; flex-direction: column; gap: 8px; }
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 760px) { .g3, .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } header.top { grid-template-columns: 1fr; } }
+@media (max-width: 460px) { .g2, .g3, .g4 { grid-template-columns: minmax(0, 1fr); } }
+.spec { display: flex; flex-direction: column; gap: 14px; padding: 20px; min-width: 0; }
+.stage { display: grid; place-items: center; border-radius: 8px; aspect-ratio: 4 / 3; max-width: 100%; }
+.stage svg { width: 46%; height: auto; }
+.on-white { background: #FFFFFF; border: 1px solid rgba(11, 44, 99, .1); }
+.on-navy { background: #0B2C63; }
+.on-film { background: var(--stage); }
+.on-tint { background: var(--panel-tint); }
+.cap { font: 400 13px/1.45 var(--sans); color: var(--muted); }
+.mono { font-family: var(--mono); font-size: 13px; }
+
+/* anatomy */
+.anatomy { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 40px; align-items: center; padding: 32px; }
+@media (max-width: 760px) { .anatomy { grid-template-columns: minmax(0, 1fr); } }
+.anatomy ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.anatomy li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; align-items: start; }
+.chip { width: 34px; height: 14px; border-radius: 7px; margin-top: 5px; }
+
+/* colour */
+.swatch { overflow: hidden; display: flex; flex-direction: column; }
+.swatch .fill { height: 96px; }
+.swatch .meta { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.swatch button { all: unset; cursor: pointer; font: 500 13px var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; border-radius: 4px; padding: 4px 8px; margin-left: -8px; width: max-content; }
+.swatch button:hover, .swatch button:focus-visible { background: var(--panel-tint); outline: 2px solid var(--blue); outline-offset: 1px; }
+.film-row .meta { background: var(--paper); }
+
+/* type */
+.type-row { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; padding: 22px 24px; border-top: 1px solid var(--line); align-items: baseline; }
+.type-row:first-child { border-top: 0; }
+@media (max-width: 600px) { .type-row { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+
+/* rules */
+.dont .stage { position: relative; }
+.dont .x { position: absolute; top: 10px; right: 12px; font: 600 12px var(--mono); color: var(--red); letter-spacing: .08em; }
+.do .x { color: var(--blue); }
+
+.files { overflow-x: auto; }
+.files table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px; }
+.files td { padding: 11px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+.files tr:first-child td { border-top: 0; }
+.files td:first-child { font-family: var(--mono); font-size: 13px; white-space: nowrap; color: var(--navy); }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); font: 500 13px var(--mono); padding: 8px 14px; border-radius: 6px; }
+@media (prefers-reduced-motion: no-preference) { .stage svg { transition: transform .4s ease; } .stage:hover svg { transform: scale(1.04); } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="oct"><polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26"/></clipPath>
+    <symbol id="mk" viewBox="0 0 120 120">
+      <polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26" fill="#0B2C63"/>
+      <g clip-path="url(#oct)"><rect x="6" y="31" width="80" height="16" rx="8" fill="#7FA0CE"/><rect x="21" y="52" width="80" height="16" rx="8" fill="#FFFFFF"/><rect x="36" y="73" width="80" height="16" rx="8" fill="#7FA0CE"/></g>
+      <circle cx="106" cy="20" r="6" fill="#C8102E"/>
+    </symbol>
+    <symbol id="mk-rev" viewBox="0 0 120 120">
+      <polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26" fill="#FFFFFF"/>
+      <g clip-path="url(#oct)"><rect x="6" y="31" width="80" height="16" rx="8" fill="#7FA0CE"/><rect x="21" y="52" width="80" height="16" rx="8" fill="#0B2C63"/><rect x="36" y="73" width="80" height="16" rx="8" fill="#7FA0CE"/></g>
+      <circle cx="106" cy="20" r="6" fill="#C8102E"/>
+    </symbol>
+    <symbol id="mk-dark" viewBox="0 0 120 120">
+      <polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26" fill="#14181B" stroke="#3A4147" stroke-width="2.5" stroke-linejoin="round"/>
+      <g clip-path="url(#oct)"><rect x="6" y="31" width="80" height="16" rx="8" fill="#6B737C"/><rect x="21" y="52" width="80" height="16" rx="8" fill="#3DFFC8"/><rect x="36" y="73" width="80" height="16" rx="8" fill="#6B737C"/></g>
+      <circle cx="106" cy="20" r="6" fill="#FFC35A"/>
+    </symbol>
+    <symbol id="mk-mono" viewBox="0 0 120 120">
+      <polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"/>
+      <g clip-path="url(#oct)" fill="currentColor"><rect x="6" y="31" width="80" height="16" rx="8"/><rect x="21" y="52" width="80" height="16" rx="8"/><rect x="36" y="73" width="80" height="16" rx="8"/></g>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <svg viewBox="0 0 120 120" role="img" aria-label="NIIP mark"><use href="#mk"/></svg>
+    <div>
+      <div class="eyebrow">Brand kit · v1 · 2026</div>
+      <h1>NIIP — National ICT Intelligence Program</h1>
+      <p class="lede">The identity for the national program, the NIIS system that powers it, and the NICTD web application. Use this page for every logo, colour and type decision.</p>
+    </div>
+  </header>
+
+  <section aria-labelledby="s-mark">
+    <div class="sec-head">
+      <div class="eyebrow">The mark</div>
+      <h2 id="s-mark">Three layers in one engine</h2>
+      <p class="lede">The octagon is the shape of the NIIS engine. Inside it, three offset bands are the program's three physical layers, drawn as they appear when the system is pulled apart.</p>
+    </div>
+    <div class="panel anatomy">
+      <div class="stage on-white" style="aspect-ratio:1/1"><svg viewBox="0 0 120 120" role="img" aria-label="NIIP mark, large"><use href="#mk"/></svg></div>
+      <ol>
+        <li><span class="chip" style="background:#7FA0CE"></span><div><h3>Web Application</h3><p class="cap">The top band. NICTD, where users meet the data.</p></div></li>
+        <li><span class="chip" style="background:#FFFFFF;border:1px solid var(--line)"></span><div><h3>NIIS, the engine</h3><p class="cap">The middle band is the brightest: the National ICT Intelligence System that powers the whole program.</p></div></li>
+        <li><span class="chip" style="background:#7FA0CE"></span><div><h3>ICT Databases</h3><p class="cap">The bottom band. Indicators, reports and research.</p></div></li>
+        <li><span class="chip" style="background:#C8102E;width:14px"></span><div><h3>The red point</h3><p class="cap">Flag red, used once. It marks the output: intelligence leaving the system.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-var">
+    <div class="sec-head">
+      <div class="eyebrow">Variants</div>
+      <h2 id="s-var">Pick the version for the surface</h2>
+    </div>
+    <div class="grid g4">
+      <div class="panel spec"><div class="stage on-white"><svg viewBox="0 0 120 120" role="img" aria-label="Official mark on white"><use href="#mk"/></svg></div><h3>Official</h3><p class="cap">Default. Documents, the website, letters, reports.</p></div>
+      <div class="panel spec"><div class="stage on-navy"><svg viewBox="0 0 120 120" role="img" aria-label="Reversed mark on navy"><use href="#mk-rev"/></svg></div><h3>Reversed</h3><p class="cap">On navy: headers, banners, the app icon.</p></div>
+      <div class="panel spec"><div class="stage on-film"><svg viewBox="0 0 120 120" role="img" aria-label="Dark mark"><use href="#mk-dark"/></svg></div><h3>Dark / film</h3><p class="cap">The 3D film, tech presentations, screens in dark rooms.</p></div>
+      <div class="panel spec"><div class="stage on-tint" style="color:#0B2C63"><svg viewBox="0 0 120 120" role="img" aria-label="One-colour mark"><use href="#mk-mono"/></svg></div><h3>One colour</h3><p class="cap">Stamps, engraving, fax, embroidery. Navy, black or white.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-lock">
+    <div class="sec-head">
+      <div class="eyebrow">Lockup &amp; spacing</div>
+      <h2 id="s-lock">Name beside the mark</h2>
+      <p class="lede">Keep clear space equal to one band's height (the white bar) on every side. The smallest size is 24 px on screen or 8 mm in print; below that, use the mark alone.</p>
+    </div>
+    <div class="grid g2">
+      <div class="panel spec">
+        <div class="stage on-white" style="aspect-ratio:auto;padding:36px 24px">
+          <div style="display:flex;align-items:center;gap:18px;max-width:100%">
+            <svg viewBox="0 0 120 120" style="width:84px;flex:none" role="img" aria-label="NIIP mark"><use href="#mk"/></svg>
+            <div style="min-width:0"><div style="font:600 46px/1 var(--serif);letter-spacing:.06em;color:#0B2C63">NIIP</div><div style="font:600 11px/1.4 var(--sans);letter-spacing:.16em;color:#5A6A85;margin-top:6px">NATIONAL ICT INTELLIGENCE PROGRAM</div></div>
+          </div>
+        </div>
+        <p class="cap">Official lockup: Fraunces 600 for the name, Inter 600 tracked for the descriptor.</p>
+      </div>
+      <div class="panel spec">
+        <div class="stage on-film" style="aspect-ratio:auto;padding:36px 24px">
+          <div style="display:flex;align-items:center;gap:18px;max-width:100%">
+            <svg viewBox="0 0 120 120" style="width:84px;flex:none" role="img" aria-label="NIIP mark, dark"><use href="#mk-dark"/></svg>
+            <div style="min-width:0"><div style="font:600 46px/1 var(--serif);letter-spacing:.06em;color:#E8EEEC">NIIP</div><div style="font:600 11px/1.4 var(--sans);letter-spacing:.16em;color:#8A9895;margin-top:6px">POWERED BY NIIS</div></div>
+          </div>
+        </div>
+        <p class="cap">Dark lockup. The descriptor can name the system when the audience is technical.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-col">
+    <div class="sec-head">
+      <div class="eyebrow">Colour</div>
+      <h2 id="s-col">Official palette</h2>
+      <p class="lede">These match the NICTD website's existing tokens, so the program and its web app read as one family. Click a value to copy it.</p>
+    </div>
+    <div class="grid g4">
+      <div class="panel swatch"><div class="fill" style="background:#0B2C63"></div><div class="meta"><h3>Navy</h3><button type="button" data-copy="#0B2C63">#0B2C63</button><span class="cap">Primary. The octagon, headings.</span></div></div>
+      <div class="panel swatch"><div class="fill" style="background:#1C5BB8"></div><div class="meta"><h3>Signal blue</h3><button type="button" data-copy="#1C5BB8">#1C5BB8</button><span class="cap">Links, buttons, charts.</span></div></div>
+      <div class="panel swatch"><div class="fill" style="background:#7FA0CE"></div><div class="meta"><h3>Sky</h3><button type="button" data-copy="#7FA0CE">#7FA0CE</button><span class="cap">The outer bands, soft fills.</span></div></div>
+      <div class="panel swatch"><div class="fill" style="background:#C8102E"></div><div class="meta"><h3>Flag red</h3><button type="button" data-copy="#C8102E">#C8102E</button><span class="cap">One accent per view. Never body text.</span></div></div>
+    </div>
+    <div class="sec-head" style="margin-top:12px"><h3>Dark / film palette</h3><p class="cap">For the 3D film and dark presentations only. Cyan stands for NIIS in this palette.</p></div>
+    <div class="grid g4">
+      <div class="panel swatch film-row"><div class="fill" style="background:#06070A"></div><div class="meta"><h3>Stage black</h3><button type="button" data-copy="#06070A">#06070A</button></div></div>
+      <div class="panel swatch film-row"><div class="fill" style="background:#2A2E33"></div><div class="meta"><h3>Graphite</h3><button type="button" data-copy="#2A2E33">#2A2E33</button></div></div>
+      <div class="panel swatch film-row"><div class="fill" style="background:#3DFFC8"></div><div class="meta"><h3>NIIS cyan</h3><button type="button" data-copy="#3DFFC8">#3DFFC8</button></div></div>
+      <div class="panel swatch film-row"><div class="fill" style="background:#FFC35A"></div><div class="meta"><h3>Amber</h3><button type="button" data-copy="#FFC35A">#FFC35A</button></div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-type">
+    <div class="sec-head">
+      <div class="eyebrow">Typography</div>
+      <h2 id="s-type">Three faces, three jobs</h2>
+    </div>
+    <div class="panel">
+      <div class="type-row"><div class="eyebrow">Display · Fraunces</div><div style="font:600 2rem/1.15 var(--serif);color:var(--navy)">Connectivity across 15 counties</div></div>
+      <div class="type-row"><div class="eyebrow">Body · Inter</div><p>NIIS validates, cleans and integrates data from ministries, regulators and open sources, then publishes consistent indicators for every county.</p></div>
+      <div class="type-row"><div class="eyebrow">Data · IBM Plex Mono</div><div class="mono" style="font-size:15px;font-variant-numeric:tabular-nums">MBB-SUBS-100 · LBR · 2024 · per 100 inh.</div></div>
+      <div class="type-row"><div class="eyebrow">Film titles</div><p class="cap">The 3D film keeps its own technical faces (Saira Semi Condensed and JetBrains Mono) to suit its HUD style.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-rules">
+    <div class="sec-head">
+      <div class="eyebrow">Usage</div>
+      <h2 id="s-rules">Keep the mark intact</h2>
+    </div>
+    <div class="grid g4">
+      <div class="panel spec do"><div class="stage on-white"><span class="x">DO</span><svg viewBox="0 0 120 120" role="img" aria-label="Correct use"><use href="#mk"/></svg></div><p class="cap">Use the supplied files at their proportions.</p></div>
+      <div class="panel spec dont"><div class="stage on-white"><span class="x">DON'T</span><svg viewBox="0 0 120 120" style="transform:rotate(-14deg)" role="img" aria-label="Rotated mark, incorrect"><use href="#mk"/></svg></div><p class="cap">Rotate or tilt it. The bands must stay level.</p></div>
+      <div class="panel spec dont"><div class="stage on-white"><span class="x">DON'T</span><svg viewBox="0 0 120 120" style="transform:scaleX(1.45)" role="img" aria-label="Stretched mark, incorrect"><use href="#mk"/></svg></div><p class="cap">Stretch or squash it.</p></div>
+      <div class="panel spec dont"><div class="stage" style="background:linear-gradient(135deg,#c8102e,#1c5bb8)"><span class="x" style="color:#fff">DON'T</span><svg viewBox="0 0 120 120" role="img" aria-label="Mark on busy background, incorrect"><use href="#mk"/></svg></div><p class="cap">Place it on busy or low-contrast backgrounds.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-files">
+    <div class="sec-head">
+      <div class="eyebrow">Files</div>
+      <h2 id="s-files">Where everything lives</h2>
+      <p class="lede">All files are in the project's <span class="mono">brand/</span> folder.</p>
+    </div>
+    <div class="panel files">
+      <table>
+        <tr><td>niip-mark.svg</td><td>Official mark. Also <span class="mono">niip-mark-1024.png</span>.</td></tr>
+        <tr><td>niip-mark-dark.svg</td><td>Dark / film mark. Also <span class="mono">niip-mark-dark-1024.png</span>.</td></tr>
+        <tr><td>niip-mark-mono-*.svg</td><td>One-colour versions in navy, black and white.</td></tr>
+        <tr><td>niip-lockup.svg</td><td>Mark with name. <span class="mono">niip-lockup-dark.svg</span> for dark grounds. Convert text to outlines before sending to a printer.</td></tr>
+        <tr><td>icons/niip-icon-*.png</td><td>App and favicon sizes: 16, 32, 48, 64, 180, 192, 512 and 1024 px.</td></tr>
+        <tr><td>icons/niip-app-icon*.svg</td><td>Editable app icon tiles: navy (default), light and dark.</td></tr>
+      </table>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden role="status">Copied</div>
+<script>
+const toast = document.getElementById('toast');
+let t;
+document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', () => {
+  const v = b.dataset.copy;
+  const done = (msg) => { toast.textContent = msg; toast.hidden = false; clearTimeout(t); t = setTimeout(() => { toast.hidden = true; }, 1400); };
+  navigator.clipboard.writeText(v).then(() => done('Copied ' + v)).catch(() => {
+    const r = document.createRange(); r.selectNodeContents(b); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done('Selected ' + v + ' — press Ctrl+C');
+  });
+}));
+</script>

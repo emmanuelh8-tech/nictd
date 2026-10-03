@@ -1,0 +1,66 @@
+{
+  "title": "Choose the layout for a single update page",
+  "question": "The roll dealt three layouts for the page an ICT Trends update opens. Keep the lead, take another, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Changelog entry",
+      "kicker": "THE ROLL",
+      "lineage": "Real product changelogs on Refero: Cycle, Family, Womp",
+      "thesis": "Each update is a dated entry in NICTD's record, read like a product changelog.",
+      "palette": ["#FFFFFF", "#0B2C63", "#17233A", "#1C5BB8"],
+      "materials": ["date rail", "captioned photo"],
+      "viewport": "A left rail holds the date set large with the category under it; the right column carries the headline, photo and text, with the neighbouring updates listed beneath.",
+      "risk": "With one short entry the rail can feel empty unless the date and the neighbours carry real weight.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "breadcrumb", "x": 0, "y": 0, "w": 12, "h": 1 },
+        { "label": "date + category rail", "x": 0, "y": 1, "w": 3, "h": 5, "accent": true },
+        { "label": "headline", "x": 3, "y": 1, "w": 9, "h": 1 },
+        { "label": "photo", "x": 3, "y": 2, "w": 9, "h": 4 },
+        { "label": "update text", "x": 3, "y": 6, "w": 7, "h": 2 },
+        { "label": "earlier / later updates", "x": 3, "y": 8, "w": 9, "h": 2 }
+      ] },
+      "comp": ".impeccable/mocks/decision/assigned.webp"
+    },
+    {
+      "id": "editorial-split",
+      "label": "Editorial split",
+      "lineage": "Editorial article pages on Dribbble and Refero (New Balance, Glukhovsky)",
+      "thesis": "The update opens like a feature story: its headline set beside its photograph.",
+      "palette": ["#FFFFFF", "#0B2C63", "#17233A", "#1C5BB8"],
+      "materials": ["full-height photo", "serif headline"],
+      "viewport": "The first screen splits in two: category, date, a large headline and the opening sentence on the left; the photo fills the right half to the edge.",
+      "risk": "A short update under a big feature layout can read as more news than it is.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "category · date", "x": 0, "y": 0, "w": 6, "h": 1 },
+        { "label": "headline + opening sentence", "x": 0, "y": 1, "w": 6, "h": 5 },
+        { "label": "photo to the edge", "x": 6, "y": 0, "w": 6, "h": 6, "accent": true },
+        { "label": "update text", "x": 1, "y": 6, "w": 7, "h": 2 },
+        { "label": "more updates", "x": 0, "y": 8, "w": 12, "h": 2 }
+      ] },
+      "comp": ".impeccable/mocks/decision/editorial-split.webp"
+    },
+    {
+      "id": "gazette-notice",
+      "label": "Gazette notice",
+      "lineage": "Government gazettes and ONS statistical release pages",
+      "thesis": "Each update is issued as a numbered public notice in the national ICT record.",
+      "palette": ["#FFFFFF", "#0B2C63", "#17233A", "#C8102E"],
+      "materials": ["ruled notice", "release metadata"],
+      "viewport": "A notice header with its number for the year and its release date, then the title, the text, and the photo set as a captioned plate.",
+      "risk": "Official framing can feel bureaucratic, and it claims an authority the demonstration data has not earned yet.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "notice header · number · date", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true },
+        { "label": "category · published · status", "x": 2, "y": 1, "w": 8, "h": 1 },
+        { "label": "title", "x": 2, "y": 2, "w": 8, "h": 2 },
+        { "label": "update text", "x": 2, "y": 4, "w": 8, "h": 2 },
+        { "label": "photo plate + caption", "x": 2, "y": 6, "w": 8, "h": 3 },
+        { "label": "previous / next notice", "x": 0, "y": 9, "w": 12, "h": 1 }
+      ] },
+      "comp": ".impeccable/mocks/decision/gazette-notice.webp"
+    }
+  ],
+  "reroll": true,
+  "steer": true,
+  "buildPath": { "value": "code" }
+}

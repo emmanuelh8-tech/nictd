@@ -1,0 +1,60 @@
+{
+  "title": "Choose the layout for the glass Careers page",
+  "question": "A fresh hand. The re-roll service could not run on this machine, so these are the next three layouts from my ranked list, none shown before. All are frosted glass over your header photo, in NICTD navy, red and white, with the application form on the page.",
+  "options": [
+    {
+      "id": "board",
+      "label": "Glass job board",
+      "lineage": "Product-company careers boards on Refero (list beside a detail sheet)",
+      "thesis": "Your people stay in view behind a single frosted board that holds every open role and the application beside it.",
+      "palette": ["#071A3E", "#0B2C63", "#C8102E", "#FFFFFF"],
+      "materials": ["frosted glass", "pinned photo"],
+      "viewport": "The group photo fills the screen and stays pinned. A headline and the mission sit on it, and a large glass board rises over it as you scroll. The roles run down the left of the board; picking one opens the glass application sheet on the right, filled in with that role. The glass frosts more deeply the more of the photo it covers.",
+      "risk": "Done timidly, one big glass panel is just a standard job board in a frosted frame.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "headline + mission on pinned photo", "x": 0, "y": 0, "w": 7, "h": 3 },
+        { "label": "glass board: roles", "x": 0, "y": 3, "w": 7, "h": 6, "accent": true },
+        { "label": "glass application sheet", "x": 7, "y": 3, "w": 5, "h": 6, "accent": true },
+        { "label": "how joining works", "x": 0, "y": 9, "w": 12, "h": 1 }
+      ] },
+      "comp": ".impeccable/mocks/decision/careers-board.webp"
+    },
+    {
+      "id": "badge",
+      "label": "Your NICTD badge",
+      "lineage": "Event and membership sign-up flows on Mobbin that preview your card as you fill the form",
+      "thesis": "Applying fills in your own NICTD team badge, frosted glass over the photo, so you see yourself on the team before you send.",
+      "palette": ["#071A3E", "#0B2C63", "#C8102E", "#FFFFFF"],
+      "materials": ["frosted glass card", "Liberian seal"],
+      "viewport": "Headline over the photo, then the roles as glass rows. The application sits below. Beside the form a glass badge card (seal, your name, county, the role) fills in live as you type and tilts slightly with the pointer, like a laminated card. It is labelled as a preview.",
+      "risk": "Playful for a government page, and a pretend badge must never read as a real credential, so it carries a clear 'Preview' label.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "headline + mission over photo", "x": 0, "y": 0, "w": 8, "h": 3 },
+        { "label": "roles as glass rows", "x": 0, "y": 3, "w": 12, "h": 3 },
+        { "label": "application form", "x": 0, "y": 6, "w": 7, "h": 4 },
+        { "label": "live glass badge preview", "x": 7, "y": 6, "w": 5, "h": 4, "accent": true }
+      ] },
+      "comp": ".impeccable/mocks/decision/careers-badge.webp"
+    },
+    {
+      "id": "counties",
+      "label": "Roles across the counties",
+      "lineage": "Field-recruitment and civic data pages that map where the work is",
+      "thesis": "Liberia's fifteen counties under glass, each role lit where its work happens, from Monrovia to every county.",
+      "palette": ["#071A3E", "#0B2C63", "#C8102E", "#FFFFFF"],
+      "materials": ["frosted glass", "county map"],
+      "viewport": "Headline over the photo. Below, a large map of the 15 counties (the app already draws them) sits behind glass panels listing the roles. Pointing at a role lights its counties: Monrovia for the data team, every county for field work. The application form follows.",
+      "risk": "The map takes over from your photo as the main backdrop below the opening, and the roles' places are broad ('Nationwide', 'County-based'), so most roles light most of the map.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "headline over photo", "x": 0, "y": 0, "w": 12, "h": 2 },
+        { "label": "county map", "x": 0, "y": 2, "w": 7, "h": 5, "accent": true },
+        { "label": "glass role panels", "x": 7, "y": 2, "w": 5, "h": 5 },
+        { "label": "application form", "x": 2, "y": 7, "w": 8, "h": 3 }
+      ] },
+      "comp": ".impeccable/mocks/decision/careers-counties.webp"
+    }
+  ],
+  "reroll": true,
+  "steer": true,
+  "buildPath": { "value": "code", "toggle": true }
+}

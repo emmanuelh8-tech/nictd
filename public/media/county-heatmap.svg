@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#0C0C0C"/>
+  <text x="24" y="40" font-family="Kanit,Segoe UI,sans-serif" font-weight="700" font-size="21" fill="#D7E2EA" letter-spacing="1">INTERNET PENETRATION BY COUNTY — 2025</text>
+  <text x="24" y="60" font-family="Consolas,monospace" font-size="11" fill="#7E8A99">relative scale · demonstration graphic</text>
+  <g font-family="Kanit,Segoe UI,sans-serif" font-size="11" fill="#D7E2EA">
+    <rect x="24" y="82" width="180" height="28" rx="6" fill="#B600A8"/><text x="32" y="100" fill="#fff">Montserrado</text>
+    <rect x="24" y="116" width="120" height="28" rx="6" fill="#BBCCD7"/><text x="32" y="134" fill="#0C0C0C">Margibi</text>
+    <rect x="24" y="150" width="95" height="28" rx="6" fill="#A5B4C4"/><text x="32" y="168" fill="#0C0C0C">Grand Bassa</text>
+    <rect x="24" y="184" width="88" height="28" rx="6" fill="#A5B4C4"/><text x="32" y="202" fill="#0C0C0C">Bomi</text>
+    <rect x="24" y="218" width="80" height="28" rx="6" fill="#8B99AB"/><text x="32" y="236" fill="#0C0C0C">Nimba</text>
+    <rect x="24" y="252" width="76" height="28" rx="6" fill="#8B99AB"/><text x="32" y="270" fill="#0C0C0C">Bong</text>
+    <rect x="24" y="286" width="72" height="28" rx="6" fill="#727F92"/><text x="32" y="304" fill="#fff">Maryland</text>
+    <rect x="330" y="82" width="70" height="28" rx="6" fill="#727F92"/><text x="338" y="100" fill="#fff">Grand Gedeh</text>
+    <rect x="330" y="116" width="64" height="28" rx="6" fill="#5A6578"/><text x="338" y="134" fill="#fff">Lofa</text>
+    <rect x="330" y="150" width="60" height="28" rx="6" fill="#5A6578"/><text x="338" y="168" fill="#fff">Grand Cape Mount</text>
+    <rect x="330" y="184" width="55" height="28" rx="6" fill="#434C5E"/><text x="338" y="202" fill="#D7E2EA">Sinoe</text>
+    <rect x="330" y="218" width="48" height="28" rx="6" fill="#434C5E"/><text x="338" y="236" fill="#D7E2EA">River Gee</text>
+    <rect x="330" y="252" width="44" height="28" rx="6" fill="#2E3545"/><text x="338" y="270" fill="#9FB0C2">Grand Kru</text>
+    <rect x="330" y="286" width="42" height="28" rx="6" fill="#2E3545"/><text x="338" y="304" fill="#9FB0C2">River Cess</text>
+    <rect x="330" y="320" width="40" height="28" rx="6" fill="#1D2230"/><text x="338" y="338" fill="#9FB0C2">Gbarpolu</text>
+  </g>
+  <text x="440" y="338" font-family="Consolas,monospace" font-size="10" fill="#7E8A99">bar length = penetration</text>
+</svg>

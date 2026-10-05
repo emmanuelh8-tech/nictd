@@ -142,15 +142,15 @@ if (form) {
   const nameEl = drop.querySelector('[data-file-name]');
   const metaEl = drop.querySelector('[data-file-meta]');
   const clear = form.querySelector('[data-file-clear]');
-  const MAX = 5 * 1024 * 1024;
+  const MAX = 4 * 1024 * 1024;
   const fileProblem = (f) => (!f ? 'Attach your CV as a PDF or Word file.'
     : !/\.(pdf|docx?)$/i.test(f.name) ? 'The CV must be a PDF or Word document (.pdf, .doc or .docx).'
-    : f.size > MAX ? 'That CV is larger than 5 MB. Please send a smaller file.' : '');
+    : f.size > MAX ? 'That CV is larger than 4 MB. Please send a smaller file.' : '');
   const showFile = () => {
     const f = input.files && input.files[0];
     if (!f) {
       nameEl.textContent = 'Drop your CV here, or choose a file';
-      metaEl.textContent = 'PDF or Word, up to 5 MB';
+      metaEl.textContent = 'PDF or Word, up to 4 MB';
       drop.classList.remove('has-file', 'is-invalid');
       clear.hidden = true;
       return;

@@ -12,6 +12,9 @@ const views = require('./views');
 
 const PORT = process.env.PORT || 4310;
 const SESSION_HOURS = 12;
+// The shared review preview (NICTD_REVIEW=1, set on Vercel): public pages only, nobody signs in,
+// nothing is written. supadb.js refuses any write as well, so this holds even if a route is missed.
+const REVIEW = process.env.NICTD_REVIEW === '1';
 
 // ---------- password hashing (scrypt, salt:hash hex) ----------
 function hashPassword(password) {
@@ -103,7 +106,7 @@ async function refreshYears() {
   cache.years = await sdb.rpc('all_years');
 }
 async function loadCaches() {
-  await Promise.all([refreshCounties(), refreshIndicators(), refreshPerms(), refreshSettings(), refreshSiteContent(), refreshYears()]);
+  await Promise.all([refreshCounties(), refreshIndicators(), refreshPerms(), refreshSettings(), refreshSiteContent(), refreshYears(), imagestore.refresh()]);
   cache.ready = true;
   console.log(`Caches loaded: ${cache.counties.length} counties, ${cache.indicators.length} indicators, ${cache.years.length} years`);
 }
@@ -141,7 +144,8 @@ function readBodyBuffer(req, limit = 10e6) {
 }
 // Careers applications: CVs live outside /public and are never served by the static handler.
 const APPLY_DIR = path.join(__dirname, 'data', 'applications');
-const CV_MAX = 5 * 1024 * 1024;
+const CV_MAX = 4 * 1024 * 1024;   // under the 4.5 MB request limit of a hosted function (Vercel)
+const CV_TYPES = { pdf: 'application/pdf', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
 const applyLog = new Map();   // ip -> recent submission times, a light brake on repeat sends
 const APPLY_LOG = path.join(APPLY_DIR, 'applications.jsonl');
 // The reference an applicant keeps: the date sent and four random hex digits, e.g. NICTD-261003-7F3A
@@ -183,7 +187,7 @@ async function setContent(key, value) {
 
 async function currentUser(req) {
   const token = parseCookies(req).nictd_session;
-  if (!token) return null;
+  if (!token || REVIEW) return null;
   const hit = cache.sessions.get(token);
   if (hit) {
     if (hit.expiresAt > Date.now()) return hit.user;
@@ -311,7 +315,7 @@ function parseBulkCsv(text) {
 }
 
 // ---------- ETL heartbeat (simulated scheduled sync) ----------
-setInterval(() => { setSetting('last_etl_sync', new Date().toISOString()).catch(() => {}); }, 5 * 60 * 1000).unref();
+if (!REVIEW) setInterval(() => { setSetting('last_etl_sync', new Date().toISOString()).catch(() => {}); }, 5 * 60 * 1000).unref();
 
 // ---------- static files ----------
 const MIME = { '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
@@ -325,7 +329,9 @@ function serveStatic(res, relPath) {
 }
 
 // ---------- router ----------
-const server = http.createServer(async (req, res) => {
+// One handler serves both ways the site runs: `node server.js` listens with it (below), and on
+// Vercel api/index.js hands every non-static request to it.
+async function handler(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const p = url.pathname;
 
@@ -336,7 +342,17 @@ const server = http.createServer(async (req, res) => {
     if (p.startsWith('/media/') && /\.(svg|mp4|webm|jpe?g|png)$/.test(p)) return serveStatic(res, p.slice(1));
     if (p.startsWith('/img/') && /\.(png|webp|jpe?g|svg)$/.test(p)) return serveStatic(res, p.slice(1));
 
-    if (!cache.ready) return send(res, 503, '<h1>NICTD is starting up…</h1><p>Connecting to the database. Refresh in a moment.</p>');
+    if (REVIEW) {
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
+        return send(res, 403, views.errorPage(null, 'This is a review preview of NICTD: signing in and sending forms are turned off.'));
+      }
+    }
+    // a fresh serverless instance waits for its first load instead of turning the visitor away
+    if (!cache.ready) {
+      try { await ready; } catch { return send(res, 503, '<h1>NICTD is starting up…</h1><p>Connecting to the database. Refresh in a moment.</p>'); }
+    }
+    imagestore.refreshIfStale();
 
     const user = await currentUser(req);
     const ctx = { user, perms: user ? [...(cache.permsByRole.get(user.role) || [])] : [] };
@@ -737,7 +753,7 @@ const server = http.createServer(async (req, res) => {
         ? send(res, status, views.careerApply(ctx, { role, counties, ...opts }))
         : redirect(res, '/careers#csRoles'));
       let parts;
-      const tooBig = () => back(413, refRole, { errors: [{ field: 'cv', message: 'That CV is larger than 5 MB. Please send a smaller file.' }], values: { cv_lost: true } });
+      const tooBig = () => back(413, refRole, { errors: [{ field: 'cv', message: 'That CV is larger than 4 MB. Please send a smaller file.' }], values: { cv_lost: true } });
       // answer an oversized upload from its declared length, before reading it, so the reply arrives
       if ((+req.headers['content-length'] || 0) > CV_MAX + 64 * 1024) { req.resume(); return tooBig(); }
       try {
@@ -764,7 +780,7 @@ const server = http.createServer(async (req, res) => {
       if (!counties.includes(f.county)) errors.push({ field: 'county', message: 'Choose your county.' });
       const cv = file && cvKind(file.filename, file.data);
       if (!file) errors.push({ field: 'cv', message: 'Attach your CV as a PDF or Word file.' });
-      else if (file.data.length > CV_MAX) errors.push({ field: 'cv', message: 'That CV is larger than 5 MB. Please send a smaller file.' });
+      else if (file.data.length > CV_MAX) errors.push({ field: 'cv', message: 'That CV is larger than 4 MB. Please send a smaller file.' });
       else if (!cv) errors.push({ field: 'cv', message: 'The CV must be a PDF or Word document (.pdf, .doc or .docx).' });
       if (!f.consent) errors.push({ field: 'consent', message: 'Please agree so the Unit can keep and assess your application.' });
       if (errors.length) return back(400, role, { errors, values: { ...f, cv_lost: !!file } });
@@ -783,8 +799,11 @@ const server = http.createServer(async (req, res) => {
         cv_original_name: path.basename(String(file.filename)).slice(0, 200) || null,
       };
       try {
-        fs.mkdirSync(APPLY_DIR, { recursive: true });
-        fs.writeFileSync(dest, file.data, { flag: 'wx' });
+        if (sdb.remoteFiles) await sdb.storagePut('applications', 'cv/' + stored, file.data, CV_TYPES[cv]);
+        else {
+          fs.mkdirSync(APPLY_DIR, { recursive: true });
+          fs.writeFileSync(dest, file.data, { flag: 'wx' });
+        }
       } catch (e) {
         console.error('[careers] CV not stored:', e.message);
         return back(503, role, { failed: true, values: { ...f, cv_lost: true } });
@@ -795,6 +814,12 @@ const server = http.createServer(async (req, res) => {
       try {
         await sdb.ins('job_applications', [record]);
       } catch (e) {
+        if (sdb.remoteFiles) {
+          // hosted: there is no private disk to fall back to, so the database is the only record
+          await sdb.storageDel('applications', 'cv/' + stored).catch(() => {});
+          console.error('[careers] application not stored:', e.message);
+          return back(503, role, { failed: true, values: { ...f, cv_lost: true } });
+        }
         try {
           fs.appendFileSync(APPLY_LOG, JSON.stringify({ ...record, created_at: new Date().toISOString() }) + '\n');
           console.warn(`[careers] ${reference} kept in ${path.relative(__dirname, APPLY_LOG)} (database: ${e.message.slice(0, 120)})`);
@@ -939,10 +964,11 @@ const server = http.createServer(async (req, res) => {
             const parts = imagestore.parseMultipart(raw, req.headers['content-type']) || [];
             const field = (n) => { const q = parts.filter((x) => x.name === n && x.filename == null)[0]; return q ? q.data.toString('utf8') : ''; };
             const file = parts.filter((x) => x.name === 'file' && x.filename != null)[0];
-            const r = imagestore.save(field('collection'), field('key'), file && file.filename, file && file.data);
+            const r = await imagestore.save(field('collection'), field('key'), file && file.filename, file && file.data);
             notice = r.ok ? 'Image saved and live on the site.' : r.error;
           } catch (e) {
-            notice = /too large/i.test(e.message) ? 'That file is larger than 8 MB.' : 'Upload failed. Please try again.';
+            if (!/too large/i.test(e.message)) console.error('[imagestore] upload failed:', e.message);
+            notice = /too large/i.test(e.message) ? 'That file is larger than 4 MB.' : 'Upload failed. Please try again.';
           }
           return redirect(res, '/admin/images?notice=' + encodeURIComponent(notice));
         }
@@ -950,7 +976,7 @@ const server = http.createServer(async (req, res) => {
         const f = parseForm(await readBody(req));
         if (p === '/admin/images/delete') {
           if (!hasPerm(user, 'manage_content')) return send(res, 403, views.forbidden(ctx));
-          const r = imagestore.remove(f.collection, f.key);
+          const r = await imagestore.remove(f.collection, f.key);
           const notice = !r.ok ? r.error
             : (r.reverted ? 'Upload deleted. That slot is back to its built-in image.' : 'That slot was already using its built-in image.');
           return redirect(res, '/admin/images?notice=' + encodeURIComponent(notice));
@@ -1225,13 +1251,18 @@ const server = http.createServer(async (req, res) => {
     console.error(err);
     return send(res, 500, views.errorPage(null, 'An unexpected error occurred.'));
   }
-});
+}
 
-server.listen(PORT, () => console.log(`NICTD running at http://localhost:${PORT} (data: Supabase)`));
-(async function boot() {
+const ready = (async function boot() {
   for (let i = 0; i < 20; i++) {
-    try { await loadCaches(); await setSetting('last_etl_sync', new Date().toISOString()); return; }
+    try { await loadCaches(); if (!REVIEW) await setSetting('last_etl_sync', new Date().toISOString()); return; }
     catch (e) { console.error('Cache load failed, retrying in 5s:', e.message); await new Promise((r) => setTimeout(r, 5000)); }
   }
-  console.error('Could not reach Supabase after 20 attempts.');
+  throw new Error('Could not reach Supabase after 20 attempts.');
 })();
+ready.catch((e) => console.error(e.message));
+
+module.exports = handler;
+if (require.main === module) {
+  http.createServer(handler).listen(PORT, () => console.log(`NICTD running at http://localhost:${PORT} (data: Supabase${REVIEW ? ', review mode: read-only' : ''})`));
+}

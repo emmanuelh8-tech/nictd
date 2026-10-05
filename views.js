@@ -3075,7 +3075,7 @@ exports.careers = (ctx) => {
     ['When are field roles open?', 'Field roles are recruited county by county as each data-collection wave opens, so check back if nothing fits today.'],
     ['What happens after I apply?', 'Shortlisted applicants are contacted for a short interview, plus a practical exercise for data and platform roles.'],
     monrovia.length ? ['Where are the data roles based?', `${monrovia.join(' and ')} ${monrovia.length > 1 ? 'are full-time roles' : 'is a full-time role'} in Monrovia.`] : null,
-    ['What do I need to apply?', 'Your CV as a PDF or Word file, up to 5 MB, and your county. A cover note is optional.'],
+    ['What do I need to apply?', 'Your CV as a PDF or Word file, up to 4 MB, and your county. A cover note is optional.'],
     ['Who handles applications?', 'The ICT Statistics & Policy Unit at the Ministry of Posts & Telecommunications.'],
   ].filter(Boolean);
   const steps = [
@@ -3241,7 +3241,7 @@ exports.careerApply = (ctx, { role, counties = [], errors = [], values = {}, fai
             <label class="cs-drop${errOf('cv') ? ' is-invalid' : ''}" data-drop>
               <input class="sr-only" type="file" name="cv" required accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"${invalid('cv')}>
               <span class="cs-drop-ic" aria-hidden="true">${icon('upload')}</span>
-              <span class="cs-drop-t"><strong data-file-name>Drop your CV here, or choose a file</strong><span data-file-meta>PDF or Word, up to 5 MB</span></span>
+              <span class="cs-drop-t"><strong data-file-name>Drop your CV here, or choose a file</strong><span data-file-meta>PDF or Word, up to 4 MB</span></span>
             </label>
             <button type="button" class="cs-drop-clear" data-file-clear hidden>Remove file</button>
             ${errText('cv')}
@@ -3825,7 +3825,7 @@ exports.adminImages = (ctx, { groups = [], notice = '' }) => {
         <h1>Image Library</h1>
         <p class="lede-sm">Every picture on the public site, in one place. Each collection is separate, so an
           image used on a report never turns up on a research paper or in the hero slider.
-          JPG, PNG or WebP, up to 8 MB. Changes go live immediately.</p>
+          JPG, PNG or WebP, up to 4 MB. Changes go live immediately.</p>
       </div>
     </div>
     ${notice ? `<div class="alert alert-ok">${esc(notice)}</div>` : ''}

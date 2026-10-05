@@ -6,6 +6,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const sdb = require('./supadb');
 
 const IMG_ROOT = path.join(__dirname, 'public', 'img');
 const MANIFEST = path.join(__dirname, 'image-manifest.json');
@@ -148,7 +149,9 @@ const COLLECTIONS = {
 };
 
 const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.webp'];
-const MAX_BYTES = 8 * 1024 * 1024;
+// 4 MB: a hosted function (Vercel) refuses request bodies over 4.5 MB, so the limit stays under it everywhere.
+const MAX_BYTES = 4 * 1024 * 1024;
+const MIME = { '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
 
 // ---- manifest ----
 let manifest = {};
@@ -162,23 +165,48 @@ function saveManifest() {
 }
 loadManifest();
 
+// ---- hosted mode (Vercel): uploads live in Supabase Storage, and their record in the settings table ----
+// image-manifest.json (deployed with the code) stays the base; the overlay, kept as the settings row
+// "image_manifest", maps collection -> key -> the upload's public URL, or null for "back to the
+// built-in image". Each server instance re-reads it every 30 seconds, so an upload made through one
+// instance reaches the others.
+const REMOTE = sdb.remoteFiles;
+const BUCKET = 'site-images';
+let overlay = {};
+let overlayAt = 0;
+async function refresh() {
+  if (!REMOTE) return;
+  const rows = await sdb.sel('settings?key=eq.image_manifest&select=value');
+  try { overlay = (rows[0] && JSON.parse(rows[0].value)) || {}; } catch { overlay = {}; }
+  overlayAt = Date.now();
+}
+function refreshIfStale(maxAge = 30000) {
+  if (REMOTE && Date.now() - overlayAt > maxAge) refresh().catch((e) => console.error('[imagestore] refresh failed:', e.message));
+}
+const saveOverlay = () => sdb.ups('settings', [{ key: 'image_manifest', value: JSON.stringify(overlay) }]);
+const objectPathOf = (u) => String(u).split('/storage/v1/object/public/' + BUCKET + '/')[1] || '';
+const entryOf = (collection, key) => (overlay[collection] && key in overlay[collection])
+  ? overlay[collection][key]
+  : manifest[collection] && manifest[collection][key];
+
 const slotDef = (collection, key) =>
   (COLLECTIONS[collection] ? COLLECTIONS[collection].slots : []).filter((s) => s.key === key)[0] || null;
 
 // Public URL for a slot: the uploaded file when one exists, otherwise the built-in default.
 function url(collection, key) {
-  const entry = manifest[collection] && manifest[collection][key];
-  if (entry) return '/img/' + collection + '/' + entry;
+  const entry = entryOf(collection, key);
+  if (entry) return /^https?:\/\//.test(entry) ? entry : '/img/' + collection + '/' + entry;
   const def = slotDef(collection, key);
   return def ? def.def : '';
 }
-const isCustom = (collection, key) => !!(manifest[collection] && manifest[collection][key]);
+const isCustom = (collection, key) => !!entryOf(collection, key);
 
 // Whether a slot actually resolves to a file on disk. A slot's default is only a path — nothing
 // guarantees the file was ever supplied — so anything optional on the page checks before drawing
 // it, rather than emitting an <img> that 404s.
 function exists(collection, key) {
   const u = url(collection, key);
+  if (/^https?:\/\//.test(u)) return true;   // an upload in Supabase Storage
   return !!u && fs.existsSync(path.join(__dirname, 'public', u.replace(/^\//, '')));
 }
 
@@ -234,16 +262,17 @@ function save(collection, key, filename, data) {
   const def = slotDef(collection, key);
   if (!def) return { ok: false, error: 'Unknown image slot.' };
   if (!data || !data.length) return { ok: false, error: 'No file received.' };
-  if (data.length > MAX_BYTES) return { ok: false, error: 'That file is larger than 8 MB.' };
+  if (data.length > MAX_BYTES) return { ok: false, error: 'That file is larger than 4 MB.' };
 
   const ext = sniff(data);
   if (!ext) return { ok: false, error: 'That file is not a JPG, PNG or WebP image.' };
   const given = path.extname(String(filename || '')).toLowerCase();
   if (given && ALLOWED_EXT.indexOf(given) === -1) return { ok: false, error: 'Only JPG, PNG and WebP files are allowed.' };
 
+  const name = key + '-' + Date.now().toString(36) + ext;
+  if (REMOTE) return saveRemote(collection, key, name, ext, data);
   const dir = path.join(IMG_ROOT, collection);
   fs.mkdirSync(dir, { recursive: true });
-  const name = key + '-' + Date.now().toString(36) + ext;
   fs.writeFileSync(path.join(dir, name), data);
 
   removeFile(collection, key);                    // drop the file this one replaces
@@ -251,6 +280,29 @@ function save(collection, key, filename, data) {
   manifest[collection][key] = name;
   saveManifest();
   return { ok: true, url: '/img/' + collection + '/' + name };
+}
+
+// Hosted: upload to the bucket, record it, then drop the upload it replaces. Returns a promise,
+// which the server awaits (it awaits the plain result on disk just the same).
+async function saveRemote(collection, key, name, ext, data) {
+  await refresh();   // start from the newest record, in case another instance changed it
+  const objectPath = collection + '/' + name;
+  await sdb.storagePut(BUCKET, objectPath, data, MIME[ext]);
+  const prev = overlay[collection] && overlay[collection][key];
+  overlay[collection] = overlay[collection] || {};
+  overlay[collection][key] = sdb.storagePublicUrl(BUCKET, objectPath);
+  await saveOverlay();
+  if (prev && objectPathOf(prev)) await sdb.storageDel(BUCKET, objectPathOf(prev)).catch(() => {});
+  return { ok: true, url: overlay[collection][key] };
+}
+async function removeRemote(collection, key) {
+  await refresh();
+  const prev = entryOf(collection, key);
+  overlay[collection] = overlay[collection] || {};
+  overlay[collection][key] = null;
+  await saveOverlay();
+  if (prev && objectPathOf(prev)) await sdb.storageDel(BUCKET, objectPathOf(prev)).catch(() => {});
+  return { ok: true, reverted: !!prev };
 }
 
 // Delete only files we created (never the built-in defaults).
@@ -264,10 +316,11 @@ function removeFile(collection, key) {
 }
 function remove(collection, key) {
   if (!slotDef(collection, key)) return { ok: false, error: 'Unknown image slot.' };
+  if (REMOTE) return removeRemote(collection, key);
   const had = removeFile(collection, key);
   if (manifest[collection]) delete manifest[collection][key];
   saveManifest();
   return { ok: true, reverted: had };
 }
 
-module.exports = { COLLECTIONS, url, isCustom, exists, listing, save, remove, parseMultipart, MAX_BYTES };
+module.exports = { COLLECTIONS, url, isCustom, exists, listing, save, remove, parseMultipart, MAX_BYTES, refresh, refreshIfStale };

@@ -4,12 +4,28 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const CFG = JSON.parse(fs.readFileSync(path.join(__dirname, 'supabase-config.json'), 'utf8'));
+// Settings come from the environment first (how a host such as Vercel supplies them), then from
+// supabase-config.json, which only exists on a development machine (it is gitignored).
+let CFG = {};
+try { CFG = JSON.parse(fs.readFileSync(path.join(__dirname, 'supabase-config.json'), 'utf8')); } catch { /* none on a host */ }
+const BASE = process.env.SUPABASE_URL || CFG.url;
 
 // Server credential. With RLS enabled the server must use a secret key (it bypasses RLS);
 // the publishable key only works while RLS is off. Prefer the environment so the secret
-// never sits in a file: SUPABASE_SECRET_KEY, else "secretKey" in supabase-config.json.
-const KEY = process.env.SUPABASE_SECRET_KEY || CFG.secretKey || CFG.key;
+// never sits in a file: SUPABASE_SECRET_KEY, else "secretKey" in supabase-config.json, and only
+// then a publishable key (SUPABASE_KEY, else "key" in the file).
+const KEY = process.env.SUPABASE_SECRET_KEY || CFG.secretKey || process.env.SUPABASE_KEY || CFG.key;
+if (!BASE || !KEY) {
+  throw new Error('[supadb] Supabase is not configured: set SUPABASE_URL and SUPABASE_SECRET_KEY, or add supabase-config.json.');
+}
+
+// Review mode (NICTD_REVIEW=1, the shared preview deployment) only ever reads. Selects are GETs;
+// the read-only functions are POSTs by protocol, so they are named here (all are STABLE in the
+// database, which Postgres will not let write). Every other call is refused before it is sent.
+const REVIEW = process.env.NICTD_REVIEW === '1';
+const READ_RPCS = new Set(['all_years', 'analytics_summary', 'explorer_table', 'growth_gaps', 'portal_stats']);
+const readOnlyCall = (method, pathq) => method === 'GET'
+  || (method === 'POST' && READ_RPCS.has((/^rpc\/([a-z_]+)/.exec(pathq) || [])[1]));
 const KEY_KIND = KEY.startsWith('sb_secret_') ? 'secret'
   : KEY.startsWith('sb_publishable_') ? 'publishable' : 'legacy-jwt';
 if (KEY_KIND === 'publishable') {
@@ -38,10 +54,13 @@ const isTransient = (e) => {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function request(method, pathq, body, extraHeaders = {}, attempt = 0) {
+  if (REVIEW && !readOnlyCall(method, pathq)) {
+    throw new Error(`review mode: ${method} ${pathq.split('?')[0]} refused (this deployment only reads)`);
+  }
   const RETRIES = 3;
   let res;
   try {
-    res = await fetch(`${CFG.url}/rest/v1/${pathq}`, {
+    res = await fetch(`${BASE}/rest/v1/${pathq}`, {
       method,
       headers: {
         ...AUTH_HEADERS,
@@ -95,4 +114,27 @@ const enc = (v) => encodeURIComponent(String(v));
 // quoted in-list: inList(['Grand Bassa','Bomi']) -> in.("Grand Bassa","Bomi") url-encoded
 const inList = (values) => 'in.' + encodeURIComponent('(' + values.map((v) => `"${String(v).replace(/"/g, '')}"`).join(',') + ')');
 
-module.exports = { sel, ins, ups, upd, del, rpc, enc, inList, CFG };
+// ---- Supabase Storage, for files a host's disk cannot keep ----
+// On a development machine uploads stay on disk, as before. On Vercel (whose disk is read-only), or
+// with NICTD_FILES=supabase, they go to two buckets instead: "applications" (private: CVs) and
+// "site-images" (public: Image Library uploads). Writing needs the secret key, which bypasses
+// the buckets' row-level security.
+const REMOTE_FILES = !!process.env.VERCEL || process.env.NICTD_FILES === 'supabase';
+const objectUrl = (bucket, objectPath) => `${BASE}/storage/v1/object/${bucket}/${objectPath.split('/').map(encodeURIComponent).join('/')}`;
+async function storagePut(bucket, objectPath, data, contentType) {
+  if (REVIEW) throw new Error('review mode: storage upload refused (this deployment only reads)');
+  const res = await fetch(objectUrl(bucket, objectPath), {
+    method: 'POST',
+    headers: { ...AUTH_HEADERS, 'Content-Type': contentType, 'cache-control': 'max-age=31536000', 'x-upsert': 'false' },
+    body: data,
+  });
+  if (!res.ok) throw new Error(`storage upload ${bucket}/${objectPath} failed: ${res.status} ${(await res.text()).slice(0, 200)}`);
+}
+async function storageDel(bucket, objectPath) {
+  if (REVIEW) throw new Error('review mode: storage delete refused (this deployment only reads)');
+  const res = await fetch(objectUrl(bucket, objectPath), { method: 'DELETE', headers: AUTH_HEADERS });
+  if (!res.ok && res.status !== 404) throw new Error(`storage delete ${bucket}/${objectPath} failed: ${res.status}`);
+}
+const storagePublicUrl = (bucket, objectPath) => `${BASE}/storage/v1/object/public/${bucket}/${objectPath}`;
+
+module.exports = { sel, ins, ups, upd, del, rpc, enc, inList, CFG, remoteFiles: REMOTE_FILES, storagePut, storageDel, storagePublicUrl };

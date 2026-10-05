@@ -6,8 +6,9 @@
 -- key (SUPABASE_SECRET_KEY), which bypasses RLS. See docs/sql/rls-lockdown.sql for the rest of
 -- the tables.
 --
--- CV files are not stored here: the server writes them to data/applications/ (outside /public)
--- and records only the stored filename.
+-- CV files are not stored here: on a development machine the server writes them to
+-- data/applications/ (outside /public); on Vercel it uploads them to the private storage bucket
+-- "applications" at cv/<cv_file> (docs/sql/storage-buckets.sql). Only the stored filename is kept here.
 --
 -- Until this table exists, the server keeps each application as one line of
 -- data/applications/applications.jsonl (same fields), so applicants are never turned away.

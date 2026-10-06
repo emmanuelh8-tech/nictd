@@ -784,3 +784,92 @@
     if (page === 'analytics-legacy') initAnalyticsLegacy();
   });
 })();
+
+// ---------- the nav dock: icons swell toward the pointer, as the macOS dock's do ----------
+// Ported from a shadcn Dock (framer-motion) to plain JS: the same falloff (an icon is full size at the
+// pointer and back to rest 150px away) and the same spring (mass .1, stiffness 150, damping 12, which
+// settles without bouncing). Each icon's scale is integrated toward its target every frame and set as
+// --dock-s (a transform, so nothing reflows and the names hold still); the loop stops once everything
+// is at rest. Only for a real pointer, and never with reduced motion.
+(function () {
+  var dock = document.querySelector('.gov-navlinks.dock');
+  if (!dock || !window.matchMedia || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var items = [].slice.call(dock.querySelectorAll('.dock-item'));
+  var BASE = 1, MAG = 1.32, DIST = 150, K = 150, C = 12, M = 0.1;
+  var st = items.map(function () { return { x: BASE, v: 0 }; });
+  var pointer = null, raf = 0, last = 0;
+  var wide = matchMedia('(min-width: 861px)');
+  function target(el) {
+    if (pointer === null) return BASE;
+    var r = el.getBoundingClientRect();
+    var d = Math.abs(pointer - (r.left + r.width / 2));
+    return d >= DIST ? BASE : BASE + (MAG - BASE) * (1 - d / DIST);
+  }
+  function frame(t) {
+    var dt = last ? Math.min(0.032, (t - last) / 1000) : 0.016; last = t;
+    var moving = false;
+    items.forEach(function (el, i) {
+      var s = st[i], goal = target(el), h = dt / 4;
+      for (var k = 0; k < 4; k++) { s.v += ((-K * (s.x - goal) - C * s.v) / M) * h; s.x += s.v * h; }
+      if (Math.abs(s.x - goal) > 0.001 || Math.abs(s.v) > 0.01) moving = true; else { s.x = goal; s.v = 0; }
+      el.style.setProperty('--dock-s', s.x.toFixed(4));
+    });
+    raf = moving ? requestAnimationFrame(frame) : 0;
+    if (!raf) last = 0;
+  }
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+  dock.addEventListener('pointermove', function (e) { if (!wide.matches) return; pointer = e.clientX; kick(); });
+  dock.addEventListener('pointerleave', function () { pointer = null; kick(); });
+  // a keyboard user gets the same swell on the focused tile
+  dock.addEventListener('focusin', function (e) {
+    if (!wide.matches || !e.target.matches('.dock .nav-link:focus-visible')) return;
+    var r = e.target.getBoundingClientRect(); pointer = r.left + r.width / 2; kick();
+  });
+  dock.addEventListener('focusout', function () { if (!dock.matches(':hover')) { pointer = null; kick(); } });
+  wide.addEventListener('change', function () { items.forEach(function (el) { el.style.removeProperty('--dock-s'); }); st.forEach(function (s) { s.x = BASE; s.v = 0; }); });
+})();
+
+// ---------- the phone menu: the burger (or the search button) opens a sheet under the app bar ----------
+// The sheet holds every section and its pages, the search field and Log In. The page behind it is held
+// still while it is open; Escape, the burger again or choosing a link closes it, and focus returns to
+// the burger. Opening from the search button puts the cursor straight into the search field.
+(function () {
+  var burger = document.querySelector('.nav-burger');
+  var sheet = document.getElementById('navSheet');
+  if (!burger || !sheet) return;
+  var finder = document.querySelector('[data-sheet-search]');
+  var nav = document.querySelector('.gov-nav');
+  var root = document.documentElement;
+  var closeT = 0;
+  function place() { var b = nav.getBoundingClientRect().bottom; sheet.style.setProperty('--sheet-top', Math.max(0, Math.round(b)) + 'px'); }
+  function open(focusSearch) {
+    clearTimeout(closeT);
+    place();
+    sheet.hidden = false;
+    root.classList.add('nav-open');
+    burger.setAttribute('aria-expanded', 'true');
+    burger.setAttribute('aria-label', 'Close menu');
+    requestAnimationFrame(function () { sheet.classList.add('is-open'); });
+    var target = focusSearch ? sheet.querySelector('input') : sheet.querySelector('.sheet-link');
+    if (target) setTimeout(function () { target.focus({ preventScroll: true }); }, focusSearch ? 60 : 0);
+  }
+  function close(returnFocus) {
+    if (sheet.hidden) return;
+    sheet.classList.remove('is-open');
+    root.classList.remove('nav-open');
+    burger.setAttribute('aria-expanded', 'false');
+    burger.setAttribute('aria-label', 'Open menu');
+    closeT = setTimeout(function () { sheet.hidden = true; }, 240);
+    if (returnFocus) burger.focus({ preventScroll: true });
+  }
+  burger.addEventListener('click', function () { sheet.hidden ? open(false) : close(true); });
+  if (finder) finder.addEventListener('click', function () { sheet.hidden ? open(true) : sheet.querySelector('input').focus(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) close(true); });
+  sheet.addEventListener('click', function (e) { if (e.target.closest('a')) close(false); });
+  // turning a tablet or widening the window back to the desktop bar closes the sheet
+  var phone = window.matchMedia('(max-width: 860px)');
+  phone.addEventListener('change', function () { if (!phone.matches) close(false); });
+  // back from the bfcache with the sheet open: start closed
+  window.addEventListener('pageshow', function () { if (!sheet.hidden) { sheet.classList.remove('is-open'); sheet.hidden = true; root.classList.remove('nav-open'); burger.setAttribute('aria-expanded', 'false'); } });
+})();

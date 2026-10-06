@@ -130,46 +130,125 @@ ul.plain, ol.plain { list-style: none; }
 .nav-search button { background: transparent; border: 0; color: #5A6A85; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: .2rem; flex: 0 0 auto; }
 .nav-search button:hover { color: #0B2C63; }
 .nav-search button .icn { width: 1.15em; height: 1.15em; stroke-width: 2; }
-/* nav links: icon over label, no dividers, underline on active */
-.gov-navlinks { display: flex; align-items: stretch; gap: .35rem; margin-left: auto; }
-.nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .3rem;
-  padding: .42rem .8rem .38rem; position: relative; min-width: 68px; border-radius: 8px; }
-.nav-link .icn { width: 1.42em; height: 1.42em; color: #17233A; stroke-width: 1.7; transition: color .15s; }
-.nav-link span { font-size: .75rem; letter-spacing: .05em; text-transform: uppercase; font-weight: 700; color: #17233A; white-space: nowrap; transition: color .15s; }
-.nav-link:hover { text-decoration: none; }
-.nav-link:hover .icn, .nav-link:hover span { color: #1C5BB8; }
-.nav-link.active .icn, .nav-link.active span { color: #0B2C63; }
-.nav-link.active::after { content: ""; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
-  width: 34px; height: 3px; border-radius: 3px; background: #1C5BB8; }
-/* Data Explorer dropdown */
-.nav-has-sub { position: relative; display: flex; }
-.nav-caret { display: inline-flex; position: absolute; right: .28rem; top: .5rem; opacity: .65; }
-.nav-caret .icn { width: .6em; height: .6em; stroke-width: 3; transform: rotate(90deg); color: #5A6A85; }
-.nav-has-sub:hover .nav-caret .icn { color: #1C5BB8; }
-.nav-submenu { position: absolute; top: 100%; left: 50%; transform: translate(-50%, 8px); min-width: 236px; z-index: 120;
+/* nav links: a dock (after the macOS dock; ported from a shadcn Dock component to CSS + app.js).
+   Each section is a round icon over its name, straight on the bar's white (no panel behind them).
+   On desktop the icons swell toward the pointer (app.js sets --dock-s on each item; the icon scales
+   up from its foot into the bar's top padding) while the names hold still, so the bar never changes
+   height. The current page is a filled navy icon. */
+.gov-navlinks.dock { display: flex; align-items: flex-end; gap: 1.6rem; margin-left: auto; padding: 0 .4rem; }
+.dock-item { position: relative; flex: 0 0 auto; }
+.dock .nav-link { position: relative; display: flex; flex-direction: column; align-items: center; gap: .32rem; padding: 10px 0 .1rem; color: #17233A; }
+.dock .nav-link:hover { text-decoration: none; }
+.dock-ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 1px solid #DCE5F2;
+  box-shadow: 0 1px 2px rgb(11 44 99 / .08); transform: scale(var(--dock-s, 1)); transform-origin: 50% 100%;
+  transition: background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease; }
+.dock-ic .icn { width: 17px; height: 17px; color: currentColor; stroke-width: 1.8; }
+.nav-label { display: inline-flex; align-items: center; gap: .2rem; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase;
+  font-weight: 700; line-height: 1; white-space: nowrap; transition: color .15s ease; }
+.nav-short { display: none; }
+.dock .nav-link:hover .dock-ic { border-color: #9DB6DE; color: #0B2C63; }
+.dock .nav-link:hover .nav-label { color: #1C5BB8; }
+.dock .nav-link:active .dock-ic { filter: brightness(.96); }
+.dock .nav-link.active .dock-ic { background: #0B2C63; border-color: #0B2C63; color: #fff; box-shadow: 0 6px 14px -6px rgb(11 44 99 / .55); }
+.dock .nav-link.active .nav-label { color: #0B2C63; }
+.dock .nav-link:focus-visible { outline: none; }
+.dock .nav-link:focus-visible .dock-ic { outline: 2px solid #C8102E; outline-offset: 3px; }
+/* a section with a menu: a small chevron after its name, the menu below */
+.dock .nav-caret { display: inline-grid; place-items: center; }
+.dock .nav-caret .icn { width: 8px; height: 8px; stroke-width: 3; transform: rotate(90deg); color: #5A6A85; }
+.dock .nav-link:hover .nav-caret .icn { color: #1C5BB8; }
+/* narrower desktops: a shorter search and tighter spacing keep the bar on one line */
+@media (max-width: 1240px) {
+  .gov-navlinks.dock { gap: 1.05rem; }
+  .nav-search { flex-basis: 190px; }
+  .nav-label { font-size: .68rem; letter-spacing: .04em; }
+}
+@media (max-width: 1020px) {
+  .gov-navlinks.dock { gap: .75rem; }
+  .nav-search { flex-basis: 150px; }
+  .nav-full { display: none; }
+  .nav-short { display: inline; }
+}
+.nav-has-sub { position: relative; }
+.nav-submenu { position: absolute; top: calc(100% + 12px); left: 50%; transform: translate(-50%, 6px); min-width: 236px; z-index: 120;
   background: #FFFFFF; border: 1px solid #CBDCF2; border-radius: 12px;
   box-shadow: 0 16px 34px rgba(11,44,99,.16); padding: .4rem; opacity: 0; visibility: hidden; pointer-events: none;
-  transition: opacity .16s ease, transform .16s ease; }
-.nav-has-sub:hover .nav-submenu, .nav-has-sub:focus-within .nav-submenu { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 4px); }
-.nav-submenu::before { content: ""; position: absolute; top: -8px; left: 0; right: 0; height: 8px; }
+  transition: opacity .16s ease, transform .2s cubic-bezier(.16, 1, .3, 1), visibility 0s linear .2s; }
+.nav-has-sub:hover .nav-submenu, .nav-has-sub:focus-within .nav-submenu { opacity: 1; visibility: visible; pointer-events: auto;
+  transform: translate(-50%, 0); transition-delay: 0s; }
+.nav-submenu::before { content: ""; position: absolute; top: -14px; left: 0; right: 0; height: 14px; }
 .nav-subitem { display: flex; align-items: center; gap: .6rem; padding: .58rem .75rem; border-radius: 8px; color: #17233A; font-size: .82rem; font-weight: 600; }
 .nav-subitem .icn { width: 1.1em; height: 1.1em; color: #5A6A85; flex: 0 0 auto; }
 .nav-subitem:hover { background: #F0F5FC; color: #0B2C63; text-decoration: none; }
 .nav-subitem:hover .icn { color: #1C5BB8; }
 .nav-subitem.active { background: #E7EFFA; color: #0B2C63; }
 .nav-subitem.active .icn { color: #1C5BB8; }
+.nav-subhead { margin-bottom: .25rem; padding-bottom: .65rem; border-bottom: 1px solid #E3EAF5; border-radius: 8px 8px 0 0; color: #0B2C63; font-weight: 700; }
 /* Log In pill (blue) */
 .nav-cta { flex: 0 0 auto; display: flex; align-items: center; gap: .45rem; margin-left: .7rem; padding: .5rem 1.1rem; border-radius: 999px;
   background: linear-gradient(135deg, #1C5BB8, #0B2C63); color: #fff; font-weight: 700; font-size: .8rem; letter-spacing: .05em; text-transform: uppercase;
   box-shadow: 0 3px 10px rgba(11,44,99,.26); }
 .nav-cta:hover { text-decoration: none; filter: brightness(1.1); }
 .nav-cta .icn { width: 1.05em; height: 1.05em; stroke-width: 2.1; }
-@media (max-width: 1080px) {
-  .nav-shell { flex-wrap: wrap; }
-  .nav-search { order: 3; flex-basis: 100%; }
-  .gov-navlinks { margin-left: 0; width: 100%; justify-content: space-between; overflow-x: auto; }
-  .nav-cta { order: 2; margin-left: auto; }
+/* the phone app bar and its menu sheet: hidden on desktop */
+.nav-brand, .nav-icon-btn, .nav-sheet { display: none; }
+/* phones and small tablets: an app bar (the flag and name on the left, search and the menu on the
+   right); the sections, the search field and Log In live in a full-height sheet under the bar */
+@media (max-width: 860px) {
+  .nav-shell { flex-wrap: nowrap; height: 56px; padding: 0 .35rem 0 .9rem; gap: .15rem; }
+  .nav-search, .gov-navlinks.dock, .nav-cta { display: none; }
+  .nav-mapblock { gap: .6rem; margin-right: auto; padding: 0; }
+  .nav-mapblock .liberia-flag { width: 34px; height: auto; }
+  .nav-brand { display: inline; color: #0B2C63; font: 800 1.02rem/1 var(--sans); letter-spacing: .06em; }
+  .nav-icon-btn { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 12px;
+    background: transparent; color: #0B2C63; cursor: pointer; }
+  .nav-icon-btn:active { background: #EEF3FA; }
+  .nav-icon-btn:focus-visible { outline: 2px solid #C8102E; outline-offset: -2px; }
+  .nav-find .icn { width: 21px; height: 21px; stroke-width: 2; }
+  /* three lines that fold into a cross */
+  .nav-burger span { position: absolute; left: 50%; width: 20px; height: 2px; margin-left: -10px; border-radius: 2px; background: currentColor;
+    transition: transform .3s cubic-bezier(.16, 1, .3, 1), opacity .2s ease; }
+  .nav-burger { position: relative; }
+  .nav-burger span:nth-child(1) { transform: translateY(-6px); }
+  .nav-burger span:nth-child(3) { transform: translateY(6px); }
+  .nav-burger[aria-expanded="true"] span:nth-child(1) { transform: rotate(45deg); }
+  .nav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .nav-burger[aria-expanded="true"] span:nth-child(3) { transform: rotate(-45deg); }
+  /* the sheet: everything under the bar, scrolling inside itself while the page stays still */
+  .nav-sheet { position: fixed; left: 0; right: 0; top: var(--sheet-top, 56px); bottom: 0; z-index: 99; overflow-y: auto; overscroll-behavior: contain;
+    background: #fff; -webkit-overflow-scrolling: touch; }
+  .nav-sheet:not([hidden]) { display: block; }
+  .nav-sheet-in { padding: .9rem 1rem calc(1.4rem + env(safe-area-inset-bottom)); transition: opacity .22s ease, transform .32s cubic-bezier(.16, 1, .3, 1); }
+  .nav-sheet:not(.is-open) .nav-sheet-in { opacity: 0; transform: translateY(-10px); }
+  /* only the root: locking body as well would make it a scroll box and unstick the bar */
+  html.nav-open { overflow: hidden; }
+  .sheet-search { display: flex; align-items: center; gap: .6rem; height: 48px; padding: 0 1rem; border-radius: 14px; background: #F2F5FA; border: 1px solid #E1E8F3; }
+  .sheet-search .icn { width: 18px; height: 18px; color: #5A6A85; flex: 0 0 auto; }
+  .sheet-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; font-size: 1rem; color: #0E1A33; }
+  .sheet-search input:focus { outline: none; }
+  .sheet-search:focus-within { border-color: #0B2C63; background: #fff; }
+  .sheet-list { margin: .8rem 0 0; padding: 0; list-style: none; }
+  .sheet-list > li + li { border-top: 1px solid #EEF2F8; }
+  .sheet-link { display: flex; align-items: center; gap: .85rem; min-height: 54px; padding: .35rem .2rem; color: #0E1A33; font-size: 1rem; font-weight: 600; }
+  .sheet-link:hover { text-decoration: none; }
+  .sheet-link:active { background: #F2F5FA; }
+  .sheet-ic { display: grid; place-items: center; flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid #DCE5F2; color: #0B2C63; }
+  .sheet-ic .icn { width: 17px; height: 17px; stroke-width: 1.8; }
+  .sheet-t { flex: 1; }
+  .sheet-go { width: 10px; height: 10px; color: #9AA7BD; stroke-width: 2.6; }
+  .sheet-link.active .sheet-ic { background: #0B2C63; border-color: #0B2C63; color: #fff; }
+  .sheet-link.active { color: #0B2C63; }
+  .sheet-sub { margin: -.2rem 0 .55rem 3.05rem; padding: 0; list-style: none; }
+  .sheet-sub a { display: flex; align-items: center; min-height: 40px; color: #33415A; font-size: .93rem; }
+  .sheet-sub a:hover { text-decoration: none; }
+  .sheet-sub a.active { color: #0B2C63; font-weight: 700; }
+  .sheet-cta { display: flex; align-items: center; justify-content: center; gap: .5rem; height: 50px; margin-top: 1.1rem; border-radius: 999px;
+    background: #0B2C63; color: #fff; font-weight: 700; font-size: .95rem; }
+  .sheet-cta:hover { text-decoration: none; }
+  .sheet-cta .icn { width: 18px; height: 18px; }
+  .sheet-cta:active { filter: brightness(1.15); }
 }
+@media (prefers-reduced-motion: reduce) { .dock-ic, .nav-label, .nav-burger span, .nav-sheet-in { transition: none; } }
 
 /* ============ SELECTOR ROW (global + sticky explorer) ============ */
 .selector-card { background: var(--paper); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--line-soft); padding: 1.2rem 1.3rem; display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: .9rem; align-items: end; }
@@ -214,8 +293,12 @@ ul.plain, ol.plain { list-style: none; }
 .hs-stage { position: absolute; inset: 0; z-index: 0; }
 /* cover = fills the whole hero edge-to-edge; the band sits below the nav so nothing is cut under it */
 .hs-slide { position: absolute; inset: 0; background-color: #0B2C63; background-size: cover; background-repeat: no-repeat; background-position: center center;
-  opacity: 0; transition: opacity .7s ease; will-change: opacity; }
+  opacity: 0; transition: opacity 1.2s cubic-bezier(.4, 0, .2, 1); will-change: opacity; }
 .hs-slide.active { opacity: 1; }
+/* the slide's 3 s shot over its still (the still is its poster); shown once it is actually playing */
+.hs-film { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; opacity: 0; transition: opacity .45s ease; }
+.hs-film.is-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .hs-film { display: none; } }
 .hs-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
     linear-gradient(to top, rgba(4,10,26,.74) 0%, rgba(4,10,26,.30) 30%, rgba(4,10,26,.04) 58%, rgba(4,10,26,.28) 100%),
@@ -701,7 +784,9 @@ a.upd-row:hover .upd-row-title { color: var(--teal-dark); text-decoration: under
 .rc-dots { display: flex; justify-content: center; gap: .5rem; margin-top: 1rem; }
 .rc-dot { width: 9px; height: 9px; border-radius: 999px; background: var(--line); cursor: pointer; transition: all .25s; }
 .rc-dot.active { background: var(--gold); width: 26px; }
-@media (max-width: 720px) { .rc-stage { height: 470px; } }
+/* on a phone the side covers reach past the screen edge and widened the whole page (zooming it out);
+   clip keeps the 3D perspective, where overflow: hidden would flatten it */
+@media (max-width: 720px) { .rc-stage { height: 470px; overflow-x: clip; } }
 @media (prefers-reduced-motion: reduce) { .rc-card { transition: none; } }
 
 /* ============ KEY NUMBERS STRIP ============ */
@@ -1226,6 +1311,50 @@ tr.unread td { background: var(--gold-soft); }
   .fbar-count { margin-left: 0; width: 100%; }
 }
 
+/* ---- the pill variant (Research): one large live search, the year as pills, a live count.
+   Interactive things are pills (the shelf's rule); the panel is 20px like the shelf's stages. Navy
+   carries state, red only the focus ring. Wins over the thin-black-outline rule further down. */
+.fbar.fbar--pills { margin: 0 0 1.6rem; padding: 1.1rem 1.15rem 1rem; border: 0; border-radius: 20px; background: #fff;
+  box-shadow: 0 1px 0 rgb(11 44 99 / .06), 0 22px 44px -26px rgb(11 44 99 / .4); }
+.fbar--pills .fbar-row { display: flex; align-items: center; gap: 1.25rem; }
+.fbar--pills .fbar-search { flex: 1 1 auto; min-height: 54px; padding: 0 .6rem 0 1.15rem; gap: .75rem;
+  border: 1px solid rgb(11 44 99 / .16); border-radius: 999px; background: #F4F6FA; }
+.fbar--pills .fbar-search:hover { border-color: rgb(11 44 99 / .32); }
+.fbar--pills .fbar-search:focus-within { background: #fff; border-color: #0B2C63; box-shadow: 0 0 0 4px rgb(11 44 99 / .1); }
+.fbar--pills .fbar-search > .icn { width: 19px; height: 19px; color: #0B2C63; }
+.fbar--pills .fbar-search input { padding: .9rem 0; font-size: 1rem; color: #0E1A33; }
+.fbar--pills .fbar-search input::placeholder { color: #5A6A85; }
+.fbar--pills .fbar-search input::-webkit-search-cancel-button { cursor: pointer; }
+.fbar-kbd { display: inline-grid; place-items: center; flex: 0 0 auto; min-width: 1.75rem; height: 1.75rem; padding: 0 .45rem;
+  border: 1px solid rgb(11 44 99 / .18); border-bottom-width: 2px; border-radius: 8px; background: #fff;
+  color: #5A6A85; font: 600 .8rem/1 var(--sans); transition: opacity .2s ease; }
+.fbar--pills .fbar-search:focus-within .fbar-kbd { opacity: 0; }
+.fbar--pills .fbar-count { flex: 0 0 auto; margin: 0; font-size: .92rem; color: #5A6A85; white-space: nowrap; }
+.fbar--pills .fbar-count b { font-size: 1.08rem; color: #0B2C63; font-variant-numeric: tabular-nums; }
+.fbar--pills .fbar-count.is-empty b { color: #C8102E; }
+.fbar-pills { display: flex; align-items: center; gap: .45rem; margin-top: .9rem; overflow-x: auto; scrollbar-width: none; }
+.fbar-pills::-webkit-scrollbar { display: none; }
+.fbar-pill { flex: 0 0 auto; height: 2.3rem; padding: 0 1.05rem; border: 1px solid rgb(11 44 99 / .16); border-radius: 999px;
+  background: #fff; color: #0B2C63; font: 600 .86rem/1 var(--sans); font-variant-numeric: tabular-nums; cursor: pointer;
+  transition: background .22s ease, color .22s ease, border-color .22s ease, transform .15s ease; }
+.fbar-pill:hover { border-color: #0B2C63; }
+.fbar-pill.is-on { background: #0B2C63; border-color: #0B2C63; color: #fff; }
+.fbar-pill:active { transform: translateY(1px); }
+.fbar-pill:focus-visible, .fbar--pills .fbar-clear:focus-visible { outline: 2px solid #C8102E; outline-offset: 2px; }
+.fbar--pills .fbar-clear { margin-left: auto; padding: .5rem .3rem; color: #5A6A85; font-size: .85rem; }
+.fbar--pills .fbar-clear:hover { color: #C8102E; }
+/* .fbar-clear sets display, which would otherwise override the hidden attribute (here and on the classic bar) */
+.fbar-clear[hidden] { display: none; }
+@media (hover: none) { .fbar-kbd { display: none; } }
+@media (max-width: 720px) {
+  .fbar.fbar--pills { padding: .9rem; }
+  .fbar--pills .fbar-row { flex-wrap: wrap; gap: .6rem; }
+  .fbar--pills .fbar-search { flex-basis: 100%; }
+  .fbar--pills .fbar-count { order: 3; width: 100%; margin-top: .1rem; }
+  .fbar-pills { flex-wrap: wrap; overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { .fbar-pill, .fbar-kbd { transition: none; } }
+
 .lib-empty { margin-top: 1rem; padding: 1.1rem; text-align: center;
   border: 1px dashed var(--line); border-radius: var(--radius); }
 
@@ -1328,6 +1457,24 @@ tr.unread td { background: var(--gold-soft); }
 .cs-hero-in { flex: 1; display: grid; grid-template-rows: auto auto 1fr auto; padding-top: clamp(3rem, 8vh, 5.5rem); padding-bottom: clamp(2rem, 6vh, 3.5rem); }
 .cs-h1 { max-width: 15em; margin: 0 0 2.1rem; font-size: clamp(2.3rem, 3.7vw, 3.9rem); line-height: 1.04; letter-spacing: -.035em; }
 .cs-hero-sub { align-self: end; max-width: 25rem; margin-top: 3rem; font-size: 1.02rem; line-height: 1.55; color: rgb(255 255 255 / .82); }
+
+/* the careers hero film: the work itself (Monrovia from the air, field interviews, the team) under a
+   navy scrim that holds the words on the left and settles into the mission's blue at the foot. The hero
+   is positioned for the film, so it covers the seal's canvas; the seal stays hidden here (data-star
+   "film" has no pose) and first arrives with the roles. careers.js fades the film in once it plays. */
+.cs-hero--film { position: relative; overflow: hidden; background: #05070C; }
+.cs-film { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 60% 50%; }
+.cs-film-scrim { position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgb(5 7 12 / .8) 0%, rgb(5 7 12 / .5) 36%, rgb(5 7 12 / .12) 66%, rgb(5 7 12 / 0) 100%),
+    linear-gradient(180deg, rgb(5 7 12 / .5) 0%, rgb(5 7 12 / 0) 24%, rgb(5 7 12 / 0) 58%, rgb(14 42 98 / .72) 88%, #1A438F 100%); }
+.cs-hero--film .cs-dim { color: rgb(255 255 255 / .74); }
+.cs-hero--film .cs-hero-sub { color: #fff; text-shadow: 0 1px 14px rgb(5 7 12 / .5); }
+.cs.is-armed .cs-film { opacity: 0; transition: opacity 1.6s var(--cs-ease); }
+.cs.is-armed .cs-film.is-playing { opacity: 1; }
+@media (max-width: 860px) {
+  .cs-film-scrim { background: linear-gradient(180deg, rgb(5 7 12 / .72) 0%, rgb(5 7 12 / .45) 45%, rgb(14 42 98 / .7) 82%, #1A438F 100%); }
+}
 
 /* ---- who the work is for */
 .cs-mission { padding: clamp(6rem, 14vh, 9rem) 0 clamp(4rem, 10vh, 7rem); color: var(--cs-ink);
@@ -1665,32 +1812,15 @@ tr.unread td { background: var(--gold-soft); }
 
 /* ============ ABOUT (/about): the Careers system, after Sharplink's about page (pinned by the user) ============
    Everything .cs gives (square edges, light Public Sans, uppercase micro-type, one electric blue, the
-   chrome seal from careers.js) plus what the reference's about page adds: annotation frames round the
-   hero object, a dashed pull quote, and portrait-style card grids. Photo frames are the reference's
+   chrome seal from careers.js) plus what the reference's about page adds: a dashed pull quote, and portrait-style card grids. Photo frames are the reference's
    portrait ground: the picture in black and white on blue, under a fine grid. Logo frames are its
    board ground: white, under the same grid. Grounds run black, ice, blue to black, navy, blue to ice,
-   and blue again for the emblem; the seal only shows over the hero, the commitments, the black band
-   (as a wireframe) and the emblem. */
+   and blue again for the emblem. The hero is a film of the field work; the seal shows beside the
+   commitments, in the black band (as a wireframe) and in the emblem. */
 .ab { --ab-red: #C8102E; }
 
-/* ---- hero: the reference's annotation frames, drawn where the seal stands (wide screens only). They sit
-   on the page, not in the hero: a positioned hero would paint its ground over the seal's canvas */
-.ab-hud { position: absolute; top: 0; left: 0; right: 0; z-index: 1; height: calc(100svh - var(--nav-h)); pointer-events: none; }
-.ab-hud i { position: absolute; border: 1px solid rgb(255 255 255 / .3); }
-.ab-hud i::before { content: ''; position: absolute; width: 5px; height: 5px; background: var(--cs-blue); }
-.ab-hud-a { left: 52%; top: 20%; width: 8.5%; height: 17%; }
-.ab-hud-a::before { left: -3px; top: -3px; }
-.ab-hud-b { left: 75.5%; top: 50%; width: 11%; height: 22%; }
-.ab-hud-b::before { right: -3px; bottom: -3px; }
-.ab-hud-c { left: 60.5%; top: 28.5%; width: 15%; height: 0; border-width: 1px 0 0; border-style: dashed; border-color: rgb(255 255 255 / .22); }
-.ab-hud-c::before { display: none; }
-@media (prefers-reduced-motion: no-preference) {
-  .ab-hud i { animation: ab-draw 1.4s var(--cs-ease) both; }
-  .ab-hud-a { animation-delay: .9s; }
-  .ab-hud-c { animation-delay: 1.1s; }
-  .ab-hud-b { animation-delay: 1.3s; }
-}
-@keyframes ab-draw { from { clip-path: inset(0 100% 100% 0); } to { clip-path: inset(-4px); } }
+/* ---- hero: the film of the field work (public/media/about-hero*.mp4) under the careers scrim
+   (.cs-hero--film); the seal waits for the commitments */
 
 /* ---- the story: figures, then the tagged rows */
 .ab-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem; margin: 0 0 clamp(3.5rem, 8vh, 5rem); }
@@ -1790,7 +1920,6 @@ tr.unread td { background: var(--gold-soft); }
 .cs.can-rise [data-rise]:not(.is-in) { opacity: 0; transform: translateY(26px); }
 
 @media (max-width: 1199px) {
-  .ab-hud { display: none; }
   .ab-commit-in { max-width: 56%; }
 }
 @media (max-width: 860px) {
@@ -1809,7 +1938,6 @@ tr.unread td { background: var(--gold-soft); }
   .ab-emblem { height: 72vh; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ab-hud i { animation: none; }
   .cs [data-rise] { opacity: 1 !important; transform: none !important; transition: none !important; }
   .ab-frame img { transition: none !important; }
 }
@@ -1847,21 +1975,9 @@ tr.unread td { background: var(--gold-soft); }
 .imglib-del .btn { width: 100%; justify-content: center; }
 .imglib-del-empty { font-size: .72rem; color: var(--muted); text-align: center; }
 
-/* ---- phones: keep the nav compact so the hero is visible on first paint ---- */
+/* ---- phones: a compact search in the top bar (the section dock floats at the foot; see MAIN NAV) ---- */
 @media (max-width: 620px) {
-  .nav-shell { padding: .3rem .8rem; gap: .5rem; row-gap: .35rem; }
-  /* the link strip scrolls sideways; hide the scrollbar and fade the right edge
-     so it reads as "more this way" rather than as a stray grey bar */
-  .gov-navlinks { scrollbar-width: none; -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity;
-    justify-content: flex-start; gap: .1rem;
-    mask-image: linear-gradient(to right, #000 88%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, #000 88%, transparent 100%); }
-  .gov-navlinks::-webkit-scrollbar { display: none; }
-  .nav-link { min-width: 60px; padding: .32rem .55rem .3rem; scroll-snap-align: start; }
-  .nav-link .icn { width: 1.25em; height: 1.25em; }
-  .nav-link span { font-size: .75rem; letter-spacing: .03em; }
-  .nav-cta { padding: .42rem .9rem; font-size: .75rem; margin-left: auto; }
+  .nav-shell { padding: .4rem .7rem; gap: .5rem; }
   .nav-search { padding: .26rem .5rem .26rem .9rem; }
   .nav-search input { font-size: .8rem; }
 }
@@ -3879,3 +3995,60 @@ body.lsc-locked { overflow: hidden; }
 .hs-quote.is-reported p { font-style: normal; }
 .hs-quote.is-reported { border-left: 3px solid rgba(255,255,255,.55); padding-left: 1.1rem; }
 @media (max-width: 700px) { .hs-quote.is-reported { padding-left: .8rem; } }
+
+/* ============ PHONES: an app, not a shrunken website ============
+   Last in the file so it wins over each page's own phone rules.
+   - The page never pans sideways: nothing may widen it past the screen (clip, unlike hidden, keeps
+     sticky positioning working), and a sideways swipe does not drag or bounce the page.
+   - Taps answer at once (no double-tap zoom delay) and without the grey flash.
+   - Video heroes are a short box, a little taller than 16:9 (4:3), instead of a full screen; the
+     home slider's quotes and the Research hero's long scroll distance give way to the same box. */
+html, body { overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; }
+@media (max-width: 860px) {
+  body { overscroll-behavior-x: none; }
+  a, button, input, select, textarea, summary, label { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+}
+@media (max-width: 760px) {
+  /* home: the slider is a 4:3 picture with its words in a band beneath it */
+  .hero-slider { height: auto; }
+  .hero-slider .hs-sticky { position: relative; top: auto; height: auto; display: block; overflow: visible; }
+  .hero-slider .hs-stage { position: relative; inset: auto; aspect-ratio: 4 / 3; overflow: hidden; }
+  .hero-slider .hs-scrim { background: linear-gradient(to top, rgba(8,19,31,.85) 0%, rgba(8,19,31,0) 38%); }
+  .hero-slider .hs-content { padding: .4rem 1rem 1.5rem; background: #08131f; }
+  .hero-slider .hs-texts { display: grid; min-height: 0; }
+  .hero-slider .hs-text { position: relative; grid-area: 1 / 1; bottom: auto; transform: translateY(8px); }
+  .hero-slider .hs-text.active { transform: none; }
+  .hero-slider .hs-quote { padding-left: 1.5rem; }
+  .hero-slider .hs-qmark { top: -.5rem; font-size: 3.2rem; }
+  .hero-slider .hs-quote p { font-size: 1.16rem; line-height: 1.32; margin-bottom: .8rem; }
+  .hero-slider .hs-who { font-size: .9rem; }
+  .hero-slider .hs-role { font-size: .8rem; }
+  .hero-slider .hs-qmeta { font-size: .7rem; }
+  .hero-slider .hs-text h1 { font-size: 1.6rem; margin-bottom: .5rem; }
+  .hero-slider .hs-dots { top: calc(75vw - 1.5rem); bottom: auto; right: auto; left: 50%; transform: translateX(-50%); flex-direction: row; gap: .5rem; }
+  .hero-slider .hv-cue { display: none; }
+  /* careers and about: the film is a 4:3 box (it grows only if the words need more) */
+  .cs .cs-hero.cs-hero--film { min-height: 0; aspect-ratio: 4 / 3; }
+  .cs .cs-hero--film .cs-hero-in { padding: 1.3rem 1.1rem 1.15rem; }
+  .cs .cs-hero--film .cs-h1 { margin-bottom: .9rem; font-size: 1.62rem; line-height: 1.08; }
+  .cs .cs-hero--film .cs-ctas { gap: .45rem; }
+  .cs .cs-hero--film .cs-btn { height: 2.25rem; font-size: .64rem; }
+  .cs .cs-hero--film .cs-btn > span { padding: 0 .8rem; }
+  .cs .cs-hero--film .cs-btn > i { width: 2.25rem; }
+  .cs .cs-hero--film .cs-hero-sub { margin-top: .9rem; max-width: 24rem; font-size: .84rem; line-height: 1.45; }
+  .cs .cs-film-scrim { background: linear-gradient(180deg, rgb(5 7 12 / .68) 0%, rgb(5 7 12 / .42) 55%, rgb(5 7 12 / .7) 100%); }
+  /* research: the same 4:3 box, looping instead of scrubbing */
+  .vhero { height: auto; }
+  .vhero-sticky { position: relative; top: auto; height: auto; aspect-ratio: 4 / 3; }
+  .vhero-inner { padding: 0 1rem 1.2rem; }
+  .explorer-shell .vhero-title, .vhero-title { font-size: 1.7rem; margin-bottom: .45rem; }
+  .vhero-kicker { margin-bottom: .45rem; font-size: .68rem; }
+  .vhero-sub { font-size: .88rem; }
+  .vhero-progress { display: none; }
+  /* careers and about: the desktop-sized gaps where one section's colour runs into the next */
+  .cs .cs-mission { padding-top: 3.2rem; padding-bottom: 3rem; }
+  .cs .cs-roles, .cs .cs-join, .cs .ab-commit { padding-top: 4rem; }
+  .cs .ab-quote { padding-top: 5rem; padding-bottom: 3rem; }
+  .cs .ab-team, .cs .ab-partners { padding-top: 3rem; padding-bottom: 3.5rem; }
+}

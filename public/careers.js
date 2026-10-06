@@ -8,6 +8,18 @@ const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const page = document.querySelector('.cs');
 if (page) page.classList.add('is-armed');
 
+// ---------- the careers hero film: fades in once it plays; held on its poster when motion is reduced ----------
+const film = document.querySelector('.cs-film');
+if (film) {
+  const show = () => film.classList.add('is-playing');
+  if (still) { film.removeAttribute('autoplay'); film.pause(); show(); }
+  else {
+    if (!film.paused && film.readyState > 2) show(); else film.addEventListener('playing', show, { once: true });
+    const p = film.play && film.play();
+    if (p && p.catch) p.catch(show);   // autoplay refused (a data saver, a low-power mode): show the poster instead
+  }
+}
+
 // ---------- letters arrive in random order ----------
 function prepDecode(el) {
   if (el.dataset.ready) return;

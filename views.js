@@ -21,6 +21,7 @@ const fmtTs = (s) => String(s || '').replace('T', ' ').slice(0, 16);
 
 const ICONS = {
   home: '<path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/>',
+  briefcase: '<rect x="2.5" y="7" width="19" height="13" rx="2"/><path d="M8.5 7V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2"/><path d="M2.5 13h19"/>',
   gauge: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
   database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
   image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
@@ -210,37 +211,64 @@ function liberiaFlag(size = 46) {
     <rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="rgba(0,0,0,.28)" stroke-width=".18"/>
   </svg>`;
 }
+// The section links are a dock (after the macOS dock, ported from a shadcn Dock component to plain
+// CSS and app.js, since the site runs no React): each section is a round icon over its name, on the
+// bar's own white; on desktop the icons swell toward the pointer while the names hold still, and the
+// current page is a filled icon. On phones the dock sits at the foot of the screen with short names,
+// the way a tab bar does.
 function mainNav(active, q) {
-  // [href, label, icon, submenu?]
+  // [href, label, icon, submenu?, short label for the phone dock]
   const links = [
-    ['/', 'Home', 'home'],
-    ['/data', 'Data Explorer', 'bars', [['/indicators', 'Indicator Catalogue', 'bookopen'], ['/query', 'Data Query', 'search'], ['/landscape', 'Data Landscape', 'layers']]],
-    ['/reports', 'ICT Reports', 'chart'],
-    ['/research', 'Research', 'doc', [['/research/submit', 'Submit Paper', 'plus']]],
-    ['/partners', 'Our Partners', 'users'],
-    ['/careers', 'Careers', 'users'],
-    ['/about', 'About', 'info'],
+    ['/', 'Home', 'home', null, 'Home'],
+    ['/data', 'Data Explorer', 'bars', [['/indicators', 'Indicator Catalogue', 'bookopen'], ['/query', 'Data Query', 'search'], ['/landscape', 'Data Landscape', 'layers']], 'Data'],
+    ['/reports', 'ICT Reports', 'chart', null, 'Reports'],
+    ['/research', 'Research', 'doc', [['/research/submit', 'Submit Paper', 'plus']], 'Research'],
+    ['/partners', 'Our Partners', 'globe', null, 'Partners'],
+    ['/careers', 'Careers', 'briefcase', null, 'Careers'],
+    ['/about', 'About', 'info', null, 'About'],
   ];
   const isActive = (href, sub) => active === href || (sub || []).some(([h]) => active === h);
-  const navItem = ([href, label, ic, sub]) => {
-    const link = `<a href="${href}" class="nav-link ${isActive(href, sub) ? 'active' : ''}">${icon(ic)}<span>${label}</span>${sub ? `<i class="nav-caret">${icon('chevron')}</i>` : ''}</a>`;
-    if (!sub) return link;
-    return `<div class="nav-has-sub">${link}
+  const navItem = ([href, label, ic, sub, short]) => {
+    const on = isActive(href, sub);
+    const link = `<a href="${href}" class="nav-link${on ? ' active' : ''}"${on ? ' aria-current="page"' : ''}><span class="dock-ic">${icon(ic)}</span><span class="nav-label"><span class="nav-full">${esc(label)}</span><span class="nav-short">${esc(short)}</span>${sub ? `<i class="nav-caret" aria-hidden="true">${icon('chevron')}</i>` : ''}</span></a>`;
+    if (!sub) return `<div class="dock-item">${link}</div>`;
+    // a menu's first row is its own section, so the name is always written out
+    return `<div class="dock-item nav-has-sub">${link}
       <div class="nav-submenu">
+        <a href="${href}" class="nav-subitem nav-subhead ${active === href ? 'active' : ''}">${icon(ic)}<span>${esc(label)}</span></a>
         ${sub.map(([h, l, i2]) => `<a href="${h}" class="nav-subitem ${active === h ? 'active' : ''}">${icon(i2)}<span>${l}</span></a>`).join('')}
       </div>
     </div>`;
   };
-  return `<nav class="gov-nav"><div class="nav-shell">
-    <a class="gov-wordmark nav-mapblock" href="/" aria-label="NICTD home">${liberiaFlag(46)}</a>
+  // the phone menu (app.js opens it): every section and its pages, the search, and Log In
+  const sheetRow = ([href, label, ic, sub]) => `<li>
+          <a href="${href}" class="sheet-link${isActive(href, sub) ? ' active' : ''}"${active === href ? ' aria-current="page"' : ''}><span class="sheet-ic">${icon(ic)}</span><span class="sheet-t">${esc(label)}</span>${icon('chevron', 'icn sheet-go')}</a>
+          ${sub ? `<ul class="sheet-sub">${sub.map(([h, l]) => `<li><a href="${h}" class="${active === h ? 'active' : ''}"${active === h ? ' aria-current="page"' : ''}>${esc(l)}</a></li>`).join('')}</ul>` : ''}
+        </li>`;
+  return `<nav class="gov-nav" aria-label="Main"><div class="nav-shell">
+    <a class="gov-wordmark nav-mapblock" href="/" aria-label="NICTD home">${liberiaFlag(46)}<span class="nav-brand" aria-hidden="true">NICTD</span></a>
     <form class="nav-search" action="/indicators" method="get">
       <input type="search" name="q" placeholder="Search indicators…" value="${esc(q || '')}">
       <button type="submit" aria-label="Search">${icon('search')}</button>
     </form>
-    <div class="gov-navlinks">
+    <div class="gov-navlinks dock">
       ${links.map(navItem).join('')}
     </div>
     <a class="nav-cta" href="/login">${icon('login')}<span>Log In</span></a>
+    <button class="nav-icon-btn nav-find" type="button" aria-label="Search indicators" aria-controls="navSheet" data-sheet-search>${icon('search')}</button>
+    <button class="nav-icon-btn nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navSheet"><span></span><span></span><span></span></button>
+  </div>
+  <div class="nav-sheet" id="navSheet" hidden>
+    <div class="nav-sheet-in">
+      <form class="sheet-search" action="/indicators" method="get" role="search">
+        ${icon('search')}
+        <input type="search" name="q" placeholder="Search indicators" aria-label="Search indicators" value="${esc(q || '')}">
+      </form>
+      <ul class="sheet-list">
+        ${links.map(sheetRow).join('')}
+      </ul>
+      <a class="sheet-cta" href="/login">${icon('login')}<span>Log In</span></a>
+    </div>
   </div></nav>`;
 }
 function footerDh() {
@@ -283,7 +311,7 @@ function footerDh() {
 const ASSET_V = Date.now().toString(36);
 function publicLayout(ctx, { title, active = '', body, extraHead = '', q = '' }) {
   return `<!DOCTYPE html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#ffffff">
 <title>${esc(title)} · NICTD</title>
 ${FONT_HEAD}
 <link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
@@ -306,7 +334,7 @@ function appLayout(ctx, { title, active = '', body, extraHead = '' }) {
   const roleLabel = { public: 'Public User', stakeholder: 'Stakeholder', admin: 'Administrator' }[u.role];
   const initials = u.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
   return `<!DOCTYPE html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#ffffff">
 <title>${esc(title)} · NICTD</title>
 ${FONT_HEAD}
 <link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
@@ -445,8 +473,23 @@ const HERO_SLIDES = [
   { img: 'slide-6', quote: 'Africa must prioritize local data processing and systems that reflect its realities.',
     who: 'Ambassador Philip Thigo', role: 'Kenya’s Special Envoy on Technology', meta: 'April 2026 · Tangier, Morocco' },
 ];
+// Each built-in slide also has a 5-6 s shot cut from it (public/media/home/<slot>.mp4, plus -720 for
+// phones), longer than a slide stays, so the cross-fades always move. The leaders' shots are camera moves over the original photo, so nobody in them is
+// animated; the Ministry is a drone shot and the laptop scene has natural motion. The shot plays as
+// its slide arrives and holds on its last frame; the still stays underneath as its poster. A slide
+// whose image was replaced in the Image Library keeps its still, so footage never sits under a
+// different picture or quote.
+function heroFilm(s, i) {
+  const fs = require('node:fs'), path = require('node:path');
+  const has = fs.existsSync(path.join(__dirname, 'public', 'media', 'home', s.img + '.mp4'));
+  if (!has || imgs.isCustom('hero', s.img)) return '';
+  return `<video class="hs-film" muted playsinline preload="${i === 0 ? 'auto' : 'none'}" aria-hidden="true"${s.pos ? ` style="object-position:${s.pos}"` : ''}>
+        <source src="/media/home/${s.img}-720.mp4" type="video/mp4" media="(max-width: 760px)">
+        <source src="/media/home/${s.img}.mp4" type="video/mp4">
+      </video>`;
+}
 function heroSlider() {
-  const slides = HERO_SLIDES.map((s, i) => `<div class="hs-slide ${i === 0 ? 'active' : ''}" data-i="${i}" style="${slotBg('hero', s.img)}${s.pos ? ';background-position:' + s.pos : ''}"></div>`).join('');
+  const slides = HERO_SLIDES.map((s, i) => `<div class="hs-slide ${i === 0 ? 'active' : ''}" data-i="${i}" style="${slotBg('hero', s.img)}${s.pos ? ';background-position:' + s.pos : ''}">${heroFilm(s, i)}</div>`).join('');
   const texts = HERO_SLIDES.map((s, i) => `<div class="hs-text ${s.quote ? 'is-quote' : ''} ${i === 0 ? 'active' : ''}" data-i="${i}">
       ${s.quote ? `<blockquote class="hs-quote${s.reported ? ' is-reported' : ''}">
         ${s.reported ? '' : '<span class="hs-qmark" aria-hidden="true">&ldquo;</span>'}
@@ -486,7 +529,23 @@ const heroSliderScript = `
     autoT=setInterval(function(){ setActive((cur+1)%n); }, 4000); }
   function progress(){ var total=sec.offsetHeight-window.innerHeight; if(total<=0) return 0;
     return Math.min(1,Math.max(0,-sec.getBoundingClientRect().top/total)); }
+  // each slide's shot (5-6 s, longer than the 4 s a slide stays) plays from its start as the slide
+  // arrives, so the camera is still moving through the cross-fade; the outgoing shot keeps playing
+  // until the fade is done. The next shot is fetched ahead and shown as soon as its first frame is
+  // ready, so a fade never lands on the still. With reduced motion the stills stay.
+  var films=slides.map(function(el){ return el.querySelector('.hs-film'); });
+  films.forEach(function(f){ if(!f) return;
+    var on=function(){ f.classList.add('is-on'); };
+    f.addEventListener('loadeddata',on); f.addEventListener('playing',on); if(f.readyState>=2) on(); });
+  function film(i){
+    if(reduceHero) return;
+    films.forEach(function(f,k){ if(!f) return;
+      if(k===i){ try{ f.currentTime=0; }catch(e){} var p=f.play(); if(p&&p.catch) p.catch(function(){}); }
+      else if(!f.paused){ setTimeout(function(){ if(cur!==k) f.pause(); },1500); } });
+    var nx=films[(i+1)%n]; if(nx&&nx.preload!=='auto'){ nx.preload='auto'; nx.load(); }
+  }
   function setActive(i){ if(i===cur) return; cur=i;
+    film(i);
     slides.forEach(function(el,k){ el.classList.toggle('active',k===i); });
     texts.forEach(function(el,k){ el.classList.toggle('active',k===i); });
     dots.forEach(function(el,k){ el.classList.toggle('active',k===i); }); }
@@ -639,7 +698,27 @@ const NATIONAL_REPORTS = [
 // the list survives it. Items opt in with data-lib-item plus data-lib-search and,
 // where a dropdown is present, data-lib-facet.
 // ---------------------------------------------------------------------------
-function filterBar({ placeholder, facetLabel, facetAll, options = [], total = 0, noun = 'shown' }) {
+function filterBar({ placeholder, facetLabel, facetAll, options = [], total = 0, noun = 'shown', variant = '' }) {
+  // The pill variant (Research): one large live search, the facet as a row of pills, a live count,
+  // and Clear only while something is applied. Typing already filters, so it has no Search button;
+  // the pills show what is applied, so it has no chip row. "/" jumps to the search.
+  if (variant === 'pills') {
+    return `<div class="fbar fbar--pills" data-library role="search">
+    <div class="fbar-row">
+      <div class="fbar-search">
+        ${icon('search')}
+        <input type="search" placeholder="${esc(placeholder)}" aria-label="${esc(placeholder)}">
+        <kbd class="fbar-kbd" aria-hidden="true">/</kbd>
+      </div>
+      <p class="fbar-count" aria-live="polite"><b>${total}</b> of ${total} ${esc(noun)}</p>
+    </div>
+    ${options.length ? `<div class="fbar-pills" role="radiogroup" aria-label="${esc(facetLabel)}">
+      <button type="button" class="fbar-pill is-on" data-val="" role="radio" aria-checked="true">${esc(facetAll)}</button>
+      ${options.map((o) => `<button type="button" class="fbar-pill" data-val="${esc(o.value)}" role="radio" aria-checked="false">${esc(o.label)}</button>`).join('')}
+      <button type="button" class="fbar-clear" hidden>${icon('rotate')} Clear</button>
+    </div>` : ''}
+  </div>`;
+  }
   return `<div class="fbar" data-library>
     <div class="fbar-controls">
       <div class="fbar-search">
@@ -690,6 +769,11 @@ const libraryFilterScript = `
     var items=[].slice.call(scope.querySelectorAll('[data-lib-item]'));
     var facetLabel=root.querySelector('.fbar-facet-label');
     var facetName=facetLabel?facetLabel.textContent.trim():'Filter';
+    // the pill variant keeps its facet in a row of pills instead of a select
+    var pills=[].slice.call(root.querySelectorAll('.fbar-pill'));
+    function facetVal(){ if(facet) return facet.value; var on=root.querySelector('.fbar-pill.is-on'); return on?on.getAttribute('data-val'):''; }
+    function setPill(val){ pills.forEach(function(p){ var on=p.getAttribute('data-val')===val; p.classList.toggle('is-on',on); p.setAttribute('aria-checked',on?'true':'false'); }); }
+    pills.forEach(function(p){ p.addEventListener('click',function(){ setPill(p.getAttribute('data-val')); apply(); }); });
 
     function chip(label,onClear){
       var b=document.createElement('button');
@@ -703,7 +787,7 @@ const libraryFilterScript = `
 
     function apply(){
       var q=(input.value||'').trim().toLowerCase();
-      var f=facet?facet.value:'';
+      var f=facetVal();
       var n=0;
       items.forEach(function(it){
         var hay=(it.getAttribute('data-lib-search')||'').toLowerCase();
@@ -719,16 +803,19 @@ const libraryFilterScript = `
       if(countWrap) countWrap.classList.toggle('is-empty',n===0);
       if(empty) empty.hidden=n!==0;
 
-      // reflect what is applied, so a filter is never silently on
-      chips.innerHTML='';
-      if(q) chips.appendChild(chip('"'+input.value.trim()+'"',function(){ input.value=''; }));
-      if(f){
-        var opt=facet.options[facet.selectedIndex];
-        chips.appendChild(chip(facetName+': '+opt.text,function(){ facet.value=''; }));
+      // reflect what is applied, so a filter is never silently on (the pill variant shows it in
+      // the pills and the search itself, so it has no chip row)
+      if(chips){
+        chips.innerHTML='';
+        if(q) chips.appendChild(chip('"'+input.value.trim()+'"',function(){ input.value=''; }));
+        if(f&&facet){
+          var opt=facet.options[facet.selectedIndex];
+          chips.appendChild(chip(facetName+': '+opt.text,function(){ facet.value=''; }));
+        }
       }
       var any=!!(q||f);
-      active.hidden=!any;
-      clear.hidden=!any;
+      if(active) active.hidden=!any;
+      if(clear) clear.hidden=!any;
     }
 
     input.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); apply(); } });
@@ -736,9 +823,16 @@ const libraryFilterScript = `
     if(go) go.addEventListener('click',apply);
     if(facet) facet.addEventListener('change',apply);
     if(clear) clear.addEventListener('click',function(){
-      input.value=''; if(facet) facet.value=''; apply(); input.focus();
+      input.value=''; if(facet) facet.value=''; if(pills.length) setPill(''); apply(); input.focus();
     });
     apply();
+  });
+  // "/" jumps to the pill variant's search, unless the visitor is already typing somewhere
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='/'||e.metaKey||e.ctrlKey||e.altKey) return;
+    var t=e.target; if(t&&(t.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    var i=document.querySelector('.fbar--pills .fbar-search input'); if(!i) return;
+    e.preventDefault(); i.focus();
   });
 })();
 `;
@@ -1842,8 +1936,9 @@ function policyEmblem(kind) {
 
 // ============ ABOUT (/about) ============
 // Built on the Careers page's system (reference: Sharplink's about page, pinned by the user): the
-// chrome seal (careers.js) stands in the hero, beside the commitments, as a wireframe in the black
-// capacity band, and alone above the closing line. Every figure is live from the catalogue or the
+// hero is a film of enumerators in the field (public/media/about-hero*.mp4), and the chrome seal
+// (careers.js) stands beside the commitments, as a wireframe in the black capacity band, and alone
+// above the closing line. Every figure is live from the catalogue or the
 // programme; every photo is one of the site's own.
 exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => {
   const DEFAULT_MISSION = "The National ICT Database of Liberia (NICTD) is a private-sector-led national initiative advancing Liberia's data sovereignty, and the country's official, continuously maintained source of ICT statistics, infrastructure, usage, affordability, market structure, digital trust and governance, and sustainability, disaggregated across all 15 counties. NICTD exists to give researchers, policymakers, donors and the public a single, trustworthy place to find and compare Liberia's digital-development data.";
@@ -1932,9 +2027,12 @@ exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => 
     title: 'About', active: '/about', workspaceActive: 'about', extraHead: CAREERS_HEAD, body: `
   <div class="cs ab" id="abPage">
     <canvas class="cs-star" id="csStar" aria-hidden="true" data-seal="${esc(sealArt())}"></canvas>
-    <div class="ab-hud" aria-hidden="true"><i class="ab-hud-a"></i><i class="ab-hud-b"></i><i class="ab-hud-c"></i></div>
-
-    <section class="cs-hero ab-hero" data-star="hero" aria-labelledby="abTitle">
+    <section class="cs-hero cs-hero--film ab-hero" data-star="film" aria-labelledby="abTitle">
+      <video class="cs-film" autoplay muted loop playsinline preload="auto" poster="/media/about-hero-poster.jpg" aria-hidden="true">
+        <source src="/media/about-hero-720.mp4" type="video/mp4" media="(max-width: 760px)">
+        <source src="/media/about-hero.mp4" type="video/mp4">
+      </video>
+      <div class="cs-film-scrim" aria-hidden="true"></div>
       <div class="cs-wrap cs-hero-in">
         <h1 id="abTitle" class="cs-h1" aria-label="Liberia’s ICT data, collected and managed by Liberians.">${csDecode('Liberia’s ICT data,')}${csDecode('collected and managed by Liberians.', 'cs-dim')}</h1>
         <div class="cs-ctas">
@@ -2223,6 +2321,11 @@ const videoHeroScript = `
   var bar=document.getElementById('vheroBar');
   if(!sec||!vid) return;
   var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // phones show the hero as a short box with no scroll distance to scrub: the clip just loops
+  if(window.matchMedia&&window.matchMedia('(max-width: 760px)').matches){
+    if(!reduced){ vid.loop=true; var pp=vid.play(); if(pp&&pp.catch) pp.catch(function(){}); }
+    return;
+  }
 
   // Autoplay on arrival. Muted playback is allowed without a gesture; if a browser still
   // refuses, the poster frame stands in and scrubbing takes over on the first scroll.
@@ -2569,7 +2672,7 @@ exports.research = (ctx, { papers = [], canManage = false, canSubmit = false, no
   if (canManage) return shell(ctx, { title: 'Research Papers', workspaceActive: 'research', body: researchAdminBody(papers, notice) });
 
   return shell(ctx, {
-    title: 'Research Papers', workspaceActive: 'research', body: `
+    title: 'Research Papers', active: '/research', workspaceActive: 'research', body: `
   ${videoHero({ src: '/media/research-hero.mp4', poster: '/media/research-hero-poster.jpg',
     kicker: 'Research', title: 'Liberia ICT Research Hub',
     sub: 'Published research and reports drawing on the National ICT Database.' })}
@@ -2577,7 +2680,9 @@ exports.research = (ctx, { papers = [], canManage = false, canSubmit = false, no
   <div class="wrap section page-black">
     ${notice ? `<div class="alert alert-ok">${esc(notice)}</div>` : ''}
     <span id="paper-search"></span>
-    ${papers.length ? libraryFilter('Search papers by title, author or abstract…', [...new Set(papers.map(paperYear).filter(Boolean))].sort((a, b) => b.localeCompare(a)), papers.length) : ''}
+    ${papers.length ? filterBar({ variant: 'pills', placeholder: 'Search papers by title, author or abstract', facetLabel: 'Year', facetAll: 'All years',
+      options: [...new Set(papers.map(paperYear).filter(Boolean))].sort((a, b) => b.localeCompare(a)).map((y) => ({ value: String(y), label: String(y) })),
+      total: papers.length, noun: 'papers' }) : ''}
     ${papers.length ? `<div class="rp-shelf" id="rpShelf">${papers.map(paperCard).join('')}</div>
     <div class="rp-empty" data-lib-empty hidden>
       <p class="rp-empty-t">No papers match that search.</p>
@@ -3053,9 +3158,11 @@ const sealArt = () => {
   const has = (f) => require('node:fs').existsSync(require('node:path').join(__dirname, 'public', 'img', 'brand', f));
   return has('seal-large.webp') ? '/img/brand/seal-large.webp' : has('seal-large.png') ? '/img/brand/seal-large.png' : imgs.url('brand', 'seal');
 };
-// One chrome star (careers.js, WebGL) travels the page as the sections pass from black through
-// NICTD blue to ice. The roles are a scroll-pinned list: the role at the centre brightens and
-// turns its own point of the star forward. Applying happens on each role's own page.
+// The hero is a film of the work (public/media/careers-hero*.mp4: Monrovia from the air, then
+// field interviews and the team), under a navy scrim. The chrome seal (careers.js, WebGL) stays
+// out of the hero and first arrives with the roles, then travels the page as the sections pass
+// from blue to black to ice. The roles are a scroll-pinned list: the role at the centre brightens
+// and turns the seal to its own pose. Applying happens on each role's own page.
 exports.careers = (ctx) => {
   const n = CAREER_ROLES.length;
   const monrovia = CAREER_ROLES.filter((r) => r.place === 'Monrovia').map((r) => r.title);
@@ -3089,7 +3196,12 @@ exports.careers = (ctx) => {
   <div class="cs" id="csPage">
     <canvas class="cs-star" id="csStar" aria-hidden="true" data-seal="${esc(sealArt())}"></canvas>
 
-    <section class="cs-hero" data-star="hero" aria-labelledby="csTitle">
+    <section class="cs-hero cs-hero--film" data-star="film" aria-labelledby="csTitle">
+      <video class="cs-film" autoplay muted loop playsinline preload="auto" poster="/media/careers-hero-poster.jpg" aria-hidden="true">
+        <source src="/media/careers-hero-720.mp4" type="video/mp4" media="(max-width: 760px)">
+        <source src="/media/careers-hero.mp4" type="video/mp4">
+      </video>
+      <div class="cs-film-scrim" aria-hidden="true"></div>
       <div class="cs-wrap cs-hero-in">
         <h1 id="csTitle" class="cs-h1" aria-label="Careers at NICTD. Built and run by Liberians.">${csDecode('Careers at NICTD.')}${csDecode('Built and run by Liberians.', 'cs-dim')}</h1>
         <div class="cs-ctas">

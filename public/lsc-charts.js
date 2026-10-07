@@ -88,7 +88,12 @@
   function scene(c, h) {
     c.innerHTML = '';
     c.style.position = 'relative';
-    var w = Math.max(300, Math.round(c.clientWidth || c.getBoundingClientRect().width || 480));
+    var cw = Math.round(c.clientWidth || c.getBoundingClientRect().width || 480);
+    // the charts keep fixed gutters for their labels; on a phone that leaves too little room to
+    // draw, and the labels pile up. There they are drawn at a readable width and the panel
+    // scrolls sideways instead of shrinking the words
+    var w = Math.max(cw < 600 ? 620 : 300, cw);
+    c.classList.toggle('is-wide', w > cw + 4);
     if (!h) h = Math.round(Math.max(330, Math.min(560, w * 0.47)));
     var uid = ++UID;
     var svg = el('svg', {
@@ -96,6 +101,7 @@
       preserveAspectRatio: 'xMidYMid meet', role: 'img',
     });
     svg.appendChild(materials(uid));
+    if (w > cw + 4) svg.style.width = w + 'px';
     c.appendChild(svg);
     var tip = document.createElement('div');
     tip.className = 'lsc-tip';

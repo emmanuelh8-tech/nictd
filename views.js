@@ -268,7 +268,7 @@ function mainNav(active, q) {
   </div>
   <div class="nav-sheet" id="navSheet" hidden>
     <div class="nav-scrim" data-sheet-close></div>
-    <div class="nav-drawer" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="nav-drawer" role="dialog" aria-modal="true" aria-label="Menu" tabindex="-1">
       <button type="button" class="nav-drawer-x" aria-label="Close menu" data-sheet-close>${icon('x')}</button>
       <div class="nav-sheet-in">
         <div class="nav-drawer-head"><img src="${esc(sealArt())}" alt="Coat of Arms of the Republic of Liberia" width="220" height="233" decoding="async"></div>
@@ -322,6 +322,10 @@ function footerDh() {
 }
 // Cache-buster stamped at server start so edited CSS/JS is never served stale from the browser cache.
 const ASSET_V = Date.now().toString(36);
+// On every page: one import map for three.js (one per document, so pages never add their own), and
+// the robot turaco, which decides for itself whether this page and this screen get it.
+const SITE_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module" src="/assets/bird.js?v=${ASSET_V}"></script>`;
 function publicLayout(ctx, { title, active = '', body, extraHead = '', q = '' }) {
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#ffffff">
@@ -330,6 +334,7 @@ ${FONT_HEAD}
 <link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
 ${FAVICON}
 <script src="/assets/liberia-counties.js?v=${ASSET_V}" defer></script>
+${SITE_HEAD}
 ${extraHead}
 </head><body>
 ${mainNav(active, q)}
@@ -353,6 +358,7 @@ ${FONT_HEAD}
 <link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
 ${FAVICON}
 <script src="/assets/liberia-counties.js?v=${ASSET_V}" defer></script>
+${SITE_HEAD}
 ${extraHead}
 </head><body>
 <div class="app">
@@ -432,7 +438,7 @@ function selectorRow(idPrefix = '') {
 exports.home = (ctx, { headlines, papers, keyStats, dashboards, indicatorsForSearch, counties, lastUpdated, heroTitle, heroSub,
   homeVideo = '', homeVideoTitle = 'About the National ICT Database Project', homeVideoCaption = '', homeVideoPlaylist = '' }) => {
   return shell(ctx, {
-    title: 'Home', active: '/', extraHead: BIRD_HEAD, body: `
+    title: 'Home', active: '/', body: `
   ${heroSlider()}
 
   ${featuredPapers()}
@@ -642,6 +648,20 @@ const featuredPapersScript = `
     track.addEventListener('mouseleave', function(){ paused=false; });
     track.addEventListener('focusin', function(){ paused=true; });
     track.addEventListener('focusout', function(){ paused=false; });
+    // a finger takes over: the drift stops, the swipe flows on with the phone's own momentum, and
+    // the drift picks up again from wherever the row came to rest. Before a swipe starts, the row
+    // is moved onto its second copy (which looks identical), so it can be swiped either way
+    var resumeT=0;
+    track.addEventListener('touchstart', function(){
+      paused=true; clearTimeout(resumeT);
+      var h=half(); if(h>0 && track.scrollLeft<h*0.25){ track.scrollLeft+=h; pos=track.scrollLeft; }
+    }, {passive:true});
+    function letGo(){
+      clearTimeout(resumeT);
+      resumeT=setTimeout(function(){ var h=half(); pos=track.scrollLeft; if(h>0 && pos>=h) pos-=h; track.scrollLeft=pos; paused=false; }, 2600);
+    }
+    track.addEventListener('touchend', letGo, {passive:true});
+    track.addEventListener('touchcancel', letGo, {passive:true});
     if(!reduce) raf=requestAnimationFrame(step);
     return {
       nudge: function(dir){
@@ -884,16 +904,18 @@ const nationalReportsScript = `
   var stage=document.getElementById('rcStage'); if(!stage) return;
   var cards=[].slice.call(stage.querySelectorAll('.rc-card'));
   var n=cards.length, cur=0, timer=null, reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function layout(){
+  // off = how far a finger has dragged the row, in cards (0 at rest)
+  function layout(off){
+    off=off||0;
     cards.forEach(function(c,i){
-      var d=i-cur; if(d>n/2) d-=n; if(d<-n/2) d+=n;   // shortest way round
+      var d=i-cur-off; while(d>n/2) d-=n; while(d<-n/2) d+=n;   // shortest way round
       var abs=Math.abs(d);
-      c.classList.toggle('is-active', d===0);
-      if(abs>2){ c.style.opacity='0'; c.style.pointerEvents='none'; c.style.transform='translateX('+(d>0?200:-200)+'%) scale(.6)'; c.style.zIndex=0; return; }
+      c.classList.toggle('is-active', abs<0.5);
+      if(abs>2.5){ c.style.opacity='0'; c.style.pointerEvents='none'; c.style.transform='translateX('+(d>0?200:-200)+'%) scale(.6)'; c.style.zIndex=0; return; }
       c.style.pointerEvents='auto';   // side cards stay hoverable so they can slide themselves in
-      c.style.opacity=(abs===0?'1':(abs===1?'.62':'.28'));
-      c.style.zIndex=String(10-abs);
-      var x=d*54, s=1-abs*0.14, ry=d*-20;
+      c.style.opacity=String(abs<=1?1-0.38*abs:abs<=2?0.62-0.34*(abs-1):0.28*Math.max(0,1-(abs-2)*2));
+      c.style.zIndex=String(10-Math.round(abs));
+      var x=d*54, s=1-Math.min(abs,2.5)*0.14, ry=d*-20;
       c.style.transform='translateX('+x+'%) scale('+s+') rotateY('+ry+'deg)';
     });
   }
@@ -927,6 +949,47 @@ const nationalReportsScript = `
     c.addEventListener('click', function(){ if(i!==cur) stepTo(i); });
   });
   stage.addEventListener('mouseenter', stop); stage.addEventListener('mouseleave', play);
+  // a finger drags the cards round with it; let go and they flow on to the nearest card, a quick
+  // flick going one further. Upright swipes still scroll the page
+  var drag=null, dragged=false;
+  stage.addEventListener('pointerdown', function(e){
+    if(e.pointerType==='mouse') return;
+    drag={ x:e.clientX, y:e.clientY, off:0, v:0, lx:e.clientX, lt:performance.now(), horiz:null, id:e.pointerId };
+    dragged=false;
+  });
+  stage.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    var dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+    if(drag.horiz===null){
+      if(Math.abs(dx)<8 && Math.abs(dy)<8) return;
+      drag.horiz=Math.abs(dx)>Math.abs(dy);
+      if(!drag.horiz){ drag=null; return; }
+      stop(); stage.classList.add('is-dragging');
+      try{ stage.setPointerCapture(drag.id); }catch(err){}
+    }
+    dragged=true;
+    var w=(cards[0].getBoundingClientRect().width||300)*0.54, t=performance.now();
+    drag.v=(e.clientX-drag.lx)/Math.max(1,t-drag.lt); drag.lx=e.clientX; drag.lt=t;
+    drag.off=-dx/w;
+    layout(drag.off);
+  });
+  function letGo(){
+    if(!drag) return;
+    var d=drag; drag=null;
+    stage.classList.remove('is-dragging');
+    if(d.horiz){
+      var w=(cards[0].getBoundingClientRect().width||300)*0.54;
+      var steps=Math.round(d.off - d.v*260/w);
+      if(!steps && Math.abs(d.off)>0.15) steps=d.off>0?1:-1;
+      steps=Math.max(-2,Math.min(2,steps));
+      cur=((cur+steps)%n+n)%n;
+      layout(0);
+    }
+    play();
+  }
+  stage.addEventListener('pointerup', letGo); stage.addEventListener('pointercancel', letGo);
+  // a drag is not a tap: it does not open a card
+  stage.addEventListener('click', function(e){ if(dragged){ e.preventDefault(); e.stopPropagation(); dragged=false; } }, true);
   layout(); play();
 })();
 `;
@@ -2223,81 +2286,194 @@ exports.submitPaper = (ctx, { errors = [], values = {}, done = false } = {}) => 
     });
   }
 
+  // one field: label above, the control, a help line, and an error line that shows when it is wrong
+  const field = (id, label, control, { req = false, help = '', err = '', wide = false, count = 0, name = '' } = {}) => {
+    const has = name && errors.find((e) => e.field === name);
+    return `<div class="sp2-field${wide ? ' is-wide' : ''}${has ? ' is-invalid is-touched' : ''}" data-field${req ? ' data-req' : ''}>
+          <label for="${id}">${label}${req ? ' <span class="sp2-req" aria-hidden="true">*</span><span class="sr-only">(required)</span>' : ''}</label>
+          <div class="sp2-control">${control}<span class="sp2-ok" aria-hidden="true">${icon('check')}</span></div>
+          <div class="sp2-under">
+            ${help ? `<p class="sp2-help" id="${id}-help">${help}</p>` : '<span></span>'}
+            ${count ? `<span class="sp2-count" data-count="${id}" aria-live="off">0 / ${count.toLocaleString('en')}</span>` : ''}
+          </div>
+          ${err ? `<p class="sp2-err" id="${id}-err">${has ? esc(has.message) : err}</p>` : ''}
+        </div>`;
+  };
+  const ctl = (id, attrs, extra = '') => `<input id="${id}" ${attrs} aria-describedby="${id}-help ${id}-err"${extra}>`;
+  const tag0 = TAGS.includes(values.tag) ? values.tag : TAGS[0];
+
   return shell(ctx, {
     title: 'Submit a Paper', active: '/research', workspaceActive: 'research', body: `
   ${pageHeader('research', 'Submit a Paper', 'Send research, a working paper or a policy brief to the ICT Statistics & Policy Unit for review.')}
-  <div class="wrap section narrow">
-    <p class="lede-sm">Submissions are open to anyone, no account required. A reviewer reads every paper before it is
-      published to the NICTD research library. Fields marked <span class="sp-req">*</span> are required.</p>
+  <div class="wrap section sp2-wrap">
+    <p class="sp2-lede">Anyone can submit, no account needed. A reviewer reads every paper before it goes into the NICTD research library.</p>
 
-    ${errors.length ? `<div class="alert alert-error"><strong>Please check the form.</strong><ul style="margin:.4rem 0 0 1.1rem">
-      ${errors.map((e) => `<li>${esc(e.message)}</li>`).join('')}</ul></div>` : ''}
+    ${errors.length ? `<div class="sp2-alert" role="alert"><b>A few things need fixing before this can be sent.</b>
+      <ul>${errors.map((e) => `<li>${esc(e.message)}</li>`).join('')}</ul></div>` : ''}
 
-    <form method="post" action="/research/submit" class="sp-form" novalidate>
+    <form method="post" action="/research/submit" class="sp2" id="sp2" novalidate>
+      <nav class="sp2-rail" aria-label="Form progress">
+        <ol>
+          <li data-step="you"><span class="sp2-dot">1</span><span>About you</span></li>
+          <li data-step="paper"><span class="sp2-dot">2</span><span>Your paper</span></li>
+          <li data-step="send"><span class="sp2-dot">3</span><span>Confirm</span></li>
+        </ol>
+        <div class="sp2-meter" aria-hidden="true"><i></i></div>
+        <p class="sp2-left" data-left>6 required fields to go</p>
+      </nav>
 
-      <section class="panel">
-        <h2>${icon('users')} About you</h2>
-        <p class="muted">We collect this so a reviewer can identify and contact you. It is not published with your paper.</p>
-        <div class="grid-form">
-          <label>Full name <span class="sp-req">*</span>
-            <input name="sub_name" required maxlength="120" value="${v('sub_name')}" class="${bad('sub_name')}" autocomplete="name"></label>
-          <label>Email address <span class="sp-req">*</span>
-            <input type="email" name="sub_email" required maxlength="180" value="${v('sub_email')}" class="${bad('sub_email')}" autocomplete="email"
-              placeholder="you@example.org"></label>
-          <label>Institution / organization
-            <input name="sub_org" maxlength="160" value="${v('sub_org')}" autocomplete="organization"></label>
-          <label>Country
-            <select name="sub_country">
-              <option value="">Select…</option>
-              ${COUNTRIES.map((c) => `<option ${values.sub_country === c ? 'selected' : ''}>${c}</option>`).join('')}
-            </select></label>
-          <label style="grid-column:1/-1">Your role
-            <select name="sub_role">
-              <option value="">Select…</option>
-              ${ROLES.map((r) => `<option ${values.sub_role === r ? 'selected' : ''}>${r}</option>`).join('')}
-            </select></label>
-          <label style="grid-column:1/-1">Short bio
-            <textarea name="sub_bio" rows="3" maxlength="800" placeholder="A few lines on your background and research interests.">${v('sub_bio')}</textarea>
-            <span class="sp-hint">Up to 800 characters.</span></label>
+      <div class="sp2-sheet">
+        <section class="sp2-sec" data-sec="you" aria-labelledby="sp2-h-you">
+          <header class="sp2-head"><span class="sp2-n" aria-hidden="true">1</span><div>
+            <h2 id="sp2-h-you">About you</h2>
+            <p>So a reviewer can reach you about this paper. None of it is published.</p></div></header>
+          <div class="sp2-grid">
+            ${field('sp-name', 'Full name', ctl('sp-name', `name="sub_name" required maxlength="120" autocomplete="name" value="${v('sub_name')}"`), { req: true, err: 'Enter your full name.', name: 'sub_name' })}
+            ${field('sp-email', 'Email address', ctl('sp-email', `type="email" name="sub_email" required maxlength="180" autocomplete="email" inputmode="email" value="${v('sub_email')}"`), { req: true, help: 'Where the review outcome is sent.', err: 'Enter an email address like name@domain.org.', name: 'sub_email' })}
+            ${field('sp-org', 'Institution or organization', ctl('sp-org', `name="sub_org" maxlength="160" autocomplete="organization" value="${v('sub_org')}"`), { help: 'Optional.' })}
+            ${field('sp-country', 'Country', `<select id="sp-country" name="sub_country" aria-describedby="sp-country-help"><option value="">Choose a country</option>${COUNTRIES.map((c) => `<option ${values.sub_country === c ? 'selected' : ''}>${c}</option>`).join('')}</select>`, { help: 'Optional.' })}
+            ${field('sp-role', 'Your role', `<select id="sp-role" name="sub_role" aria-describedby="sp-role-help"><option value="">Choose a role</option>${ROLES.map((r) => `<option ${values.sub_role === r ? 'selected' : ''}>${r}</option>`).join('')}</select>`, { help: 'Optional.', wide: true })}
+            ${field('sp-bio', 'Short bio', `<textarea id="sp-bio" name="sub_bio" rows="3" maxlength="800" data-grow aria-describedby="sp-bio-help">${v('sub_bio')}</textarea>`, { help: 'A few lines on your background and research interests.', wide: true, count: 800 })}
+          </div>
+        </section>
+
+        <section class="sp2-sec" data-sec="paper" aria-labelledby="sp2-h-paper">
+          <header class="sp2-head"><span class="sp2-n" aria-hidden="true">2</span><div>
+            <h2 id="sp2-h-paper">Your paper</h2>
+            <p>What a reader sees in the library once it is approved.</p></div></header>
+          <div class="sp2-grid">
+            ${field('sp-title', 'Title', ctl('sp-title', `name="title" required maxlength="240" value="${v('title')}"`), { req: true, wide: true, err: 'Give the paper a title.', name: 'title' })}
+            ${field('sp-authors', 'Author(s)', ctl('sp-authors', `name="authors" required maxlength="200" value="${v('authors')}"`), { req: true, help: 'As they should appear in print.', err: 'Name at least one author.', name: 'authors' })}
+            <fieldset class="sp2-field sp2-chips" data-field>
+              <legend>Category</legend>
+              <div class="sp2-chiprow">${TAGS.map((t) => `<label class="sp2-chip"><input type="radio" name="tag" value="${t}" ${t === tag0 ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>
+            </fieldset>
+            ${field('sp-abstract', 'Abstract', `<textarea id="sp-abstract" name="abstract" rows="4" required maxlength="1200" data-grow aria-describedby="sp-abstract-help sp-abstract-err">${v('abstract')}</textarea>`, { req: true, wide: true, count: 1200, help: 'The summary shown with the paper.', err: 'Add a short abstract.', name: 'abstract' })}
+            ${field('sp-body', 'Full text', `<textarea id="sp-body" name="body" rows="6" maxlength="20000" data-grow aria-describedby="sp-body-help">${v('body')}</textarea>`, { wide: true, count: 20000, help: 'Optional. Paste the paper here, or leave it blank and a reviewer will ask for the file by email.' })}
+          </div>
+        </section>
+
+        <section class="sp2-sec" data-sec="send" aria-labelledby="sp2-h-send">
+          <header class="sp2-head"><span class="sp2-n" aria-hidden="true">3</span><div>
+            <h2 id="sp2-h-send">Confirm</h2>
+            <p>One last check before it goes to a reviewer.</p></div></header>
+          <div class="sp2-field sp2-consent${errors.some((e) => e.field === 'consent') ? ' is-invalid is-touched' : ''}" data-field data-req>
+            <label class="sp2-check">
+              <input type="checkbox" name="consent" value="1" ${values.consent ? 'checked' : ''} required>
+              <span class="sp2-box" aria-hidden="true">${icon('check')}</span>
+              <span>I confirm this is my own work, or that I am allowed to submit it, and I agree that the ICT Statistics &amp; Policy Unit may keep my contact details to process this submission. <span class="sp2-req" aria-hidden="true">*</span></span>
+            </label>
+            <p class="sp2-err">Please tick this box to send the paper.</p>
+            <p class="sp2-note">${icon('shield')} Your name, email and bio stay with this submission for review correspondence only, in line with Liberia’s Data Protection Act.</p>
+          </div>
+        </section>
+
+        <div class="sp2-actions">
+          <button class="sp2-send" type="submit"><span class="sp2-send-t">Submit for review</span><span class="sp2-send-i" aria-hidden="true">${icon('arrow')}</span><span class="sp2-spin" aria-hidden="true"></span></button>
+          <a class="sp2-cancel" href="/research">Cancel</a>
         </div>
-      </section>
-
-      <section class="panel">
-        <h2>${icon('doc')} Your paper</h2>
-        <div class="grid-form">
-          <label style="grid-column:1/-1">Title <span class="sp-req">*</span>
-            <input name="title" required maxlength="240" value="${v('title')}" class="${bad('title')}"></label>
-          <label>Author(s) <span class="sp-req">*</span>
-            <input name="authors" required maxlength="200" value="${v('authors')}" class="${bad('authors')}"
-              placeholder="As they should appear in print"></label>
-          <label>Category
-            <select name="tag">${TAGS.map((t) => `<option ${values.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
-          <label style="grid-column:1/-1">Abstract <span class="sp-req">*</span>
-            <textarea name="abstract" rows="4" required maxlength="1200" class="${bad('abstract')}">${v('abstract')}</textarea>
-            <span class="sp-hint">Up to 1,200 characters.</span></label>
-          <label style="grid-column:1/-1">Full text <span class="sp-hint-inline">optional</span>
-            <textarea name="body" rows="8" maxlength="20000" placeholder="Paste the full paper here, or leave blank and a reviewer will request the file by email.">${v('body')}</textarea></label>
-        </div>
-      </section>
-
-      <section class="panel sp-consent">
-        <label class="sp-check">
-          <input type="checkbox" name="consent" value="1" ${values.consent ? 'checked' : ''} class="${bad('consent')}">
-          <span>I confirm this is my own work or that I am authorised to submit it, and I consent to the ICT Statistics
-            &amp; Policy Unit storing my contact details to process this submission. <span class="sp-req">*</span></span>
-        </label>
-        <p class="muted" style="margin-top:.7rem">NICTD holds aggregate, anonymized statistics. Your name, email and bio are
-          stored only against this submission for review correspondence, in line with Liberia’s Data Protection Act.</p>
-      </section>
-
-      <div class="sp-actions">
-        <button class="btn btn-teal" type="submit">${icon('arrow')} Submit for review</button>
-        <a class="btn btn-outline" href="/research">Cancel</a>
       </div>
     </form>
-  </div>`,
+
+    <div class="sp2-bar" aria-hidden="true">
+      <div class="sp2-bar-in">
+        <div class="sp2-bar-p"><div class="sp2-meter"><i></i></div><span data-left>6 required fields to go</span></div>
+        <button class="sp2-send sp2-send-sm" type="submit" form="sp2" tabindex="-1"><span class="sp2-send-t">Submit</span><span class="sp2-send-i">${icon('arrow')}</span><span class="sp2-spin"></span></button>
+      </div>
+    </div>
+  </div>
+  <script>${submitPaperScript}</script>`,
   });
 };
+
+// The submit form, alive: each field says when it is complete (a check) or wrong (a line under it,
+// shown once the reader has left the field), counters count, text boxes grow, the step rail and the
+// phone's bottom bar fill as the required fields are done, sections rise in as they arrive, and a
+// send shows that it is sending. With reduced motion nothing moves; it all still works.
+const submitPaperScript = `
+(function(){
+  var f=document.getElementById('sp2'); if(!f) return;
+  f.classList.add('is-live');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var EMAIL=/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/;
+  var fields=[].slice.call(f.querySelectorAll('[data-field]'));
+  function ctrl(fd){ return fd.querySelector('input:not([type=radio]),textarea,select'); }
+  function ok(fd){
+    var c=ctrl(fd); if(!c) return true;
+    if(c.type==='checkbox') return c.checked;
+    var val=c.value.trim();
+    if(c.type==='email') return fd.hasAttribute('data-req') ? EMAIL.test(val) : (!val || EMAIL.test(val));
+    return fd.hasAttribute('data-req') ? val.length>0 : true;
+  }
+  function paint(fd){
+    var c=ctrl(fd); if(!c) return;
+    var good=ok(fd), filled=c.type==='checkbox'?c.checked:c.value.trim().length>0;
+    fd.classList.toggle('is-valid', good && filled);
+    fd.classList.toggle('is-invalid', !good && fd.classList.contains('is-touched'));
+    c.setAttribute('aria-invalid', String(!good && fd.classList.contains('is-touched')));
+  }
+  var req=fields.filter(function(fd){ return fd.hasAttribute('data-req'); });
+  function progress(){
+    var done=req.filter(ok).length, left=req.length-done;
+    f.closest('.sp2-wrap').style.setProperty('--sp2-p', String(done/req.length));
+    [].forEach.call(document.querySelectorAll('[data-left]'), function(el){ el.textContent = left ? (left+' required field'+(left>1?'s':'')+' to go') : 'Ready to send'; });
+    ['you','paper','send'].forEach(function(k){
+      var sec=f.querySelector('[data-sec="'+k+'"]'), dot=f.querySelector('[data-step="'+k+'"]');
+      var rs=[].slice.call(sec.querySelectorAll('[data-req]'));
+      if(dot) dot.classList.toggle('is-done', rs.length>0 && rs.every(ok));
+    });
+  }
+  function count(c){
+    var el=f.querySelector('[data-count="'+c.id+'"]'); if(!el) return;
+    var n=c.value.length, max=+c.getAttribute('maxlength');
+    el.textContent=n.toLocaleString('en')+' / '+max.toLocaleString('en');
+    el.classList.toggle('is-near', n>max*0.9);
+  }
+  function grow(c){ if(!c.hasAttribute('data-grow')) return; c.style.height='auto'; c.style.height=Math.min(c.scrollHeight+2, 560)+'px'; }
+  fields.forEach(function(fd){
+    var c=ctrl(fd); if(!c) return;
+    c.addEventListener('input',function(){ paint(fd); progress(); count(c); grow(c); });
+    c.addEventListener('change',function(){ fd.classList.add('is-touched'); paint(fd); progress(); });
+    c.addEventListener('blur',function(){ if(c.value || c.type==='checkbox' || fd.classList.contains('is-touched')) fd.classList.add('is-touched'); paint(fd); });
+    paint(fd); count(c); grow(c);
+  });
+  progress();
+  // the step you are on is the one in view
+  if('IntersectionObserver' in window){
+    var steps={};
+    [].forEach.call(f.querySelectorAll('[data-step]'),function(li){ steps[li.getAttribute('data-step')]=li; });
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){
+      var k=e.target.getAttribute('data-sec');
+      if(e.isIntersecting){ e.target.classList.add('is-in'); Object.keys(steps).forEach(function(s){ steps[s].classList.toggle('is-here', s===k); }); }
+    }); },{ rootMargin:'-35% 0px -45% 0px' });
+    [].forEach.call(f.querySelectorAll('[data-sec]'),function(sec){ io.observe(sec); });
+    // sections rise in as they arrive (they are visible without this)
+    var rise=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('is-risen'); rise.unobserve(e.target); } }); },{ threshold:0.08 });
+    if(!reduce) [].forEach.call(f.querySelectorAll('.sp2-sec'),function(sec){ sec.classList.add('will-rise'); rise.observe(sec); });
+  }
+  // the phone's bottom bar shows once the form is on screen
+  var bar=document.querySelector('.sp2-bar');
+  if(bar && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(es){ bar.classList.toggle('is-on', es[0].isIntersecting); },{ threshold:0 }).observe(f);
+  }
+  var sending=false;
+  f.addEventListener('submit',function(e){
+    if(sending){ e.preventDefault(); return; }
+    var bad=req.filter(function(fd){ return !ok(fd); });
+    if(bad.length){
+      e.preventDefault();
+      bad.forEach(function(fd){ fd.classList.add('is-touched'); paint(fd); });
+      var first=ctrl(bad[0]); bad[0].scrollIntoView({ behavior: reduce?'auto':'smooth', block:'center' });
+      setTimeout(function(){ first.focus({ preventScroll:true }); }, reduce?0:350);
+      if(!reduce){ f.classList.remove('is-shaking'); void f.offsetWidth; f.classList.add('is-shaking'); }
+      return;
+    }
+    sending=true;
+    [].forEach.call(document.querySelectorAll('.sp2-send'),function(b){ b.classList.add('is-sending'); b.setAttribute('aria-busy','true'); });
+    [].forEach.call(document.querySelectorAll('.sp2-send .sp2-send-t'),function(t){ t.textContent='Sending'; });
+  });
+})();
+`;
 
 // Scroll-scrubbed video hero. The clip autoplays on arrival; once the reader starts
 // scrolling, their scroll position drives the playhead instead, so scrolling down runs the
@@ -3138,11 +3314,8 @@ const careerSlug = (r) => String(r.title).toLowerCase().replace(/[^a-z0-9]+/g, '
 exports.CAREER_ROLES = CAREER_ROLES;
 exports.careerSlug = careerSlug;
 // Three.js comes from jsDelivr, as in niip-3d; careers.js draws the star only when it loads.
-// The home page's robot turaco: three.js from the same CDN build as Careers, and the director script.
-const BIRD_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
-<script type="module" src="/assets/bird.js?v=${ASSET_V}"></script>`;
-const CAREERS_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<script type="module" src="/assets/careers.js?v=${ASSET_V}"></script>`;
+// Careers and About: their chrome star (three.js comes from the site-wide import map)
+const CAREERS_HEAD = `<script type="module" src="/assets/careers.js?v=${ASSET_V}"></script>`;
 const csBtn = (href, label, cls = '') => `<a class="cs-btn${cls ? ' ' + cls : ''}" href="${esc(href)}"><span>${esc(label)}</span><i aria-hidden="true">${icon('arrow')}</i></a>`;
 // A line whose letters arrive in random order (careers.js); the parent heading carries the words.
 const csDecode = (text, cls = '') => `<span class="cs-line${cls ? ' ' + cls : ''}" data-decode aria-hidden="true">${esc(text)}</span>`;

@@ -1,7 +1,9 @@
-// The home page's robot turaco (desktop for now). It starts on the "Featured Research Papers"
-// heading and keeps the reader company down the page and back up again: each time they scroll it
-// flies to another heading on screen, every flight by a different route. When the footer comes into
-// view it lands there and rests until the reader scrolls back up.
+// The site's robot turaco, on every public page, on phones and desktops. On the home page it starts
+// on the "Featured Research Papers" heading; elsewhere it flies in to the first place it can sit.
+// It keeps the reader company down the page and back up again: each time they scroll it flies to
+// another perch on screen (a heading, or the top of a card, a panel or a button), every flight by a
+// different route. When the footer comes into view it lands there and rests until the reader scrolls
+// back up.
 //
 // Sitting, it looks about like a curious bird (a turn of the head, a hold, a tilt to one eye). When
 // the reader stops scrolling for ten seconds it does something of its own, never the same thing twice
@@ -9,19 +11,21 @@
 // loop, a dive toward the reader, a stretch, a song, a preen, a turn. It watches the mouse and jumps
 // away if the cursor comes too close. If no heading is in view it flies past now and then.
 //
-// And there is a worm. Now and then it comes up under one of the carousels; the bird spots it and
-// goes for it, and always misses, a different way each time (just too late, too far, a fly-over with
-// the claws out, an overshoot, a decoy, a standoff). Often the worm pops back up behind its back.
+// And there is a worm. Now and then it pokes out of the top of a card (or under one of the home
+// carousels); the bird spots it and goes for it, and always misses, a different way each time (just
+// too late, too far, a fly-over with the claws out, an overshoot, a decoy, a standoff). Often the
+// worm pops back up behind its back.
 //
-// Marked in the page: data-perch="start" | data-perch | data-perch="final" on headings, and
-// data-worm on the carousels the worm lives under. The bird stands on a flat-topped capital on a
-// heading's first line, so it never covers a line. Wide screens with a mouse only, never under
-// reduced motion, and only with WebGL.
+// Perches are found on the page: h1 to h3 headings (the bird stands on a flat-topped capital on the
+// first line, so it never covers a line) and cards, panels and buttons (it stands on the top edge).
+// data-perch="start" | "final" mark where it begins and ends; data-no-perch keeps it off a region;
+// data-worm marks the ground under a carousel. Never on admin pages, never under reduced motion, and
+// only with WebGL. On phones a tap near it sends it off; with a mouse it watches the pointer.
 
-const DESKTOP = matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)');
+const SMALL = matchMedia('(max-width: 760px)');
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)');
 const webgl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } })();
-if (DESKTOP.matches && !REDUCE.matches && webgl && document.querySelector('[data-perch]')) start().catch((e) => console.warn('robo turaco:', e));
+if (!REDUCE.matches && webgl && innerWidth >= 320 && !location.pathname.startsWith('/admin')) start().catch((e) => console.warn('robo turaco:', e));
 
 async function start() {
   const THREE = await import('three');
@@ -39,7 +43,7 @@ async function start() {
   canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:80';
   document.body.appendChild(canvas);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, SMALL.matches ? 2 : 1.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
   renderer.setClearColor(0x000000, 0);
@@ -64,7 +68,7 @@ async function start() {
     W = innerWidth; H = innerHeight;
     renderer.setSize(W, H, false); camera.aspect = W / H; camera.updateProjectionMatrix();
     s = (2 * D * Math.tan((FOV * Math.PI) / 360)) / H;  // world units per pixel at the page plane
-    birdPx = clamp(H * 0.095, 66, 92);
+    birdPx = SMALL.matches ? clamp(W * 0.135, 46, 58) : clamp(H * 0.095, 66, 92);
     root.scale.setScalar((birdPx * s) / BIRD_H);
     worm.object.scale.copy(root.scale).multiplyScalar(1.25);   // a touch larger than life, so it reads
     perches.forEach((p) => { p.letter = null; });
@@ -75,7 +79,26 @@ async function start() {
   // ---- perches on headings
   const FLAT = 'TEFHIDPBRLNMKZ';
   const meas = document.createElement('canvas').getContext('2d');
-  const perches = [...document.querySelectorAll('[data-perch]')].map((el) => ({ el, role: el.dataset.perch || 'perch', aim: 0.66, flip: false }));
+  const HEADS = 'h1, h2, h3, [data-perch]';
+  const ITEMS = '.panel, .card, [class$="-card"], [class*="-card "], .lsc-map, .vid-frame, .dx-stat, .sp2-sheet, .btn, .rp-btn, .cs-btn';
+  const NO = '.gov-nav, .nav-sheet, [data-no-perch], .hero-slider, #sqTrends, #rcStage, #fpTrack, .lsc-deck, .dx-fs, .xdd-panel, .sp2-bar, .to-top, .lsc-card, dialog, [hidden]';
+  const known = new WeakMap();
+  let perches = [];
+  function scan() {
+    const list = [], seen = new Set();
+    const add = (el, role) => {
+      if (seen.has(el) || (el.closest(NO) && !el.hasAttribute('data-perch'))) return;
+      seen.add(el);
+      let p = known.get(el);
+      if (!p) { p = { el, role, aim: role === 'item' ? rnd(0.22, 0.78) : 0.66, flip: false }; known.set(el, p); }
+      list.push(p);
+    };
+    document.querySelectorAll(HEADS).forEach((el) => add(el, el.dataset.perch || 'perch'));
+    document.querySelectorAll(ITEMS).forEach((el) => add(el, 'item'));
+    perches = list;
+  }
+  scan();
+  setInterval(scan, 1500);
   // the flat-topped capital on the heading's first line nearest p.aim of the way along
   function chooseLetter(p) {
     const cs = getComputedStyle(p.el);
@@ -105,6 +128,12 @@ async function start() {
   // where the bird's feet go, in viewport pixels (null while the spot has no layout)
   function perchPoint(p) {
     if (p.point) return p.point();
+    if (p.role === 'item') {
+      // on the top edge of a card, panel or button, a little way along it
+      const r = p.el.getBoundingClientRect();
+      if (r.width < 70 || r.height < 34) return null;
+      return { x: r.left + r.width * p.aim, y: r.top + 1, z: 0 };
+    }
     if (!p.letter) chooseLetter(p);
     const L = p.letter; if (!L) return null;
     const r = document.createRange(); r.setStart(L.node, L.i); r.setEnd(L.node, L.i + 1);
@@ -121,14 +150,18 @@ async function start() {
   const onScreen = (pt) => !!pt && pt.y > navBottom() + birdPx * 0.6 && pt.y < H + birdPx && pt.x > -40 && pt.x < W + 40;
 
   // ---- the worm's ground: just under each carousel marked data-worm
-  const wormSpots = [...document.querySelectorAll('[data-worm]')];
-  const holePoint = (h) => { const r = h.el.getBoundingClientRect(); return r.width ? { x: r.left + r.width * h.fx, y: r.bottom + 26, z: 0 } : null; };
+  const wormSpots = () => [...document.querySelectorAll('[data-worm]')].map((el) => ({ el, edge: 'bottom' }))
+    .concat(perches.filter((p) => p.role === 'item' && !p.el.matches('.btn, .rp-btn, .cs-btn')).map((p) => ({ el: p.el, edge: 'top' })));
+  const holePoint = (h) => {
+    const r = h.el.getBoundingClientRect(); if (!r.width) return null;
+    return { x: r.left + r.width * h.fx, y: h.edge === 'top' ? r.top + 1 : r.bottom + 26, z: 0 };
+  };
   // a place on the ground beside a hole, offset px from it (negative = left of it)
   const groundPerch = (hole, offset) => ({ role: 'ground', hole, offset, point() { const h = holePoint(hole); return h && { x: h.x + offset, y: h.y, z: 0 }; } });
   function pickHole(avoid) {
     const opts = [];
-    for (const el of wormSpots) for (let k = 0; k < 4; k++) {
-      const h = { el, fx: rnd(0.12, 0.88) }, pt = holePoint(h);
+    for (const sp of wormSpots()) for (let k = 0; k < 3; k++) {
+      const h = { el: sp.el, edge: sp.edge, fx: rnd(0.15, 0.85) }, pt = holePoint(h);
       if (groundOK(pt) && (!avoid || Math.abs(pt.x - holePoint(avoid).x) > birdPx * 1.6)) opts.push(h);
     }
     return opts.length ? pick(opts) : null;
@@ -208,9 +241,11 @@ async function start() {
 
   // ---- state
   const S = { PERCHED: 'perched', TAKEOFF: 'takeoff', FLY: 'flying', AWAY: 'away' };
-  let state = S.PERCHED, perch = perches.find((p) => p.role === 'start') || perches[0];
+  let perch = perches.find((p) => p.role === 'start') || null;
+  let state = perch ? S.PERCHED : S.AWAY;
   let everSeen = false, seenFor = 0, scrolled = false, now = 0, lastScroll = 0, lastAct = 0, scrollDir = 1, lastY = scrollY;
-  let flight = null, pending = null, awayT = 0, awayWait = 1, launchT = 0, roll = 0, modeHold = 0, busyT = 0, startleCool = 0;
+  let flight = null, pending = null, awayT = 0, awayWait = 1.4, launchT = 0, roll = 0, modeHold = 0, busyT = 0, startleCool = 0;
+  if (!perch) root.visible = false;
   let lastBehaviour = '', behaviours = 0, mYaw = 0, mLook = 0;
   let ep = null, epWait = null, epName = '', epStart = 0, nextWorm = Infinity, wormHole = null, lastMiss = '', misses = 0;
   const mouse = { x: -1e4, y: -1e4, t: -99 };
@@ -226,7 +261,9 @@ async function start() {
     scrolled = true; lastScroll = now; lastAct = now;
     const y = scrollY; if (Math.abs(y - lastY) > 2) scrollDir = y > lastY ? 1 : -1; lastY = y;
   }, { passive: true });
-  addEventListener('pointermove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.t = now; }, { passive: true });
+  addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') { mouse.x = e.clientX; mouse.y = e.clientY; mouse.t = now; } }, { passive: true });
+  let tap = null;
+  addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') tap = { x: e.clientX, y: e.clientY, t: now }; }, { passive: true });
   addEventListener('resize', resize);
   const idleFor = () => now - lastScroll;
   const birdAt = () => toScreen(root.position);
@@ -297,7 +334,7 @@ async function start() {
     tour: () => takeOff({ target: perch, route: 'tour' }),
     visit: () => { if (targets(perch).length) takeOff({}); else BEHAVIOURS.loop(); },
     hop: () => {
-      if ((perch.flatCount || 0) < 2) return BEHAVIOURS.turn();
+      if (perch.role !== 'item' && (perch.flatCount || 0) < 2) return BEHAVIOURS.turn();
       perch.aim = pick([0.12, 0.35, 0.55, 0.85].filter((a) => Math.abs(a - perch.aim) > 0.15)); perch.letter = null;
       takeOff({ target: perch, route: 'hop' });
     },
@@ -314,7 +351,7 @@ async function start() {
     // on the ground (after a worm hunt) it just goes back up to a heading
     if (perch.role === 'ground') { if (targets(null).length) takeOff({}); else { bird.express('preen'); busyT = 2; } return; }
     // the worm, when it can show itself, half the time
-    if (wormSpots.length && behaviours > 0 && Math.random() < 0.5 && startWorm()) return;
+    if (behaviours > 0 && Math.random() < 0.5 && startWorm()) return;
     // the first time the reader stops, the bird makes a pass across the screen; after that, anything
     const name = behaviours === 0 ? 'tour' : pick(Object.keys(BEHAVIOURS).filter((n) => n !== lastBehaviour));
     behaviours++; lastBehaviour = name;
@@ -429,7 +466,7 @@ async function start() {
     if (perch.role === 'ground') goUp();
   }
   function startWorm() {
-    if (ep || !wormSpots.length) return false;
+    if (ep) return false;
     const hole = pickHole(); if (!hole) return false;
     ep = hunt(hole); epWait = null; lastAct = now; epStart = now; epName = '';
     nextWorm = Infinity;
@@ -464,11 +501,12 @@ async function start() {
     qFlight.multiply(new THREE.Quaternion().setFromAxisAngle(FWD, roll));
   }
 
-  let rendered = true;
+  let rendered = true, frameN = 0;
   function frame(dt) {
     now += dt;
-    if (!DESKTOP.matches) { canvas.style.display = 'none'; scrolled = false; return; }
-    canvas.style.display = '';
+    const covered = document.documentElement.classList.contains('nav-open') || document.documentElement.classList.contains('tree-open');
+    canvas.style.visibility = covered ? 'hidden' : '';
+    if (covered) { scrolled = false; return; }
     let draw = true;
     busyT -= dt; startleCool -= dt;
     // a scroll ends a worm hunt: the worm is gone in an instant and the bird gets on with its day
@@ -484,6 +522,7 @@ async function start() {
       if (pt) { root.position.copy(toWorld(pt.x, pt.y)); qPerch = facing(pt.x, perch); root.quaternion.slerp(qPerch, 1 - Math.exp(-6 * dt)); }
       seenFor = vis ? seenFor + dt : 0;
       if (vis && !everSeen) { everSeen = true; nextWorm = now + rnd(7, 11); }
+      if (!pt && everSeen) { state = S.AWAY; root.visible = false; awayT = 0; awayWait = rnd(0.5, 1); flight = null; }
       draw = vis;
       const resting = perch.role === 'final' && inZone(pt) && scrollDir > 0;  // the end of the page
       const footerAhead = scrollDir > 0 && perch.role !== 'final' && targets(perch).some((o) => o.p.role === 'final');
@@ -494,7 +533,9 @@ async function start() {
         // watches the mouse (smoothly); jumps away if the cursor comes too close
         const head = { x: pt.x, y: pt.y - birdPx * 0.75 };
         const dx = mouse.x - head.x, dy = mouse.y - head.y, dist = Math.hypot(dx, dy);
-        if (dist < birdPx * 0.8 && startleCool <= 0 && busyT <= 0 && now - mouse.t < 0.5) {
+        const tapped = tap && now - tap.t < 0.4 && Math.hypot(tap.x - pt.x, tap.y - (pt.y - birdPx * 0.5)) < birdPx * 0.9;
+        if (tapped) tap = null;
+        if ((tapped || (dist < birdPx * 0.8 && now - mouse.t < 0.5)) && startleCool <= 0 && busyT <= 0) {
           startleCool = 5; lastAct = now;
           bird.express('hop');
           if (targets(perch).length && Math.random() < 0.6) takeOff({}); else takeOff({ target: perch, route: pick(['loop', 'arc', 'tour']) });
@@ -572,7 +613,9 @@ async function start() {
     const wormOn = !!wh && (ep || worm.out || worm.object.children[0].material.opacity > 0.02);
     worm.object.visible = wormOn;
     if (wormOn) { worm.object.position.copy(toWorld(wh.x, wh.y)); worm.setGround(worm.object.position.y); }
-    render((draw && root.visible) || wormOn);
+    frameN++;
+    const still = state === S.PERCHED && now - lastScroll > 0.4 && busyT <= 0 && !ep && bird.timeInMode > 1.2;
+    render(((draw && root.visible) || wormOn) && (!SMALL.matches || !still || frameN % 2 === 0));
   }
   function render(draw) {
     if (draw) { renderer.render(scene, camera); rendered = true; }
@@ -589,7 +632,8 @@ async function start() {
   requestAnimationFrame(loop);
   // read-only status for testing in the console
   window.__roboTuraco = {
-    get state() { return state; }, get perch() { return perch && (perch.el ? perch.el.textContent.trim() : perch.role); }, get route() { return flight && flight.name; },
+    get state() { return state; }, get perch() { return perch && (perch.el ? perch.role + ': ' + perch.el.textContent.trim().replace(/\s+/g, ' ').slice(0, 40) : perch.role); }, get route() { return flight && flight.name; },
+    get perches() { return perches.length; },
     get behaviour() { return lastBehaviour; }, get behaviours() { return behaviours; }, get hunt() { return ep ? epName || 'spotting' : ''; },
     get misses() { return misses; }, get wormOut() { return worm.out; }, startWorm, root,
   };

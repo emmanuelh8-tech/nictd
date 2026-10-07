@@ -849,7 +849,8 @@
     burger.setAttribute('aria-expanded', 'true');
     burger.setAttribute('aria-label', 'Close menu');
     requestAnimationFrame(function () { sheet.classList.add('is-open'); });
-    var target = focusSearch ? sheet.querySelector('input') : sheet.querySelector('.sheet-link');
+    // focus goes to the drawer itself (no ring), so no link wears a focus box after the menu opens
+    var target = focusSearch ? sheet.querySelector('input') : sheet.querySelector('.nav-drawer');
     if (target) setTimeout(function () { target.focus({ preventScroll: true }); }, focusSearch ? 60 : 0);
   }
   function close(returnFocus) {

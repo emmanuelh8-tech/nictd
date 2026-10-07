@@ -679,6 +679,23 @@
       var open = t.classList.toggle('is-open');
       treeToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
+    // phones: Browse indicators sits in the filter drop-down and opens the list as a full sheet
+    var browseBtn = qs('#dx-cmd-browse'), treeClose = qs('#tree-close');
+    function treeSheet(on) {
+      var t = qs('#indicator-tree');
+      if (!t) return;
+      t.classList.toggle('is-sheet', on);
+      document.documentElement.classList.toggle('tree-open', on);
+      if (browseBtn) browseBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (on) { var first = t.querySelector('.tree-item.selected') || t.querySelector('.tree-item'); if (first) first.focus({ preventScroll: false }); }
+      else if (browseBtn) browseBtn.focus({ preventScroll: true });
+    }
+    if (browseBtn) browseBtn.addEventListener('click', function () { treeSheet(true); });
+    if (treeClose) treeClose.addEventListener('click', function () { treeSheet(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.documentElement.classList.contains('tree-open')) treeSheet(false); });
+    qsa('.tree-item').forEach(function (it) {
+      it.addEventListener('click', function () { if (document.documentElement.classList.contains('tree-open')) treeSheet(false); });
+    });
     function scrollToTop() {
       var target = qs('#dx-intro');
       if (target) target.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });

@@ -842,10 +842,8 @@
   var nav = document.querySelector('.gov-nav');
   var root = document.documentElement;
   var closeT = 0;
-  function place() { var b = nav.getBoundingClientRect().bottom; sheet.style.setProperty('--sheet-top', Math.max(0, Math.round(b)) + 'px'); }
   function open(focusSearch) {
     clearTimeout(closeT);
-    place();
     sheet.hidden = false;
     root.classList.add('nav-open');
     burger.setAttribute('aria-expanded', 'true');
@@ -860,13 +858,24 @@
     root.classList.remove('nav-open');
     burger.setAttribute('aria-expanded', 'false');
     burger.setAttribute('aria-label', 'Open menu');
-    closeT = setTimeout(function () { sheet.hidden = true; }, 240);
+    closeT = setTimeout(function () { sheet.hidden = true; }, 320);
     if (returnFocus) burger.focus({ preventScroll: true });
   }
   burger.addEventListener('click', function () { sheet.hidden ? open(false) : close(true); });
   if (finder) finder.addEventListener('click', function () { sheet.hidden ? open(true) : sheet.querySelector('input').focus(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) close(true); });
-  sheet.addEventListener('click', function (e) { if (e.target.closest('a')) close(false); });
+  sheet.addEventListener('click', function (e) {
+    if (e.target.closest('[data-sheet-close]')) { close(true); return; }
+    var plus = e.target.closest('.sheet-plus');
+    if (plus) {
+      var sub = document.getElementById(plus.getAttribute('aria-controls'));
+      var on = plus.getAttribute('aria-expanded') !== 'true';
+      plus.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (sub) sub.hidden = !on;
+      return;
+    }
+    if (e.target.closest('a')) close(false);
+  });
   // turning a tablet or widening the window back to the desktop bar closes the sheet
   var phone = window.matchMedia('(max-width: 860px)');
   phone.addEventListener('change', function () { if (!phone.matches) close(false); });

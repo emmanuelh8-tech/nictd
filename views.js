@@ -240,11 +240,17 @@ function mainNav(active, q) {
       </div>
     </div>`;
   };
-  // the phone menu (app.js opens it): every section and its pages, the search, and Log In
-  const sheetRow = ([href, label, ic, sub]) => `<li>
-          <a href="${href}" class="sheet-link${isActive(href, sub) ? ' active' : ''}"${active === href ? ' aria-current="page"' : ''}><span class="sheet-ic">${icon(ic)}</span><span class="sheet-t">${esc(label)}</span>${icon('chevron', 'icn sheet-go')}</a>
-          ${sub ? `<ul class="sheet-sub">${sub.map(([h, l]) => `<li><a href="${h}" class="${active === h ? 'active' : ''}"${active === h ? ' aria-current="page"' : ''}>${esc(l)}</a></li>`).join('')}</ul>` : ''}
+  // the phone menu (app.js opens it): a drawer from the left with the national seal at its head,
+  // every section (a + opens a section's own pages), the search, and Log In
+  const sheetRow = ([href, label, ic, sub]) => {
+    const subId = 'sheet-sub-' + (href.replace(/\W+/g, '') || 'home');
+    const open = sub && isActive(href, sub);
+    return `<li${sub ? ' class="has-sub"' : ''}>
+          <div class="sheet-row"><a href="${href}" class="sheet-link${isActive(href, sub) ? ' active' : ''}"${active === href ? ' aria-current="page"' : ''}>${esc(label)}</a>${sub
+            ? `<button type="button" class="sheet-plus" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${subId}" aria-label="${esc(label)} pages"><i aria-hidden="true"></i></button>` : ''}</div>
+          ${sub ? `<ul class="sheet-sub" id="${subId}"${open ? '' : ' hidden'}>${sub.map(([h, l]) => `<li><a href="${h}" class="${active === h ? 'active' : ''}"${active === h ? ' aria-current="page"' : ''}>${esc(l)}</a></li>`).join('')}</ul>` : ''}
         </li>`;
+  };
   return `<nav class="gov-nav" aria-label="Main"><div class="nav-shell">
     <a class="gov-wordmark nav-mapblock" href="/" aria-label="NICTD home">${liberiaFlag(46)}<span class="nav-brand" aria-hidden="true">NICTD</span></a>
     <form class="nav-search" action="/indicators" method="get">
@@ -259,15 +265,20 @@ function mainNav(active, q) {
     <button class="nav-icon-btn nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navSheet"><span></span><span></span><span></span></button>
   </div>
   <div class="nav-sheet" id="navSheet" hidden>
-    <div class="nav-sheet-in">
-      <form class="sheet-search" action="/indicators" method="get" role="search">
-        ${icon('search')}
-        <input type="search" name="q" placeholder="Search indicators" aria-label="Search indicators" value="${esc(q || '')}">
-      </form>
-      <ul class="sheet-list">
-        ${links.map(sheetRow).join('')}
-      </ul>
-      <a class="sheet-cta" href="/login">${icon('login')}<span>Log In</span></a>
+    <div class="nav-scrim" data-sheet-close></div>
+    <div class="nav-drawer" role="dialog" aria-modal="true" aria-label="Menu">
+      <button type="button" class="nav-drawer-x" aria-label="Close menu" data-sheet-close>${icon('x')}</button>
+      <div class="nav-sheet-in">
+        <div class="nav-drawer-head"><img src="${esc(sealArt())}" alt="Coat of Arms of the Republic of Liberia" width="220" height="233" decoding="async"></div>
+        <form class="sheet-search" action="/indicators" method="get" role="search">
+          ${icon('search')}
+          <input type="search" name="q" placeholder="Search indicators" aria-label="Search indicators" value="${esc(q || '')}">
+        </form>
+        <ul class="sheet-list">
+          ${links.map(sheetRow).join('')}
+        </ul>
+        <a class="sheet-cta" href="/login">${icon('login')}<span>Log In</span></a>
+      </div>
     </div>
   </div></nav>`;
 }
@@ -1372,6 +1383,7 @@ exports.dataExplorer = (ctx, { indicators, indicatorsByDomain, domainOrder, doma
       <label>Animate</label>
       <button type="button" class="dx-play" id="dx-play" aria-label="Play through the years">${icon('rotate')}<span>Play years</span></button>
     </div>
+    <button type="button" class="dx-cmd-browse" id="dx-cmd-browse" aria-controls="indicator-tree" aria-expanded="false">${icon('layers')}<span>Browse indicators</span></button>
     <button type="button" class="dx-cmd-pin" id="dx-cmd-pin" aria-label="Hide the filters" aria-expanded="true">${icon('chevron')}</button>
     <button type="button" class="dx-cmd-peek" id="dx-cmd-peek" aria-hidden="true" tabindex="-1"></button>
   </div></div>
@@ -1381,6 +1393,7 @@ exports.dataExplorer = (ctx, { indicators, indicatorsByDomain, domainOrder, doma
   <div class="explorer-shell dx-black">
     <aside class="indicator-tree" id="indicator-tree">
       <button type="button" class="tree-toggle" id="tree-toggle" aria-expanded="false">${icon('layers')}<span>Browse indicators</span></button>
+      <div class="tree-sheet-head"><p>Browse indicators</p><button type="button" class="tree-close" id="tree-close" aria-label="Close the indicator list">${icon('x')}</button></div>
       <div class="tree-body">
         <p class="tree-title">Indicators</p>
         ${domainOrder.map((d) => `<div class="tree-cat ${meta.domain === d ? 'open' : ''}">
@@ -1399,10 +1412,10 @@ exports.dataExplorer = (ctx, { indicators, indicatorsByDomain, domainOrder, doma
         <p class="dx-statement" id="explorer-desc">${esc(meta.description || '')}</p>
         <p class="dx-source">
           <span class="dx-mock" id="dx-mock" hidden title="These figures are placeholders for demonstration. They are not official statistics.">Mock data</span>
-          <span class="dx-fact"><i>Unit</i><b id="dx-unit">${esc(meta.unit)}</b></span>
+          <span class="dx-fact dx-fact-unit"><i>Unit</i><b id="dx-unit">${esc(meta.unit)}</b></span>
           <span class="dx-fact dx-fact-source"><i>Source</i><b id="dx-agency">${esc(meta.agency || 'n/a')}</b></span>
-          <span class="dx-fact"><i>Coverage</i><b id="dx-coverage">${counties.length} counties</b></span>
-          <span class="dx-fact"><i>Years</i><b id="dx-years-span">&nbsp;</b></span>
+          <span class="dx-fact dx-fact-coverage"><i>Coverage</i><b id="dx-coverage">${counties.length} counties</b></span>
+          <span class="dx-fact dx-fact-years"><i>Years</i><b id="dx-years-span">&nbsp;</b></span>
         </p>
       </section>
 
@@ -2420,12 +2433,6 @@ const videoHeroScript = `
 
 // Promo band under the research video hero. The circle alternates between two pictures
 // every three seconds; the three chips name the three things the page is for.
-// Counts are deliberately expressed as ranges: the platform is new and a precise figure
-// would overstate it.
-const RESEARCH_PROMO_STATS = [
-  { icon: 'doc',   value: '1\u20132K',    label: 'Papers' },
-  { icon: 'users', value: '100\u2013300', label: 'Active Users' },
-];
 
 function researchPromo() {
   const img1 = imgs.url('researchCircle', 'circle-1');
@@ -2452,13 +2459,6 @@ function researchPromo() {
           <a class="rp-btn rp-btn-ghost" href="/research/submit">
             ${icon('cloudup', 'icn rp-btn-ico')} Submit Paper ${icon('arrow', 'icn rp-btn-go')}
           </a>
-        </div>
-        <div class="rp-stats">
-          ${RESEARCH_PROMO_STATS.map((s, i) => `${i ? '<i class="rp-stat-div"></i>' : ''}
-            <div class="rp-stat">
-              <span class="rp-stat-ico">${icon(s.icon)}</span>
-              <span class="rp-stat-text"><b>${esc(s.value)}</b><span>${esc(s.label)}</span></span>
-            </div>`).join('')}
         </div>
       </div>
 

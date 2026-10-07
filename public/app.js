@@ -882,3 +882,36 @@
   // back from the bfcache with the sheet open: start closed
   window.addEventListener('pageshow', function () { if (!sheet.hidden) { sheet.classList.remove('is-open'); sheet.hidden = true; root.classList.remove('nav-open'); burger.setAttribute('aria-expanded', 'false'); } });
 })();
+
+// Back to the top: a round button in the lower left that appears once the reader is a screen down.
+// The ring around it fills as the page scrolls, so it also says how far through the page they are.
+(function () {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'to-top';
+  b.setAttribute('aria-label', 'Back to the top of the page');
+  b.innerHTML = '<svg class="to-top-ring" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" pathLength="100"/>' +
+    '<circle class="to-top-fill" cx="28" cy="28" r="26" pathLength="100"/></svg>' +
+    '<svg class="to-top-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg>';
+  document.body.appendChild(b);
+  var fill = b.querySelector('.to-top-fill');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var queued = false;
+  function update() {
+    queued = false;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var y = window.scrollY || document.documentElement.scrollTop;
+    var p = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+    fill.style.strokeDashoffset = String(100 - p * 100);
+    b.classList.toggle('is-on', y > window.innerHeight * 0.8);
+  }
+  function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', queue, { passive: true });
+  window.addEventListener('resize', queue);
+  b.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: reduce.matches ? 'auto' : 'smooth' });
+    var home = document.querySelector('.gov-wordmark');
+    if (home) home.focus({ preventScroll: true });
+  });
+  update();
+})();

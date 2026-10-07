@@ -252,7 +252,7 @@ function mainNav(active, q) {
         </li>`;
   };
   return `<nav class="gov-nav" aria-label="Main"><div class="nav-shell">
-    <a class="gov-wordmark nav-mapblock" href="/" aria-label="NICTD home">${liberiaFlag(46)}<span class="nav-brand" aria-hidden="true">NICTD</span></a>
+    <a class="gov-wordmark nav-mapblock" href="/" aria-label="NIIS home">${liberiaFlag(46)}<span class="nav-brand" aria-hidden="true">NIIS</span></a>
     <form class="nav-search" action="/indicators" method="get">
       <input type="search" name="q" placeholder="Search indicators…" value="${esc(q || '')}">
       <button type="submit" aria-label="Search">${icon('search')}</button>
@@ -272,12 +272,12 @@ function mainNav(active, q) {
         <div class="nav-drawer-head"><img src="${esc(sealArt())}" alt="Coat of Arms of the Republic of Liberia" width="220" height="233" decoding="async"></div>
         <form class="sheet-search" action="/indicators" method="get" role="search">
           ${icon('search')}
-          <input type="search" name="q" placeholder="Search indicators" aria-label="Search indicators" value="${esc(q || '')}">
+          <input type="search" name="q" placeholder="Search" aria-label="Search indicators" value="${esc(q || '')}">
         </form>
         <ul class="sheet-list">
           ${links.map(sheetRow).join('')}
         </ul>
-        <a class="sheet-cta" href="/login">${icon('login')}<span>Log In</span></a>
+        <a class="sheet-cta" href="/login"><span>Get Started</span>${icon('arrow')}</a>
       </div>
     </div>
   </div></nav>`;
@@ -515,14 +515,12 @@ function heroSlider() {
       <h1>${s.title.split('\n').map(esc).join('<br>')}</h1>
       ${s.sub ? `<p class="hs-sub">${esc(s.sub)}</p>` : ''}`}
     </div>`).join('');
-  const dots = HERO_SLIDES.map((s, i) => `<span class="hs-dot ${i === 0 ? 'active' : ''}" data-i="${i}"></span>`).join('');
   return `<section class="hero-slider" id="heroSlider">
     <div class="hs-sticky">
       <div class="hs-stage">${slides}<div class="hs-scrim"></div></div>
       <div class="hs-content wrap">
         <div class="hs-texts">${texts}</div>
       </div>
-      <div class="hs-dots" aria-hidden="true">${dots}</div>
       <div class="hv-cue" aria-hidden="true"><span>Scroll to explore</span><i></i></div>
     </div>
   </section>`;
@@ -532,7 +530,6 @@ const heroSliderScript = `
   var sec=document.getElementById('heroSlider'); if(!sec) return;
   var slides=[].slice.call(sec.querySelectorAll('.hs-slide'));
   var texts=[].slice.call(sec.querySelectorAll('.hs-text'));
-  var dots=[].slice.call(sec.querySelectorAll('.hs-dot'));
   var cue=sec.querySelector('.hv-cue'), n=slides.length, cur=-1, running=false, raf=0, inView=true;
   var lastScrollIdx=-1, autoT=null;
   var reduceHero=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -558,8 +555,7 @@ const heroSliderScript = `
   function setActive(i){ if(i===cur) return; cur=i;
     film(i);
     slides.forEach(function(el,k){ el.classList.toggle('active',k===i); });
-    texts.forEach(function(el,k){ el.classList.toggle('active',k===i); });
-    dots.forEach(function(el,k){ el.classList.toggle('active',k===i); }); }
+    texts.forEach(function(el,k){ el.classList.toggle('active',k===i); }); }
   function update(){
     var p=progress();
     // map scroll progress across n slides, with a little dwell at each
@@ -680,7 +676,7 @@ const featuredPapersScript = `
 `;
 
 // National ICT Reports, a "facing" coverflow carousel: the centre report faces the viewer while
-// its neighbours angle away in 3D. Auto-advances, pauses on hover, arrows + dots, and a See more link.
+// its neighbours angle away in 3D. Auto-advances, pauses on hover, arrows, and a See more link.
 // img keys point at the "reports" image collection, which is kept separate from the research
 // papers and the hero slider so no picture appears twice on the site.
 const NATIONAL_REPORTS = [
@@ -869,7 +865,6 @@ function nationalReports() {
       <div class="rc-meta">${esc(r.date)}</div>
     </div>
   </article>`).join('');
-  const dots = NATIONAL_REPORTS.map((r, i) => `<span class="rc-dot ${i === 0 ? 'active' : ''}" data-i="${i}"></span>`).join('');
   return `<section class="wrap section reveal" id="natReports" style="padding-top:0">
     <div class="sec-head-dh">
       <h2>National ICT Reports</h2>
@@ -880,14 +875,12 @@ function nationalReports() {
       </div>
     </div>
     <div class="rc-stage" id="rcStage">${cards}</div>
-    <div class="rc-dots">${dots}</div>
   </section>`;
 }
 const nationalReportsScript = `
 (function(){
   var stage=document.getElementById('rcStage'); if(!stage) return;
   var cards=[].slice.call(stage.querySelectorAll('.rc-card'));
-  var dots=[].slice.call(document.querySelectorAll('#natReports .rc-dot'));
   var n=cards.length, cur=0, timer=null, reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function layout(){
     cards.forEach(function(c,i){
@@ -901,7 +894,6 @@ const nationalReportsScript = `
       var x=d*54, s=1-abs*0.14, ry=d*-20;
       c.style.transform='translateX('+x+'%) scale('+s+') rotateY('+ry+'deg)';
     });
-    dots.forEach(function(el,k){ el.classList.toggle('active',k===cur); });
   }
   function go(dir){ cur=(cur+dir+n)%n; layout(); }
   function play(){ if(reduce) return; stop(); timer=setInterval(function(){ go(1); }, 4200); }
@@ -909,7 +901,6 @@ const nationalReportsScript = `
   document.querySelectorAll('#natReports .rc-arrow').forEach(function(b){
     b.addEventListener('click', function(){ go(Number(b.dataset.dir)); play(); });
   });
-  dots.forEach(function(el,k){ el.addEventListener('click', function(){ cur=k; layout(); play(); }); });
   // Hover a side card to slide it into the centre. Re-arms only after the cursor actually MOVES,
   // so a resting cursor never re-triggers when the cards shift underneath it.
   // One hover = exactly one step. A time lock rides out the re-entry events that fire
@@ -1668,7 +1659,6 @@ exports.landscape = (ctx, { indicators, meta, year, years, counties }) => shell(
       <div class="lsc-deck-body" id="lsc-deck-body"></div>
       <button type="button" class="lsc-deck-nav is-next" id="lsc-deck-next" aria-label="Next visual">${icon('chevron')}</button>
     </div>
-    <div class="lsc-deck-dots" id="lsc-deck-dots"></div>
   </div>
 
   <script>window.__NICTD_PAGE__='landscape';window.__LANDSCAPE_STATE__=${JSON.stringify({
@@ -2467,14 +2457,14 @@ function researchPromo() {
           <svg class="rp-ring" viewBox="0 0 320 320" aria-hidden="true">
             <defs>
               <linearGradient id="rpg" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#7C3AED"/>
-                <stop offset="100%" stop-color="#2F80F5"/>
+                <stop offset="0%" stop-color="#0B2C63"/>
+                <stop offset="100%" stop-color="#1C4C9E"/>
               </linearGradient>
             </defs>
             <circle class="rp-ring-track" cx="160" cy="160" r="150"/>
             <circle class="rp-ring-arc" cx="160" cy="160" r="150" stroke="url(#rpg)"/>
-            <circle class="rp-ring-dot" cx="160" cy="10" r="5.5" fill="#7C3AED"/>
-            <circle class="rp-ring-dot" cx="160" cy="310" r="5.5" fill="#2F80F5"/>
+            <circle class="rp-ring-dot" cx="160" cy="10" r="5.5" fill="#0B2C63"/>
+            <circle class="rp-ring-dot" cx="160" cy="310" r="5.5" fill="#1C4C9E"/>
           </svg>
           <div class="rp-photo">
             <img src="${esc(img1)}" alt="" class="is-on" data-rp-slide>
@@ -2793,7 +2783,7 @@ function researchAdminBody(papers, notice) {
 
 exports.paper = (ctx, p, canManage = false) => shell(ctx, {
   title: p.title, workspaceActive: 'research', body: `
-  <div class="wrap section narrow">
+  <div class="wrap section narrow paper-page">
     <p class="kicker"><a href="/research">← Research papers</a></p>
     ${canManage ? `<div class="alert">${statusPill(p)} <span class="muted">Admin preview, this is how the paper reads. Manage it from the Research Papers list.</span></div>` : ''}
     <div class="paper-detail-head">

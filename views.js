@@ -253,9 +253,11 @@ function mainNav(active, q) {
   };
   return `<nav class="gov-nav" aria-label="Main"><div class="nav-shell">
     <a class="gov-wordmark nav-mapblock" href="/" aria-label="NIIS home">${liberiaFlag(46)}<span class="nav-brand" aria-hidden="true">NIIS</span></a>
-    <form class="nav-search" action="/indicators" method="get">
-      <input type="search" name="q" placeholder="Search indicators…" value="${esc(q || '')}">
-      <button type="submit" aria-label="Search">${icon('search')}</button>
+    <form class="nav-search" action="/indicators" method="get" role="search">
+      <input type="search" name="q" aria-label="Search indicators" autocomplete="off" value="${esc(q || '')}">
+      <button type="button" class="nav-search-x" aria-label="Clear the search"${q ? '' : ' hidden'}>${icon('x')}</button>
+      <span class="nav-search-rule" aria-hidden="true"></span>
+      <button type="submit" class="nav-search-go" aria-label="Search">${icon('search')}</button>
     </form>
     <div class="gov-navlinks dock">
       ${links.map(navItem).join('')}
@@ -608,7 +610,7 @@ function featuredPapers() {
         <button class="fp-arrow" data-dir="1" aria-label="Next">${icon('chevron')}</button>
       </div>
     </div>
-    <div class="fp-track" id="fpTrack">${FEATURED_PAPERS.map(card).join('')}${FEATURED_PAPERS.map(card).join('')}</div>
+    <div class="fp-track" id="fpTrack" data-worm>${FEATURED_PAPERS.map(card).join('')}${FEATURED_PAPERS.map(card).join('')}</div>
   </section>`;
 }
 const featuredPapersScript = `
@@ -874,7 +876,7 @@ function nationalReports() {
         <button class="rc-arrow" data-dir="1" aria-label="Next report">${icon('chevron')}</button>
       </div>
     </div>
-    <div class="rc-stage" id="rcStage">${cards}</div>
+    <div class="rc-stage" id="rcStage" data-worm>${cards}</div>
   </section>`;
 }
 const nationalReportsScript = `
@@ -1145,7 +1147,7 @@ function latestUpdates(headlines) {
         ${n > 1 ? `<button type="button" class="sq-arrow" data-sq-step="-1" aria-label="Previous update">${SQ_BACK}</button><button type="button" class="sq-arrow" data-sq-step="1" aria-label="Next update">${SQ_NEXT}</button>` : ''}
       </div>
     </div>
-    <div class="sq" id="sqTrends"><div class="sq-body" style="--sq-slats:${slats}">
+    <div class="sq" id="sqTrends" data-worm><div class="sq-body" style="--sq-slats:${slats}">
       <div class="sq-window"><div class="sq-strip" role="tablist" aria-labelledby="sqTrendsTitle">${strip}</div></div>
       <div class="sq-copy" id="sqPanel" role="tabpanel" aria-labelledby="sqTab-0" aria-live="polite">${copy}</div>
     </div></div>
@@ -1263,15 +1265,16 @@ const latestUpdatesScript = `
     btn.addEventListener('click',function(){ step(+btn.getAttribute('data-sq-step')); });
   });
 
-  // steps on every 6 s; holds while pointed at, focused, off screen, or in a hidden tab
+  // keeps moving: each card slides over in 1 s, rests 1 s, and the next one goes. It holds while
+  // the pointer is on the carousel, while it has focus, off screen, or in a hidden tab
   var timer=0, hovering=false, focused=false, seen=true;
   function arm(){
     clearTimeout(timer);
     if(reduce.matches||hovering||focused||!seen||document.hidden) return;
-    timer=setTimeout(function(){ step(1,true); },6000);
+    timer=setTimeout(function(){ step(1,true); },2000);
   }
-  section.addEventListener('mouseenter',function(){ hovering=true; arm(); });
-  section.addEventListener('mouseleave',function(){ hovering=false; arm(); });
+  root.addEventListener('mouseenter',function(){ hovering=true; arm(); });
+  root.addEventListener('mouseleave',function(){ hovering=false; arm(); });
   section.addEventListener('focusin',function(){ focused=true; arm(); });
   section.addEventListener('focusout',function(e){ if(!section.contains(e.relatedTarget)){ focused=false; arm(); } });
   document.addEventListener('visibilitychange',arm);

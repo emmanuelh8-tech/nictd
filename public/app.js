@@ -915,3 +915,57 @@
   });
   update();
 })();
+
+// The nav search: the clear button shows once something is typed and empties the box.
+(function () {
+  document.querySelectorAll('.nav-search').forEach(function (f) {
+    var input = f.querySelector('input'), x = f.querySelector('.nav-search-x');
+    if (!input || !x) return;
+    function sync() { x.hidden = !input.value; }
+    input.addEventListener('input', sync);
+    x.addEventListener('click', function () { input.value = ''; sync(); input.focus(); });
+    sync();
+  });
+})();
+
+// White behind the words: any text or button whose own background and every ancestor's is clear
+// (so it sits straight on the binary canvas) is marked .on-canvas and gets a white ground. Light
+// text is skipped, since light text is drawn for a dark ground. Content added later is marked too.
+(function () {
+  var SKIP = /^(SCRIPT|STYLE|NOSCRIPT|SVG|CANVAS|VIDEO|IMG|PICTURE|IFRAME|TEXTAREA|SELECT|OPTION|TEMPLATE|BR|HR)$/;
+  var clearCache = new WeakMap();
+  function alpha(c) { var m = c.match(/rgba?\(([^)]+)\)/); if (!m) return c === 'transparent' ? 0 : 1; var p = m[1].split(','); return p.length > 3 ? parseFloat(p[3]) : 1; }
+  function isClear(el) {
+    if (clearCache.has(el)) return clearCache.get(el);
+    var cs = getComputedStyle(el);
+    var clear = alpha(cs.backgroundColor) < 0.25 && cs.backgroundImage === 'none' && cs.position !== 'fixed';
+    clearCache.set(el, clear); return clear;
+  }
+  function onCanvas(el) { for (var a = el; a && a !== document.body; a = a.parentElement) if (!isClear(a)) return false; return true; }
+  function isLight(color) {
+    var m = color.match(/[\d.]+/g); if (!m || m.length < 3) return false;
+    if (m.length > 3 && parseFloat(m[3]) < 0.5) return true;
+    return (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255 > 0.72;
+  }
+  function ownText(el) { for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && /\S/.test(n.data)) return true; return false; }
+  function mark(scope) {
+    var els = (scope || document.body).querySelectorAll('*');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (SKIP.test(el.tagName) || el.closest('svg') || el.classList.contains('on-canvas')) continue;
+      var control = el.matches('button, .btn, input[type=submit], input[type=button]');
+      if (!control && !ownText(el)) continue;
+      if (el.parentElement && el.parentElement.closest('.on-canvas')) continue;
+      var cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || isLight(cs.color)) continue;
+      if (onCanvas(el)) el.classList.add('on-canvas');
+    }
+  }
+  function run() { try { mark(); } catch (e) { /* never break the page over a background */ } }
+  run();
+  window.addEventListener('load', run);
+  var t = 0;
+  new MutationObserver(function (list) {
+    if (list.some(function (r) { return r.addedNodes.length; })) { clearTimeout(t); t = setTimeout(function () { clearCache = new WeakMap(); run(); }, 250); }
+  }).observe(document.body, { childList: true, subtree: true });
+})();

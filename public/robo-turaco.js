@@ -5,7 +5,7 @@
 //   scene.add(bird.object);           // origin = the point between the feet (the perch)
 //   bird.perch() | bird.takeOff() | bird.fly({ glide }) | bird.flare() | bird.touchDown()
 //   bird.lookAt(yaw, pitch, hold)     // turn the head (radians, + = toward the bird's left)
-//   bird.express('chirp' | 'stretch' | 'preen' | 'bob' | 'hop' | 'shake')
+//   bird.express('chirp' | 'stretch' | 'preen' | 'bob' | 'hop' | 'shake' | 'peck' | 'grab' | 'excited' | 'confused')
 //   bird.update(dt)                   // every frame
 //
 // Axes on the bird: +Z is forward (the beak), +Y up, +X the bird's left.
@@ -239,12 +239,12 @@ export function createRoboTuraco(THREE, options = {}) {
   // P = current, T = target. Each eases toward its target at its own rate (per second).
   const P = {
     spread: 0, flapAmp: 0, sweep: 0, twist: 0, legTuck: 0, crouch: 0, legForward: 0, grip: 1,
-    pitch: -0.45, tailLift: 0, tailFan: 0, crest: 1, yaw: 0, look: 0, jaw: 0, blink: 0, flapRate: 3.4, shuffle: 0,
+    pitch: -0.45, tailLift: 0, tailFan: 0, crest: 1, yaw: 0, look: 0, tilt: 0, jaw: 0, blink: 0, flapRate: 3.4, shuffle: 0,
   };
   const T = { ...P };
   const K = {
     spread: 8, flapAmp: 6, sweep: 6, twist: 6, legTuck: 7, crouch: 14, legForward: 6, grip: 10,
-    pitch: 5, tailLift: 9, tailFan: 6, crest: 7, yaw: 16, look: 16, jaw: 22, blink: 40, flapRate: 5, shuffle: 10,
+    pitch: 5, tailLift: 9, tailFan: 6, crest: 7, yaw: 9, look: 9, tilt: 7, jaw: 22, blink: 40, flapRate: 5, shuffle: 10,
   };
   let phase = 0;            // flap cycle 0..1
   let breath = 0;
@@ -300,7 +300,7 @@ export function createRoboTuraco(THREE, options = {}) {
     pulses.forEach((p) => (p.t += dt)); pulses = pulses.filter((p) => p.t < p.dur);
 
     // behaviour inside modes
-    if (mode === 'perched') idle(dt);
+    if (mode === 'perched') idle(dt); else if (lookHold <= 0) { T.tilt = 0; }
     if (mode === 'takeoff' && timeInMode > takeOffLaunch) {
       // launch: legs push, wings beat down hard
       Object.assign(T, { crouch: -0.25, spread: 1, flapAmp: 1, flapRate: 4.8, legTuck: 1, pitch: -0.25, tailLift: 0.1, tailFan: 0.5, look: 0, grip: 0 });
@@ -315,7 +315,7 @@ export function createRoboTuraco(THREE, options = {}) {
   }
 
   let lookHold = 0;
-  function lookAt(yaw, look = 0, hold = 1.2) { T.yaw = clamp(yaw, -1.8, 1.8); T.look = clamp(look, -0.4, 0.6); lookHold = hold; }
+  function lookAt(yaw, look = 0, hold = 1.2, tilt = 0) { T.yaw = clamp(yaw, -1.8, 1.8); T.look = clamp(look, -0.4, 0.7); T.tilt = tilt; lookHold = hold; }
   // small set pieces the page can call for: each is a few timed pulses on top of the pose
   function express(kind) {
     if (kind === 'chirp') { [0, 0.3, 0.62].forEach((d) => pulse('jaw', 0.3, 0.22, 'hump', d)); pulse('crest', 0.28, 1.1, 'hump'); pulse('look', -0.18, 0.9, 'hump'); }
@@ -324,12 +324,25 @@ export function createRoboTuraco(THREE, options = {}) {
     if (kind === 'preen') { lookAt((Math.random() < 0.5 ? 1 : -1) * 1.7, 0.55, 1.4); pulse('shuffle', 1, 1.2, 'hump', 0.35); pulse('jaw', 0.18, 0.5, 'hump', 0.5); }
     if (kind === 'hop') { pulse('crouch', 0.6, 0.42); pulse('shuffle', 0.8, 0.5, 'hump'); }
     if (kind === 'shake') { pulse('shake', 1, 0.6, 'hump'); pulse('crest', -0.3, 0.6, 'hump'); }
+    if (kind === 'peck') { pulse('peck', 1, 0.34, 'hump'); pulse('jaw', 0.42, 0.3, 'hump', 0.05); pulse('crouch', 0.3, 0.34, 'hump'); }
+    if (kind === 'grab') { pulse('grab', 1, 0.55, 'hump'); pulse('tailFan', 0.8, 0.6, 'hump'); }
+    if (kind === 'excited') { pulse('crest', 0.35, 1.2, 'hump'); pulse('crouch', 0.32, 0.8, 'hump'); pulse('shuffle', 0.7, 0.6, 'hump', 0.2); }
+    if (kind === 'confused') {
+      pulse('crest', -0.35, 1.4, 'hump'); pulse('shake', 0.7, 0.5, 'hump', 0.1);
+      lookAt(rnd(-1, 1), 0.45, 0.9, rnd(-0.4, 0.4));
+    }
   }
   function idle(dt) {
     const c = idleClock;
     for (const k in c) c[k] -= dt;
     if (lookHold > 0) { lookHold -= dt; c.look = Math.max(c.look, 0.4); }
-    else if (c.look <= 0) { T.yaw = Math.random() < 0.25 ? 0 : rnd(-0.95, 0.95); T.look = rnd(-0.25, 0.3); c.look = rnd(0.7, 2.6); }
+    else if (c.look <= 0 && mode === 'perched') {
+      const r = Math.random();
+      T.yaw = r < 0.2 ? 0 : rnd(-1.05, 1.05); T.look = rnd(-0.2, 0.28);
+      T.tilt = Math.random() < 0.35 ? rnd(0.22, 0.4) * (Math.random() < 0.5 ? -1 : 1) : 0;
+      c.look = rnd(1.1, 2.8);
+    }
+    else if (false) { T.yaw = Math.random() < 0.25 ? 0 : rnd(-0.95, 0.95); T.look = rnd(-0.25, 0.3); c.look = rnd(0.7, 2.6); }
     if (c.blink <= 0) { pulse('blink', 1, 0.16, 'hump'); c.blink = rnd(1.8, 4.5); }
     if (c.crest <= 0) { pulse('crest', -0.45, 0.6, 'hump'); c.crest = rnd(4, 9); }
     if (c.tail <= 0) { pulse('tailLift', 0.32, 0.9, 'hump'); c.tail = rnd(2.8, 6.5); }
@@ -342,9 +355,8 @@ export function createRoboTuraco(THREE, options = {}) {
     // ---- posture: the body sinks into the crouch; legs solve to keep the feet planted
     const bodyH = 0.19 - crouch * 0.05;
     body.position.set(0, lerp(bodyH, 0.13, P.legTuck), lerp(-0.012, 0, P.legTuck) + crouch * 0.01);
-    const breathe = Math.sin(breath * TAU * 0.5) * 0.012;
+    body.position.y += Math.sin(breath * TAU * 0.35) * 0.0016;
     body.rotation.set(P.pitch + crouch * 0.18, 0, 0);
-    body.scale.set(1 + breathe, 1 + breathe * 0.6, 1);
 
     // ---- neck + head: posture compensates body pitch so the head stays level (birds do this)
     // perched the neck stands nearly upright; in flight it reaches forward
@@ -352,13 +364,13 @@ export function createRoboTuraco(THREE, options = {}) {
     let neckSum = 0;
     for (let i = 0; i < NECK; i++) {
       const b = bones['neck' + i];
-      b.rotation.x = (i === 0 ? lerp(0.32, 0.66, tuck) : lerp(0.14, 0.17, tuck)) + P.look * 0.1;
+      b.rotation.x = (i === 0 ? lerp(0.32, 0.66, tuck) : lerp(0.14, 0.17, tuck)) + P.look * 0.1 + pulseValue('peck') * (i === 0 ? 0.75 : 0.3);
       b.rotation.y = P.yaw * 0.2;
       neckSum += b.rotation.x;
     }
-    head.rotation.x = -body.rotation.x - neckSum - 0.08 + (P.look + pulseValue('look')) * 0.55;
+    head.rotation.x = -body.rotation.x - neckSum - 0.08 + (P.look + pulseValue('look')) * 0.55 + pulseValue('peck') * 0.5;
     head.rotation.y = P.yaw * 0.4 + Math.sin(breath * 42) * 0.28 * pulseValue('shake');
-    head.rotation.z = P.yaw * -0.08;
+    head.rotation.z = P.yaw * -0.08 + P.tilt;
     const blink = clamp(pulseValue('blink'), 0, 1);
     eyes.forEach((e) => e.scale.set(1, 1 - blink * 0.85, 1));
     jaw.rotation.x = clamp(P.jaw + pulseValue('jaw'), 0, 0.5);
@@ -368,7 +380,7 @@ export function createRoboTuraco(THREE, options = {}) {
     crestFins.forEach(({ bone: b, a, u, side }) => {
       const flat = (1 - cr) * (0.9 + u * 0.5);
       b.rotation.x = -a * lerp(0.55, 1.0, cr) - flat;
-      b.rotation.z = -side * lerp(0.03, 0.075, cr) + Math.sin(breath * 3 + u * 4) * 0.02;
+      b.rotation.z = -side * lerp(0.03, 0.075, cr);
     });
 
     // ---- wings
@@ -424,6 +436,7 @@ export function createRoboTuraco(THREE, options = {}) {
     legs.forEach((L) => {
       // foot target in root space -> body space
       const target = new THREE.Vector3(L.s * 0.038, 0, lerp(0, 0.06, P.legForward));
+      const grab = pulseValue('grab');
       body.updateMatrix();
       const inv = body.matrix.clone().invert();
       target.applyMatrix4(inv);
@@ -433,13 +446,13 @@ export function createRoboTuraco(THREE, options = {}) {
       const beta = Math.acos(clamp((THIGH * THIGH + dist * dist - SHANK * SHANK) / (2 * THIGH * dist), -1, 1));
       const gamma = Math.acos(clamp((THIGH * THIGH + SHANK * SHANK - dist * dist) / (2 * THIGH * SHANK), -1, 1));
       const ikHip = theta + beta, ikKnee = -(Math.PI - gamma);
-      L.hip.rotation.x = lerp(ikHip, 1.35, tuck);
-      L.knee.rotation.x = lerp(ikKnee, 0.6, tuck);
+      L.hip.rotation.x = lerp(ikHip, 1.35, tuck) - grab * 1.6;
+      L.knee.rotation.x = lerp(ikKnee, 0.6, tuck) - grab * 0.5;
       L.hip.rotation.z = L.s * lerp(0.0, 0.12, tuck);
       // keep the foot flat on the perch while standing
       const footLevel = -(body.rotation.x + L.hip.rotation.x + L.knee.rotation.x);
       L.ankle.rotation.x = lerp(footLevel, 0.9, tuck);
-      const curl = lerp(clamp(P.grip, 0, 1) * 0.12, 1.25, tuck);
+      const curl = lerp(clamp(P.grip, 0, 1) * 0.12, 1.25, tuck) * (1 - grab * 0.9);
       L.toes.forEach((t) => { t.bone.rotation.x = t.front ? curl : curl * 0.8; });
     });
   }

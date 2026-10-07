@@ -121,15 +121,24 @@ ul.plain, ol.plain { list-style: none; }
 @keyframes lmkflow { to { stroke-dashoffset: -14; } }
 @keyframes lmkpulse { 0%,100% { r: 1.4; opacity: .6; } 50% { r: 2.5; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .lmk-link, .lmk-node { animation: none; } }
-/* search pill */
-.nav-search { flex: 0 1 250px; min-width: 0; display: flex; align-items: center; gap: .35rem;
-  background: #FFFFFF; border: 1px solid #CBDCF2; border-radius: 999px; padding: .34rem .55rem .34rem 1.05rem; }
-.nav-search input { flex: 1; min-width: 0; background: transparent; border: 0; color: #17233A; padding: .3rem 0; font-size: .84rem; }
-.nav-search input::placeholder { color: #8A99B3; }
+/* search pill: no words in it until the reader types; a clear button appears with the first
+   character, then a thin rule and the search button */
+.nav-search { flex: 0 1 300px; min-width: 0; display: flex; align-items: center; gap: .2rem;
+  background: #FFFFFF; border: 1px solid #D3DAE6; border-radius: 999px; padding: .3rem .45rem .3rem 1.1rem; }
+.nav-search:focus-within { border-color: #0B2C63; box-shadow: 0 0 0 3px rgba(11,44,99,.08); }
+.nav-search input { flex: 1; min-width: 0; background: transparent; border: 0; color: #17233A; padding: .3rem 0; font-size: .86rem; }
 .nav-search input:focus { outline: none; }
-.nav-search button { background: transparent; border: 0; color: #5A6A85; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: .2rem; flex: 0 0 auto; }
+.nav-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+.nav-search button { background: transparent; border: 0; color: #5A6A85; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: .25rem; flex: 0 0 auto; border-radius: 999px; }
 .nav-search button:hover { color: #0B2C63; }
+.nav-search button:focus-visible { outline: 2px solid #C8102E; outline-offset: 1px; }
 .nav-search button .icn { width: 1.15em; height: 1.15em; stroke-width: 2; }
+.nav-search .nav-search-x[hidden] { display: none; }
+.nav-search .nav-search-x { color: #6B7385; }
+.nav-search .nav-search-x .icn { width: 1.05em; height: 1.05em; }
+.nav-search-rule { flex: 0 0 1px; align-self: stretch; margin: .25rem .3rem; background: #D3DAE6; }
+.nav-search .nav-search-go { color: #3E4657; }
+.nav-search .nav-search-go .icn { width: 1.22em; height: 1.22em; }
 /* nav links: a dock (after the macOS dock; ported from a shadcn Dock component to CSS + app.js).
    Each section is a round icon over its name, straight on the bar's white (no panel behind them).
    On desktop the icons swell toward the pointer (app.js sets --dock-s on each item; the icon scales
@@ -160,12 +169,12 @@ ul.plain, ol.plain { list-style: none; }
 /* narrower desktops: a shorter search and tighter spacing keep the bar on one line */
 @media (max-width: 1240px) {
   .gov-navlinks.dock { gap: 1.05rem; }
-  .nav-search { flex-basis: 190px; }
+  .nav-search { flex-basis: 228px; }
   .nav-label { font-size: .68rem; letter-spacing: .04em; }
 }
 @media (max-width: 1020px) {
   .gov-navlinks.dock { gap: .75rem; }
-  .nav-search { flex-basis: 150px; }
+  .nav-search { flex-basis: 180px; }
   .nav-full { display: none; }
   .nav-short { display: inline; }
 }
@@ -4047,10 +4056,6 @@ html { -webkit-text-size-adjust: 100%; }
 .tree-sheet-head p { margin: 0; color: #0B2C63; font: 700 1.15rem/1.2 var(--serif); }
 .tree-close { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: #0B2C63; color: #fff; cursor: pointer; }
 .tree-close .icn { width: 17px; height: 17px; stroke-width: 2.2; }
-@media (max-width: 860px) {
-  /* a plain white page behind every button, line of text and box: no binary watermark on phones */
-  html { background-image: none; background-color: #fff; }
-}
 @media (max-width: 760px) {
   /* data explorer: Browse indicators lives in the filter drop-down; the list opens as a full sheet */
   .explorer-shell .tree-toggle { display: none; }
@@ -4116,3 +4121,8 @@ html { -webkit-text-size-adjust: 100%; }
   .paper-detail-head h1 { font-size: clamp(2rem, 9vw, 2.6rem); line-height: 1.08; overflow-wrap: anywhere; margin-bottom: .5rem; }
   .paper-cover-lg { width: 112px; }
 }
+
+/* Text and buttons that sit straight on the binary canvas get a white ground of their own, so the
+   pattern stays on the page but never runs behind the words (app.js adds the class; light text is
+   left alone, since it is meant for a dark ground). Inline words get a highlight per line. */
+.on-canvas { background-color: #fff; box-shadow: 0 0 0 3px #fff; -webkit-box-decoration-break: clone; box-decoration-break: clone; }

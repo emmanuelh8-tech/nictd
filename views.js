@@ -291,7 +291,7 @@ function footerDh() {
   return `<footer class="footer-dh">${seal}
     <div class="footer-grid">
       <div>
-        <h4>About NICTD</h4>
+        <h4 data-perch="final">About NICTD</h4>
         <p>The National ICT Database of Liberia (NICTD) is the official source of ICT statistics and digital-development data for Liberia, tracking connectivity, affordability, market structure and digital governance across all 15 counties.</p>
         <div class="footer-social">
           <a href="#" aria-label="X / Twitter">${icon('share')}</a>
@@ -430,7 +430,7 @@ function selectorRow(idPrefix = '') {
 exports.home = (ctx, { headlines, papers, keyStats, dashboards, indicatorsForSearch, counties, lastUpdated, heroTitle, heroSub,
   homeVideo = '', homeVideoTitle = 'About the National ICT Database Project', homeVideoCaption = '', homeVideoPlaylist = '' }) => {
   return shell(ctx, {
-    title: 'Home', active: '/', body: `
+    title: 'Home', active: '/', extraHead: BIRD_HEAD, body: `
   ${heroSlider()}
 
   ${featuredPapers()}
@@ -601,7 +601,7 @@ function featuredPapers() {
   </a>`;
   return `<section class="wrap section reveal" id="featuredPapers">
     <div class="sec-head-dh">
-      <h2>Featured Research Papers</h2>
+      <h2 data-perch="start">Featured Research Papers</h2>
       <div class="fp-nav">
         <a class="more" href="/research" style="margin-right:.8rem">All papers ${icon('arrow')}</a>
         <button class="fp-arrow" data-dir="-1" aria-label="Previous">${icon('chevron', 'icn fp-flip')}</button>
@@ -867,7 +867,7 @@ function nationalReports() {
   </article>`).join('');
   return `<section class="wrap section reveal" id="natReports" style="padding-top:0">
     <div class="sec-head-dh">
-      <h2>National ICT Reports</h2>
+      <h2 data-perch>National ICT Reports</h2>
       <div class="rc-nav">
         <a class="more" href="/reports" style="margin-right:.8rem">See more ${icon('arrow')}</a>
         <button class="rc-arrow" data-dir="-1" aria-label="Previous report">${icon('chevron', 'icn fp-flip')}</button>
@@ -993,7 +993,7 @@ function homeVideoSection(src, title, caption, playlistRaw) {
     ? `background-image:url('https://i.ytimg.com/vi/${esc(youTubeId(it.src))}/mqdefault.jpg')`
     : `background-image:linear-gradient(135deg,rgba(11,44,99,.35),rgba(200,16,46,.3)),url('/img/papers/connectivity.jpg')`);
   return `<section class="wrap section reveal" id="homeVideo">
-    <div class="sec-head-dh"><h2>${esc(title)}</h2></div>
+    <div class="sec-head-dh"><h2 data-perch>${esc(title)}</h2></div>
     <div class="vid-layout">
       <div class="vid-frame">${playerFor(main.src, main.title)}</div>
       <aside class="vid-queue">
@@ -1139,7 +1139,7 @@ function latestUpdates(headlines) {
   const data = JSON.stringify(slides.map(({ title, img, cat, date, href }) => ({ title, img, cat, date, href }))).replace(/</g, '\\u003c');
   return `<section class="wrap section reveal" id="latestUpdates" style="padding-top:0">
     <div class="sec-head-dh">
-      <h2 id="sqTrendsTitle">Liberia ICT Trends</h2>
+      <h2 id="sqTrendsTitle" data-perch>Liberia ICT Trends</h2>
       <div class="sq-nav">
         <a class="more" href="/updates">All updates ${icon('arrow')}</a>
         ${n > 1 ? `<button type="button" class="sq-arrow" data-sq-step="-1" aria-label="Previous update">${SQ_BACK}</button><button type="button" class="sq-arrow" data-sq-step="1" aria-label="Next update">${SQ_NEXT}</button>` : ''}
@@ -3135,6 +3135,9 @@ const careerSlug = (r) => String(r.title).toLowerCase().replace(/[^a-z0-9]+/g, '
 exports.CAREER_ROLES = CAREER_ROLES;
 exports.careerSlug = careerSlug;
 // Three.js comes from jsDelivr, as in niip-3d; careers.js draws the star only when it loads.
+// The home page's robot turaco: three.js from the same CDN build as Careers, and the director script.
+const BIRD_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js"}}</script>
+<script type="module" src="/assets/bird.js?v=${ASSET_V}"></script>`;
 const CAREERS_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <script type="module" src="/assets/careers.js?v=${ASSET_V}"></script>`;
 const csBtn = (href, label, cls = '') => `<a class="cs-btn${cls ? ' ' + cls : ''}" href="${esc(href)}"><span>${esc(label)}</span><i aria-hidden="true">${icon('arrow')}</i></a>`;

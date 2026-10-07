@@ -4088,7 +4088,7 @@ html { -webkit-text-size-adjust: 100%; }
   .explorer-shell .toolbar-actions .btn { justify-content: center; white-space: nowrap; background: #fff; }
 }
 
-/* back to the top: lower left, dark blue, its ring filling in Liberia red as the page scrolls */
+/* back to the top (phones): lower left, dark blue, its ring filling in Liberia red as the page scrolls */
 .to-top { position: fixed; left: max(1rem, env(safe-area-inset-left)); bottom: calc(1.1rem + env(safe-area-inset-bottom)); z-index: 90;
   display: grid; place-items: center; width: 54px; height: 54px; padding: 0; border: 0; border-radius: 50%;
   background: #0B2C63; color: #fff; cursor: pointer; box-shadow: 0 10px 24px -8px rgba(5,12,28,.55);
@@ -4104,6 +4104,8 @@ html { -webkit-text-size-adjust: 100%; }
 .to-top-arrow { position: relative; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 @media (prefers-reduced-motion: reduce) { .to-top, .to-top.is-on { transition: none; } }
 @media print { .to-top { display: none; } }
+/* phones only: on desktop the page is short to scroll back with the wheel or the keyboard */
+@media (min-width: 861px) { .to-top { display: none; } }
 
 /* a research paper's page: every line of text in black */
 .paper-page, .paper-page h1, .paper-page h2, .paper-page p, .paper-page .muted, .paper-page .authors,

@@ -883,7 +883,7 @@
   window.addEventListener('pageshow', function () { if (!sheet.hidden) { sheet.classList.remove('is-open'); sheet.hidden = true; root.classList.remove('nav-open'); burger.setAttribute('aria-expanded', 'false'); } });
 })();
 
-// Back to the top: a round button in the lower left that appears once the reader is a screen down.
+// Back to the top (phones; CSS hides it on desktop): a round button in the lower left that appears once the reader is a screen down.
 // The ring around it fills as the page scrolls, so it also says how far through the page they are.
 (function () {
   var b = document.createElement('button');

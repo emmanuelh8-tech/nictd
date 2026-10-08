@@ -942,24 +942,24 @@
   // ============================================================
   // PAGE: Our Team
   // ============================================================
-  // A scroll-snapping row of cards with arrows, a counter, a progress line and mouse drag; fingers
-  // get the browser's own momentum and snapping. o: { item, rows, at, total, bar, prev, next, onTap }
+  // A scroll-snapping row of cards with skip buttons, a counter, a progress line and mouse drag;
+  // fingers get the browser's own momentum and snapping. o: { item, at, total, bar, prev, next, onTap }
   function rowCarousel(track, o) {
     function cards() { return qsa(o.item, track).filter(function (c) { return !c.hidden; }); }
     function pad(n) { return String(n).padStart(2, '0'); }
+    // one column's width: the gap between the first two distinct column edges
     function stepW() {
-      var cs = cards();
-      if (!cs.length) return track.clientWidth;
-      for (var i = 1; i < cs.length; i++) if (cs[i].offsetLeft > cs[0].offsetLeft + 1) return cs[i].offsetLeft - cs[0].offsetLeft;
+      var xs = cards().map(function (c) { return c.offsetLeft; }).sort(function (a, b) { return a - b; });
+      for (var i = 1; i < xs.length; i++) if (xs[i] > xs[0] + 1) return xs[i] - xs[0];
       return track.clientWidth;
     }
     function perView() { return Math.max(1, Math.round(track.clientWidth / stepW())); }
     // the counter shows how many have come into view
     function sync() {
       var max = track.scrollWidth - track.clientWidth, x = track.scrollLeft, view = Math.min(1, track.clientWidth / track.scrollWidth);
-      var n = cards().length;
-      o.at.textContent = pad(Math.min(n, (Math.round(x / stepW()) + perView()) * o.rows));
-      if (o.total) o.total.textContent = pad(n);
+      var edge = track.getBoundingClientRect().right - 2, cs = cards();
+      o.at.textContent = pad(cs.filter(function (c) { var r = c.getBoundingClientRect(); return r.left + r.width / 2 < edge; }).length);
+      if (o.total) o.total.textContent = pad(cs.length);
       o.bar.style.width = (view * 100) + '%';
       o.bar.style.transform = 'translateX(' + (max > 0 ? (x / max) * (1 / view - 1) * 100 : 0) + '%)';
       o.prev.disabled = x <= 2; o.next.disabled = x >= max - 2;
@@ -996,29 +996,80 @@
     });
     track.addEventListener('click', function (e) {
       if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; return; }
-      if (e.target.closest('a[href="#"]')) { e.preventDefault(); return; }
+      if (e.target.closest('a[href="#"]')) { e.preventDefault(); e.stopPropagation(); return; }
       var c = e.target.closest(o.item);
-      if (c) o.onTap(c, false);
+      if (c) o.onTap(c);
     }, true);
+    // the keyboard walks the cards in reading order
     track.addEventListener('keydown', function (e) {
       var c = e.target.closest(o.item);
       if (!c) return;
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); o.onTap(c, true); return; }
-      var cs = cards(), by = { ArrowRight: o.rows, ArrowLeft: -o.rows, ArrowDown: 1, ArrowUp: -1 }[e.key];
-      var nx = by && cs[cs.indexOf(c) + by];
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); o.onTap(c); return; }
+      var by = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+      if (!by) return;
+      var cs = cards().sort(function (a, b) { return a.dataset.i - b.dataset.i; });
+      var nx = cs[cs.indexOf(c) + by];
       if (!nx) return;
       e.preventDefault();
       nx.focus({ preventScroll: true });
       nx.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: REDUCE ? 'auto' : 'smooth' });
     });
     sync();
-    return { sync: sync, cards: cards, reset: function () { track.scrollTo({ left: 0 }); sync(); } };
+    return { sync: sync, reset: function () { track.scrollTo({ left: 0 }); sync(); } };
   }
-  // one card open at a time
-  function openOnly(list, c) {
-    var open = !c.classList.contains('is-open');
-    list.forEach(function (x) { x.classList.remove('is-open'); });
-    c.classList.toggle('is-open', open);
+
+  // ---- a person's profile: name, role, education, experience and links, with skip buttons to the next
+  function initPeople() {
+    var pm = qs('#pm'), P = window.__PEOPLE__;
+    if (!pm || !P) return null;
+    var tpl = qs('#pmSocial'), cur = null, from = null;
+    function li(text) { var l = document.createElement('li'); l.textContent = text; return l; }
+    function fill(kind, i) {
+      var list = P[kind], p = list[i];
+      cur = { kind: kind, i: i };
+      qs('.pm-photo img', pm).src = p.img;
+      qs('.pm-kind', pm).textContent = kind === 'team' ? 'NIIS team' : 'ICT talent · ' + p.field + ' · ' + p.county;
+      qs('#pm-name', pm).textContent = p.name;
+      qs('.pm-role', pm).textContent = p.role;
+      qs('.pm-bio', pm).textContent = p.bio || '';
+      var edu = qs('.pm-edu', pm); edu.innerHTML = '';
+      (p.edu || []).forEach(function (t) { edu.appendChild(li(t)); });
+      var exp = qs('.pm-exp', pm); exp.innerHTML = '';
+      (p.exp || []).forEach(function (x) {
+        var l = document.createElement('li');
+        l.innerHTML = '<b></b><span></span><em></em>';
+        l.children[0].textContent = x[0]; l.children[1].textContent = x[1]; l.children[2].textContent = x[2];
+        exp.appendChild(l);
+      });
+      var sk = qs('.pm-skills', pm); sk.innerHTML = '';
+      (p.skills || []).forEach(function (t) { sk.appendChild(li(t)); });
+      qs('[data-pm-skills]', pm).hidden = !(p.skills && p.skills.length);
+      var soc = qs('.pm-social', pm);
+      soc.innerHTML = tpl.innerHTML;
+      qsa('a', soc).forEach(function (a) { a.setAttribute('aria-label', p.name + a.getAttribute('aria-label')); });
+      qs('.pm-count', pm).textContent = (i + 1) + ' / ' + list.length;
+      qs('.pm-body', pm).scrollTop = 0;
+      if (!REDUCE) { var b = qs('.pm-in', pm); b.classList.remove('is-swap'); void b.offsetWidth; b.classList.add('is-swap'); }
+    }
+    function open(kind, i, card) {
+      from = card || null;
+      fill(kind, i);
+      if (!pm.open) { if (pm.showModal) pm.showModal(); else pm.setAttribute('open', ''); document.documentElement.classList.add('ui-locked'); }
+    }
+    function close() { if (pm.close) pm.close(); else { pm.removeAttribute('open'); onClose(); } }
+    function onClose() { document.documentElement.classList.remove('ui-locked'); if (from) from.focus({ preventScroll: true }); }
+    function step(d) { if (!cur) return; var n = P[cur.kind].length; fill(cur.kind, (cur.i + d + n) % n); }
+    pm.addEventListener('close', onClose);
+    pm.addEventListener('click', function (e) {
+      if (e.target === pm || e.target.closest('[data-pm-close]')) { close(); return; }
+      if (e.target.closest('a[href="#"]')) { e.preventDefault(); return; }
+      var s = e.target.closest('[data-pm-step]');
+      if (s) step(Number(s.dataset.pmStep));
+    });
+    pm.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    });
     return open;
   }
 
@@ -1026,57 +1077,42 @@
     var root = qs('.tm');
     if (!root) return;
     initInView('.tc-panel, .tp-panel, .tm-grid');
-    var hover = matchMedia('(hover: hover)'), compact = matchMedia('(max-width: 760px)');
+    var openPerson = initPeople() || function () {};
+    function openCard(c) { openPerson(c.dataset.person, Number(c.dataset.i), c); }
 
     // ---- the team: two rows of four, filled column by column
     var track = qs('#tcTrack');
-    if (track) {
-      var cards = qsa('.tc-card', track), detail = qs('#tcDetail');
-      // a card too small to hold its bio (phones) opens it in the panel under the rows instead
-      var showDetail = function (c) {
-        if (!c) { detail.hidden = true; return; }
-        qs('img', detail).src = qs('.tc-photo', c).src;
-        qs('.tc-name', detail).textContent = qs('.tc-name', c).textContent;
-        qs('.tc-role', detail).textContent = qs('.tc-role', c).textContent;
-        qs('p', detail).textContent = qs('.tc-bio p', c).textContent;
-        detail.hidden = false;
-        if (!REDUCE) { detail.classList.remove('is-in'); void detail.offsetWidth; detail.classList.add('is-in'); }
-      };
-      rowCarousel(track, {
-        item: '.tc-card', rows: 2, at: qs('[data-tc-at]'), bar: qs('.tc-progress i'),
-        prev: qs('[data-tc="-1"]'), next: qs('[data-tc="1"]'),
-        onTap: function (c, key) {
-          if (!key && !compact.matches && hover.matches) return;   // a mouse gets the card on hover
-          var open = openOnly(cards, c);
-          if (compact.matches) showDetail(open ? c : null);
-        },
-      });
-      qs('.tc-detail-x', detail).addEventListener('click', function () {
-        cards.forEach(function (o) { o.classList.remove('is-open'); });
-        showDetail(null);
-      });
-      compact.addEventListener('change', function () { if (!compact.matches) showDetail(null); });
-    }
+    if (track) rowCarousel(track, {
+      item: '.tc-card', at: qs('[data-tc-at]'), bar: qs('.tc-progress i'),
+      prev: qs('[data-tc="-1"]'), next: qs('[data-tc="1"]'), onTap: openCard,
+    });
 
-    // ---- the talent pool: one row, filtered by field
+    // ---- the talent pool: four rows of four in reading order, filtered by field
     var tTrack = qs('#tpTrack');
     if (tTrack) {
       var tCards = qsa('.tp-card', tTrack), chips = qsa('[data-tp-field]');
+      // the first sixteen fill the view row by row; the rest follow a column at a time
+      var lay = function () {
+        tCards.filter(function (c) { return !c.hidden; }).sort(function (a, b) { return a.dataset.i - b.dataset.i; }).forEach(function (c, k) {
+          var r = k < 16 ? Math.floor(k / 4) : (k - 16) % 4, col = k < 16 ? k % 4 : 4 + Math.floor((k - 16) / 4);
+          c.style.gridRow = r + 1; c.style.gridColumn = col + 1;
+        });
+      };
+      lay();
       var row = rowCarousel(tTrack, {
-        item: '.tp-card', rows: 1, at: qs('[data-tp-at]'), total: qs('[data-tp-total]'), bar: qs('.tp-progress i'),
-        prev: qs('[data-tp="-1"]'), next: qs('[data-tp="1"]'),
-        onTap: function (c, key) { if (key || !hover.matches) openOnly(tCards, c); },
+        item: '.tp-card', at: qs('[data-tp-at]'), total: qs('[data-tp-total]'), bar: qs('.tp-progress i'),
+        prev: qs('[data-tp="-1"]'), next: qs('[data-tp="1"]'), onTap: openCard,
       });
       chips.forEach(function (b) {
         b.addEventListener('click', function () {
-          var f = b.dataset.tpField;
+          var f = b.dataset.tpField, k = 0;
           pressOnly(chips, 'data-tp-field', f);
-          tCards.forEach(function (c, i) {
+          tCards.forEach(function (c) {
             var show = !f || c.dataset.field === f;
-            c.classList.remove('is-open');
             c.hidden = !show;
-            if (show && !REDUCE) c.animate([{ opacity: 0, transform: 'translateY(12px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: Math.min(i, 5) * 40, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+            if (show && !REDUCE) c.animate([{ opacity: 0, transform: 'translateY(12px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: Math.min(k++, 8) * 35, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
           });
+          lay();
           row.reset();
         });
       });

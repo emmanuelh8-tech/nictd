@@ -67,6 +67,7 @@ const ICONS = {
   rotate: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
   login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>',
   check: '<polyline points="4.5 12.5 9.5 17.5 19.5 7"/>',
+  chevrons: '<polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/>',
   eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
   eyeoff: '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
   copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
@@ -611,8 +612,8 @@ function featuredPapers() {
       <h2 data-perch="start">Featured Research Papers</h2>
       <div class="fp-nav">
         <a class="more" href="/research" style="margin-right:.8rem">All papers ${icon('arrow')}</a>
-        <button class="fp-arrow" data-dir="-1" aria-label="Previous">${icon('chevron', 'icn fp-flip')}</button>
-        <button class="fp-arrow" data-dir="1" aria-label="Next">${icon('chevron')}</button>
+        <button class="fp-arrow skip" data-dir="-1" aria-label="Previous">${icon('chevrons', 'icn ui-flip')}</button>
+        <button class="fp-arrow skip" data-dir="1" aria-label="Next">${icon('chevrons')}</button>
       </div>
     </div>
     <div class="fp-track" id="fpTrack" data-worm>${FEATURED_PAPERS.map(card).join('')}${FEATURED_PAPERS.map(card).join('')}</div>
@@ -891,8 +892,8 @@ function nationalReports() {
       <h2 data-perch>National ICT Reports</h2>
       <div class="rc-nav">
         <a class="more" href="/reports" style="margin-right:.8rem">See more ${icon('arrow')}</a>
-        <button class="rc-arrow" data-dir="-1" aria-label="Previous report">${icon('chevron', 'icn fp-flip')}</button>
-        <button class="rc-arrow" data-dir="1" aria-label="Next report">${icon('chevron')}</button>
+        <button class="rc-arrow skip" data-dir="-1" aria-label="Previous report">${icon('chevrons', 'icn ui-flip')}</button>
+        <button class="rc-arrow skip" data-dir="1" aria-label="Next report">${icon('chevrons')}</button>
       </div>
     </div>
     <div class="rc-stage" id="rcStage" data-worm>${cards}</div>
@@ -1206,7 +1207,7 @@ function latestUpdates(headlines) {
       <h2 id="sqTrendsTitle" data-perch>ICT News &amp; Updates</h2>
       <div class="sq-nav">
         <a class="more" href="/updates">All updates ${icon('arrow')}</a>
-        ${n > 1 ? `<button type="button" class="sq-arrow" data-sq-step="-1" aria-label="Previous update">${SQ_BACK}</button><button type="button" class="sq-arrow" data-sq-step="1" aria-label="Next update">${SQ_NEXT}</button>` : ''}
+        ${n > 1 ? `<button type="button" class="sq-arrow skip" data-sq-step="-1" aria-label="Previous update">${icon('chevrons', 'icn ui-flip')}</button><button type="button" class="sq-arrow skip" data-sq-step="1" aria-label="Next update">${icon('chevrons')}</button>` : ''}
       </div>
     </div>
     <div class="sq" id="sqTrends" data-worm><div class="sq-body" style="--sq-slats:${slats}">
@@ -3608,35 +3609,118 @@ const TALENTS = [
   { name: 'Yassah Morris', img: 'yassah-morris', role: 'Data analyst', field: 'Data & AI', county: 'Bomi',
     note: 'Built a dashboard that tracks school enrolment across Bomi County.', skills: ['Power BI', 'Excel', 'SQL'] },
 ];
-const SOCIAL = {
-  in: '<path d="M6.94 5a2 2 0 1 1-4-.002 2 2 0 0 1 4 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91l.04-1.68z"/>',
-  x: '<path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78L17.75 3zm-1.08 16.2h1.7L7.4 4.72H5.58L16.67 19.2z"/>',
-  mail: '<path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4 7.3V17h16V7.3l-8 4.9z"/>',
+// Education and experience behind each sample profile (mock, as the profiles are), shown in the
+// details window that opens from a card. experience: [role, where, when]
+const PERSON_MORE = {
+  'Musu Kollie': { edu: ['MSc Development Statistics, University of Liberia', 'BSc Economics, Cuttington University'], exp: [['Survey / Project Director', 'NIIS data mining phase', '2026 to now'], ['Survey manager', 'National household survey programme', '2019 to 2025'], ['Statistician', 'County planning office, Bong', '2014 to 2019']] },
+  'Emmanuel Kpadeh': { edu: ['BSc Computer Science, University of Liberia', 'Certificate in Data Engineering'], exp: [['Data Team Lead', 'NIIS', '2026 to now'], ['Database administrator', 'Ministry IT unit', '2018 to 2025']] },
+  'Comfort Wesseh': { edu: ['MSc Applied Statistics, University of Ghana', 'BSc Mathematics, University of Liberia'], exp: [['Sampling Statistician', 'NIIS', '2026 to now'], ['Research statistician', 'Health survey programme', '2021 to 2025']] },
+  'Prince Flomo': { edu: ['BSc Software Engineering, Stella Maris Polytechnic'], exp: [['Database / CAPI Engineer', 'NIIS', '2026 to now'], ['Mobile developer', 'Software studio, Monrovia', '2022 to 2025']] },
+  'Siafa Kamara': { edu: ['BSc Information Technology, African Methodist Episcopal University'], exp: [['Database / CAPI Engineer', 'NIIS', '2026 to now'], ['Systems administrator', 'Bank IT department', '2020 to 2025']] },
+  'Hawa Kromah': { edu: ['BSc Geography, University of Liberia', 'Diploma in GIS'], exp: [['GIS / Mapping Analyst', 'NIIS', '2026 to now'], ['GIS officer', 'County land-use mapping project', '2019 to 2025']] },
+  'Jartu Dolo': { edu: ['BSc Statistics, University of Liberia'], exp: [['Data Quality Analyst', 'NIIS', '2026 to now'], ['Monitoring and evaluation officer', 'Education programme', '2018 to 2025']] },
+  'Saye Zuo': { edu: ['BA Economics, Cuttington University'], exp: [['Data Quality Analyst', 'NIIS', '2026 to now'], ['Field data supervisor', 'Agriculture census', '2016 to 2025']] },
+  'Korto Nyumah': { edu: ['Associate Degree in Computer Science, Grand Bassa Community College'], exp: [['Data Processing Clerk', 'NIIS', '2026 to now'], ['Data entry officer', 'County health office', '2023 to 2025']] },
+  'Momo Konneh': { edu: ['MA Sociology, University of Liberia', 'BA Sociology, Cuttington University'], exp: [['County Research Lead, Bong', 'NIIS', '2026 to now'], ['Researcher', 'Community research programme, Bong', '2017 to 2025']] },
+  'Decontee Tarpeh': { edu: ['BSc Public Health, Mother Patern College of Health Sciences'], exp: [['Field Supervisor, Nimba', 'NIIS', '2026 to now'], ['Enumerator team lead', 'Demographic survey', '2021 to 2025']] },
+  'Varney Kanneh': { edu: ['Certificate in Information Technology, Booker Washington Institute'], exp: [['Field Enumerator, Montserrado', 'NIIS', '2026 to now'], ['Mobile money agent', 'Paynesville', '2022 to 2025']] },
+  'Blessing Gbessay': { edu: ['BSc Computer Science (in progress), Stella Maris Polytechnic'], exp: [['Flutter developer, freelance', 'Monrovia', '2024 to now'], ['Volunteer coding coach', 'Community tech hub', '2023 to now']] },
+  'Abraham Tamba': { edu: ['BSc Statistics, University of Liberia'], exp: [['Data analyst', 'Development research programme', '2023 to now'], ['Research intern', 'Margibi County planning office', '2022']] },
+  'Patience Sumo': { edu: ['BA Mass Communication, Cuttington University'], exp: [['UX designer, freelance', 'Gbarnga', '2024 to now'], ['Design fellow', 'Inclusive tech programme', '2023']] },
+  'Joseph Wolobah': { edu: ['BSc Information Technology, United Methodist University'], exp: [['Security analyst', 'Business network, Ganta', '2022 to now'], ['IT support officer', 'Nimba County school', '2020 to 2022']] },
+  'Mercy Toe': { edu: ['Diploma in Electrical Engineering, Booker Washington Institute'], exp: [['IoT maker', 'Maker space, Buchanan', '2023 to now'], ['Solar installer', 'Rural energy cooperative', '2021 to 2023']] },
+  'Augustine Karmo': { edu: ['BSc Computer Science, Cuttington University'], exp: [['Android developer', 'Schools project, Voinjama', '2024 to now'], ['ICT teacher', 'Lofa County high school', '2022 to 2024']] },
+  'Esther Gonleh': { edu: ['BSc Computer Science (in progress), University of Liberia'], exp: [['Language data volunteer', 'Local-language AI project', '2024 to now'], ['Research assistant', 'University computing lab', '2023 to now']] },
+  'Mohammed Fofana': { edu: ['Certificate in Networking, BlueCrest University College'], exp: [['Network engineer', 'Community Wi-Fi, Robertsport', '2022 to now'], ['Field technician', 'Internet service provider', '2020 to 2022']] },
+  'Princess Teah': { edu: ['BSc Information Technology, William V.S. Tubman University'], exp: [['Web developer, freelance', 'Harper', '2023 to now'], ['IT assistant', 'Tourism office, Maryland', '2022']] },
+  'Isaac Saygbe': { edu: ['Diploma in Electronics, Booker Washington Institute'], exp: [['Robotics instructor', 'Schools STEM club, Bomi', '2023 to now'], ['Electronics technician', 'Repair shop, Tubmanburg', '2020 to 2023']] },
+  'Victoria Wreh': { edu: ['BBA Accounting, University of Liberia'], exp: [['Fintech product builder', 'Zwedru', '2024 to now'], ['Savings group officer', 'Women’s microfinance programme', '2021 to 2024']] },
+  'Samuel Kpaan': { edu: ['BSc Agriculture, Cuttington University', 'Certificate in Remote Sensing'], exp: [['Data scientist', 'Cocoa cooperative, Nimba', '2023 to now'], ['Extension officer', 'Agriculture programme', '2020 to 2023']] },
+  'Cecilia Jallah': { edu: ['BSc Computer Science (in progress), African Methodist Episcopal University'], exp: [['Study group lead', 'Women in cybersecurity', '2024 to now'], ['IT intern', 'Bank IT department, Monrovia', '2024']] },
+  'Moses Gaye': { edu: ['Certificate in Networking, Stella Maris Polytechnic'], exp: [['Network technician', 'Clinics connectivity project, River Gee', '2023 to now'], ['Electrician', 'Fish Town', '2019 to 2023']] },
+  'Grace Sackie': { edu: ['BA Mass Communication, University of Liberia'], exp: [['Digital media producer', 'Community radio, Grand Kru', '2022 to now'], ['Reporter', 'Radio station, Barclayville', '2020 to 2022']] },
+  'Daniel Saah': { edu: ['BSc Computer Science, Stella Maris Polytechnic'], exp: [['App developer', 'Fishing cooperative, Greenville', '2024 to now'], ['Computer lab assistant', 'Sinoe high school', '2022 to 2024']] },
+  'Rebecca Kpoto': { edu: ['BA Fine Arts, University of Liberia', 'Certificate in UX Design'], exp: [['Interface designer', 'E-services design team', '2023 to now'], ['Graphic designer', 'Print shop, Kakata', '2020 to 2023']] },
+  'Alfred Zinnah': { edu: ['Diploma in Electronics, Booker Washington Institute'], exp: [['Electronics technician', 'Laptop refurbishment, Voinjama', '2022 to now'], ['Phone repair technician', 'Voinjama market', '2019 to 2022']] },
+  'Mariama Sesay': { edu: ['BSc Economics, University of Liberia'], exp: [['Fintech analyst', 'Remittance research project', '2024 to now'], ['Bank teller', 'Robertsport branch', '2021 to 2024']] },
+  'Peter Nagbe': { edu: ['BSc Computer Science, Cuttington University'], exp: [['Data engineer', 'Clinic records project, Bong', '2023 to now'], ['Health information officer', 'County health team', '2020 to 2023']] },
+  'Hannah Weefur': { edu: ['BSc Information Technology, BlueCrest University College'], exp: [['Mobile service developer', 'Farmers’ weather service, River Cess', '2024 to now'], ['Teacher', 'School in Cestos City', '2021 to 2024']] },
+  'Joshua Tokpah': { edu: ['BSc Information Technology, United Methodist University'], exp: [['IT security officer', 'County hospital, Gbarpolu', '2022 to now'], ['IT technician', 'District office, Bopolu', '2019 to 2022']] },
+  'Ruth Kerkula': { edu: ['BA Communications, African Methodist Episcopal University'], exp: [['Video creator', 'Digital safety channel', '2023 to now'], ['Social media assistant', 'Agency, Monrovia', '2021 to 2023']] },
+  'Kpana Fallah': { edu: ['Certificate in Networking, Grand Bassa Community College'], exp: [['Network engineer', 'Co-working space, Buchanan', '2022 to now'], ['Fibre technician', 'Telecom contractor', '2019 to 2022']] },
+  'Yassah Morris': { edu: ['BSc Statistics, University of Liberia'], exp: [['Data analyst', 'County education office, Bomi', '2023 to now'], ['Data clerk', 'School census', '2021 to 2023']] },
 };
+// brand marks for the social links: GitHub (from the team-card component the owner supplied),
+// Instagram and Facebook (Font Awesome Free, as in the footer), LinkedIn and X
+const SOCIAL = {
+  gh: { vb: '0 0 24 24', d: 'M5.88401 18.6533C5.58404 18.4526 5.32587 18.1975 5.0239 17.8369C4.91473 17.7065 4.47283 17.1524 4.55811 17.2583C4.09533 16.6833 3.80296 16.417 3.50156 16.3089C2.9817 16.1225 2.7114 15.5499 2.89784 15.0301C3.08428 14.5102 3.65685 14.2399 4.17672 14.4263C4.92936 14.6963 5.43847 15.1611 6.12425 16.0143C6.03025 15.8974 6.46364 16.441 6.55731 16.5529C6.74784 16.7804 6.88732 16.9182 6.99629 16.9911C7.20118 17.1283 7.58451 17.1874 8.14709 17.1311C8.17065 16.7489 8.24136 16.3783 8.34919 16.0358C5.38097 15.3104 3.70116 13.3952 3.70116 9.63971C3.70116 8.40085 4.0704 7.28393 4.75917 6.3478C4.5415 5.45392 4.57433 4.37284 5.06092 3.15636C5.1725 2.87739 5.40361 2.66338 5.69031 2.57352C5.77242 2.54973 5.81791 2.53915 5.89878 2.52673C6.70167 2.40343 7.83573 2.69705 9.31449 3.62336C10.181 3.41879 11.0885 3.315 12.0012 3.315C12.9129 3.315 13.8196 3.4186 14.6854 3.62277C16.1619 2.69 17.2986 2.39649 18.1072 2.52651C18.1919 2.54013 18.2645 2.55783 18.3249 2.57766C18.6059 2.66991 18.8316 2.88179 18.9414 3.15636C19.4279 4.37256 19.4608 5.45344 19.2433 6.3472C19.9342 7.28337 20.3012 8.39208 20.3012 9.63971C20.3012 13.3968 18.627 15.3048 15.6588 16.032C15.7837 16.447 15.8496 16.9105 15.8496 17.4121C15.8496 18.0765 15.8471 18.711 15.8424 19.4225C15.8412 19.6127 15.8397 19.8159 15.8375 20.1281C16.2129 20.2109 16.5229 20.5077 16.6031 20.9089C16.7114 21.4504 16.3602 21.9773 15.8186 22.0856C14.6794 22.3134 13.8353 21.5538 13.8353 20.5611C13.8353 20.4708 13.836 20.3417 13.8375 20.1145C13.8398 19.8015 13.8412 19.599 13.8425 19.4094C13.8471 18.7019 13.8496 18.0716 13.8496 17.4121C13.8496 16.7148 13.6664 16.2602 13.4237 16.051C12.7627 15.4812 13.0977 14.3973 13.965 14.2999C16.9314 13.9666 18.3012 12.8177 18.3012 9.63971C18.3012 8.68508 17.9893 7.89571 17.3881 7.23559C17.1301 6.95233 17.0567 6.54659 17.199 6.19087C17.3647 5.77663 17.4354 5.23384 17.2941 4.57702L17.2847 4.57968C16.7928 4.71886 16.1744 5.0198 15.4261 5.5285C15.182 5.69438 14.8772 5.74401 14.5932 5.66413C13.7729 5.43343 12.8913 5.315 12.0012 5.315C11.111 5.315 10.2294 5.43343 9.40916 5.66413C9.12662 5.74359 8.82344 5.69492 8.57997 5.53101C7.8274 5.02439 7.2056 4.72379 6.71079 4.58376C6.56735 5.23696 6.63814 5.77782 6.80336 6.19087C6.94565 6.54659 6.87219 6.95233 6.61423 7.23559C6.01715 7.8912 5.70116 8.69376 5.70116 9.63971C5.70116 12.8116 7.07225 13.9683 10.023 14.2999C10.8883 14.3971 11.2246 15.4769 10.5675 16.0482C10.3751 16.2156 10.1384 16.7802 10.1384 17.4121V20.5611C10.1384 21.5474 9.30356 22.2869 8.17878 22.09C7.63476 21.9948 7.27093 21.4766 7.36613 20.9326C7.43827 20.5204 7.75331 20.2116 8.13841 20.1276V19.1381C7.22829 19.1994 6.47656 19.0498 5.88401 18.6533Z', label: 'GitHub' },
+  ig: { vb: '0 0 448 512', d: 'M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z', label: 'Instagram' },
+  fb: { vb: '0 0 320 512', d: 'M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z', label: 'Facebook' },
+  in: { vb: '0 0 24 24', d: 'M6.94 5a2 2 0 1 1-4-.002 2 2 0 0 1 4 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91l.04-1.68z', label: 'LinkedIn' },
+  x: { vb: '0 0 24 24', d: 'M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78L17.75 3zm-1.08 16.2h1.7L7.4 4.72H5.58L16.67 19.2z', label: 'X' },
+};
+const SOCIAL_ORDER = ['gh', 'ig', 'fb', 'in', 'x'];
+// the sample profiles have no accounts yet, so every link is a placeholder
+const socialLinks = (name, focusable) => SOCIAL_ORDER.map((k) => `<a href="#" aria-label="${esc(name)} on ${SOCIAL[k].label}"${focusable ? '' : ' tabindex="-1"'}><svg viewBox="${SOCIAL[k].vb}" aria-hidden="true"><path d="${SOCIAL[k].d}"/></svg></a>`).join('');
+// a laptop in its own colours: silver body, dark bezel, a lit blue screen
+const LAPTOP = `<svg class="tc-laptop" viewBox="0 0 48 34" aria-hidden="true">
+  <defs>
+    <linearGradient id="lpBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EEF0F3"/><stop offset="1" stop-color="#A3A9B1"/></linearGradient>
+    <linearGradient id="lpScreen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5B9BF5"/><stop offset=".55" stop-color="#1F52B4"/><stop offset="1" stop-color="#0C2766"/></linearGradient>
+  </defs>
+  <rect x="7" y="2" width="34" height="23.5" rx="2.4" fill="#2A2D33"/>
+  <rect x="9.2" y="4.2" width="29.6" height="19" rx=".9" fill="url(#lpScreen)"/>
+  <path d="M9.2 4.2h12.5L12.6 23.2H9.2z" fill="#fff" opacity=".13"/>
+  <circle cx="24" cy="3.1" r=".55" fill="#5C6068"/>
+  <path d="M1.5 26.2h45l-2.4 4.9c-.4.8-1.1 1.2-2 1.2H5.9c-.9 0-1.6-.4-2-1.2z" fill="url(#lpBody)"/>
+  <rect x="1.5" y="25.3" width="45" height="1.7" rx=".85" fill="#C7CCD3"/>
+  <path d="M19.5 26.2h9l-.7 1.3h-7.6z" fill="#8A9099"/>
+</svg>`;
 exports.team = (ctx) => {
   const maxCounty = Math.max(...TEAM_COUNTIES.map((c) => c[1] + c[2] + c[3] + c[4]));
   const fieldTotal = TEAM_COUNTIES.reduce((s, c) => s + c[1] + c[2] + c[3] + c[4], 0);
   const n = TEAM_MEMBERS.length;
+  const pad = (v) => String(v).padStart(2, '0');
+  // the team's rows fill column by column, so the first eight are laid in reading order
   const first = TEAM_MEMBERS.slice(0, 8), top = first.slice(0, 4), low = first.slice(4);
   const laid = top.flatMap((m, c) => (low[c] ? [m, low[c]] : [m])).concat(TEAM_MEMBERS.slice(8));
-  const card = (m) => { const i = TEAM_MEMBERS.indexOf(m); return `<article class="tc-card" style="--k:${Math.min(i, 7)}" tabindex="0" role="group" aria-roledescription="team member" aria-label="${esc(m.name)}, ${esc(m.role)}">
-          <div class="tc-media">
-            <img class="tc-photo" src="/img/team/${m.img}.jpg?v=${ASSET_V}" alt="" width="600" height="600" loading="lazy" decoding="async">
-            <div class="tc-bio">
-              <div class="tc-social">
-                <a href="#" aria-label="${esc(m.name)} on LinkedIn" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true">${SOCIAL.in}</svg></a>
-                <a href="#" aria-label="${esc(m.name)} on X" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true">${SOCIAL.x}</svg></a>
-                <a href="#" aria-label="Email ${esc(m.name)}" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true">${SOCIAL.mail}</svg></a>
-              </div>
-              <p>${esc(m.bio)}</p>
-            </div>
-          </div>
+  const card = (m) => {
+    const i = TEAM_MEMBERS.indexOf(m), src = `/img/team/${m.img}.jpg?v=${ASSET_V}`;
+    return `<article class="tc-card" data-person="team" data-i="${i}" style="--k:${Math.min(i, 7)}" tabindex="0" role="button" aria-label="${esc(m.name)}, ${esc(m.role)}. Open profile">
+          <div class="tc-media"><img class="tc-photo" src="${src}" alt="" width="600" height="600" loading="lazy" decoding="async"></div>
           <div class="tc-info">
-            <img class="tc-avatar" src="/img/team/${m.img}.jpg?v=${ASSET_V}" alt="" width="600" height="600" loading="lazy" decoding="async">
             <span class="tc-name">${esc(m.name)}</span>
             <span class="tc-role">${esc(m.role)}</span>
           </div>
-        </article>`; };
+          <div class="tc-bio">
+            <div class="tc-bio-head">
+              <img class="tc-avatar" src="${src}" alt="" width="600" height="600" loading="lazy" decoding="async">
+              <span><b>${esc(m.name)}</b><em>${esc(m.role)}</em></span>
+            </div>
+            <p>${esc(m.bio)}</p>
+            <div class="tc-social">${socialLinks(m.name)}</div>
+          </div>
+        </article>`;
+  };
+  const tPlace = (i) => (i < 16 ? `grid-row:${Math.floor(i / 4) + 1};grid-column:${(i % 4) + 1}` : `grid-row:${((i - 16) % 4) + 1};grid-column:${5 + Math.floor((i - 16) / 4)}`);
+  const tCard = (t, i) => `<article class="tp-card" data-person="talent" data-i="${i}" data-field="${esc(t.field)}" style="--k:${Math.min(i, 7)};${tPlace(i)}" tabindex="0" role="button" aria-label="${esc(t.name)}, ${esc(t.role)}, ${esc(t.county)}. Open profile">
+            <img class="tp-photo" src="/img/talent/${t.img}.jpg?v=${ASSET_V}" alt="" width="600" height="800" loading="lazy" decoding="async">
+            <span class="tp-field">${esc(t.field)}</span>
+            <div class="tp-body">
+              <h3 class="tp-name">${esc(t.name)}</h3>
+              <p class="tp-role">${esc(t.role)}</p>
+              <p class="tp-place">${icon('pin')}<span>${esc(t.county)}</span></p>
+              <div class="tp-more"><div>
+                <p class="tp-note">${esc(t.note)}</p>
+                <ul class="tp-skills">${t.skills.map((k) => `<li>${esc(k)}</li>`).join('')}</ul>
+              </div></div>
+            </div>
+          </article>`;
+  // what the details window shows
+  const people = {
+    team: TEAM_MEMBERS.map((m) => ({ name: m.name, role: m.role, img: `/img/team/${m.img}.jpg?v=${ASSET_V}`, bio: m.bio, ...(PERSON_MORE[m.name] || {}) })),
+    talent: TALENTS.map((t) => ({ name: t.name, role: t.role, img: `/img/talent/${t.img}.jpg?v=${ASSET_V}`, bio: t.note, county: t.county, field: t.field, skills: t.skills, ...(PERSON_MORE[t.name] || {}) })),
+  };
   return shell(ctx, {
     title: 'Our Team', active: '/about/team', workspaceActive: 'about', body: `
   ${pageHeader('team', 'Our Team', 'The people who collect, check and publish Liberia’s ICT data.')}
@@ -3645,26 +3729,17 @@ exports.team = (ctx) => {
       <div class="tc-panel">
         <div class="tc-head">
           <div>
-            <p class="tc-eyebrow">${icon('sparkle')}<b>Who</b><b>we</b><b>are</b></p>
+            <p class="tc-eyebrow">${LAPTOP}<b>Who</b><b>we</b><b>are</b></p>
             <h2 id="tc-h" class="tc-title">The people<br>behind NIIS.</h2>
           </div>
           <div class="tc-ctrl">
-            <span class="tc-count" aria-hidden="true"><b data-tc-at>${String(Math.min(8, n)).padStart(2, '0')}</b> / ${String(n).padStart(2, '0')}</span>
-            <button type="button" class="tc-arrow" data-tc="-1" aria-label="Previous team members">${icon('arrow', 'icn ui-flip')}</button>
-            <button type="button" class="tc-arrow" data-tc="1" aria-label="Next team members">${icon('arrow')}</button>
+            <span class="tc-count" aria-hidden="true"><b data-tc-at>${pad(Math.min(8, n))}</b> / ${pad(n)}</span>
+            <button type="button" class="tc-arrow skip" data-tc="-1" aria-label="Previous team members">${icon('chevrons', 'icn ui-flip')}</button>
+            <button type="button" class="tc-arrow skip" data-tc="1" aria-label="Next team members">${icon('chevrons')}</button>
           </div>
         </div>
         <div class="tc-track" id="tcTrack" role="region" aria-label="Team members, ${n} in all" tabindex="-1">
           ${laid.map(card).join('')}
-        </div>
-        <div class="tc-detail" id="tcDetail" hidden aria-live="polite">
-          <img alt="" width="600" height="600">
-          <div class="tc-detail-in">
-            <span class="tc-name"></span>
-            <span class="tc-role"></span>
-            <p></p>
-          </div>
-          <button type="button" class="tc-detail-x" aria-label="Close">${icon('x')}</button>
         </div>
         <div class="tc-foot">
           <div class="tc-progress" aria-hidden="true"><i></i></div>
@@ -3682,9 +3757,9 @@ exports.team = (ctx) => {
             <p class="tp-lede">Young Liberians we have found building, designing and securing the country’s digital future.</p>
           </div>
           <div class="tp-ctrl">
-            <span class="tp-count" aria-hidden="true"><b data-tp-at>04</b> / <span data-tp-total>${String(TALENTS.length).padStart(2, '0')}</span></span>
-            <button type="button" class="tp-arrow" data-tp="-1" aria-label="Previous talents">${icon('arrow', 'icn ui-flip')}</button>
-            <button type="button" class="tp-arrow" data-tp="1" aria-label="Next talents">${icon('arrow')}</button>
+            <span class="tp-count" aria-hidden="true"><b data-tp-at>${pad(Math.min(16, TALENTS.length))}</b> / <span data-tp-total>${pad(TALENTS.length)}</span></span>
+            <button type="button" class="tp-arrow skip" data-tp="-1" aria-label="Previous talents">${icon('chevrons', 'icn ui-flip')}</button>
+            <button type="button" class="tp-arrow skip" data-tp="1" aria-label="Next talents">${icon('chevrons')}</button>
           </div>
         </div>
         <div class="tp-chips" role="group" aria-label="Filter by field">
@@ -3692,19 +3767,7 @@ exports.team = (ctx) => {
           ${[...new Set(TALENTS.map((t) => t.field))].map((f) => `<button type="button" data-tp-field="${esc(f)}" aria-pressed="false">${esc(f)} <b>${TALENTS.filter((t) => t.field === f).length}</b></button>`).join('')}
         </div>
         <div class="tp-track" id="tpTrack" role="region" aria-label="ICT talents" tabindex="-1">
-          ${TALENTS.map((t, i) => `<article class="tp-card" data-field="${esc(t.field)}" style="--k:${Math.min(i, 5)}" tabindex="0" role="group" aria-roledescription="talent" aria-label="${esc(t.name)}, ${esc(t.role)}, ${esc(t.county)}">
-            <img class="tp-photo" src="/img/talent/${t.img}.jpg?v=${ASSET_V}" alt="" width="600" height="800" loading="lazy" decoding="async">
-            <span class="tp-field">${esc(t.field)}</span>
-            <div class="tp-body">
-              <h3 class="tp-name">${esc(t.name)}</h3>
-              <p class="tp-role">${esc(t.role)}</p>
-              <p class="tp-place">${icon('pin')}<span>${esc(t.county)}</span></p>
-              <div class="tp-more"><div>
-                <p class="tp-note">${esc(t.note)}</p>
-                <ul class="tp-skills">${t.skills.map((k) => `<li>${esc(k)}</li>`).join('')}</ul>
-              </div></div>
-            </div>
-          </article>`).join('')}
+          ${TALENTS.map(tCard).join('')}
         </div>
         <div class="tp-foot">
           <div class="tp-progress" aria-hidden="true"><i></i></div>
@@ -3738,7 +3801,29 @@ exports.team = (ctx) => {
       </ol>
     </section>
   </div>
-  <script>window.__NICTD_PAGE__='team';</script>`,
+  <dialog class="pm" id="pm" aria-labelledby="pm-name">
+    <button type="button" class="pm-x" data-pm-close aria-label="Close">${icon('x')}</button>
+    <div class="pm-in">
+      <div class="pm-photo"><img alt="" width="600" height="600"></div>
+      <div class="pm-body">
+        <p class="pm-kind"></p>
+        <h2 id="pm-name"></h2>
+        <p class="pm-role"></p>
+        <p class="pm-bio"></p>
+        <div class="pm-sec"><h3>Education</h3><ul class="pm-edu"></ul></div>
+        <div class="pm-sec"><h3>Experience</h3><ol class="pm-exp"></ol></div>
+        <div class="pm-sec" data-pm-skills><h3>Skills</h3><ul class="pm-skills"></ul></div>
+        <div class="pm-social"></div>
+      </div>
+    </div>
+    <div class="pm-nav">
+      <button type="button" class="skip" data-pm-step="-1" aria-label="Previous profile">${icon('chevrons', 'icn ui-flip')}</button>
+      <span class="pm-count" aria-hidden="true"></span>
+      <button type="button" class="skip" data-pm-step="1" aria-label="Next profile">${icon('chevrons')}</button>
+    </div>
+  </dialog>
+  <template id="pmSocial">${socialLinks('', true)}</template>
+  <script>window.__NICTD_PAGE__='team';window.__PEOPLE__=${JSON.stringify(people).replace(/</g, '\\u003c')};</script>`,
   });
 };
 

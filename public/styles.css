@@ -5044,11 +5044,10 @@ button.skip:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px;
 .tc.is-patrons { margin-top: 1.4rem; }
 .tc.is-patrons .tc-panel { background: #E2E5EA; }
 .tc.is-patrons .tc-card:focus-visible { box-shadow: 0 0 0 3px #E2E5EA, 0 0 0 5px #464B53; }
-.tc-badge { position: absolute; top: 8px; left: 8px; z-index: 1; padding: .24rem .58rem; border-radius: 999px; background: #0B2C63; font: 700 .58rem/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: #fff; transition: opacity .3s; }
-.tc-badge.is-patron { background: var(--gold); }
+.tc-badge { position: absolute; top: 8px; left: 8px; z-index: 1; max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: .24rem .58rem; border-radius: 999px; background: var(--gold); font: 700 .58rem/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: #fff; transition: opacity .3s; }
 .tc-card.is-open .tc-badge, .tc-card:focus-visible .tc-badge { opacity: 0; }
 @media (hover: hover) and (min-width: 761px) { .tc-card:hover .tc-badge { opacity: 0; } }
-@media (max-width: 760px) { .tc-badge { top: 3px; left: 3px; padding: .12rem .3rem; font-size: .42rem; letter-spacing: .06em; } }
+@media (max-width: 760px) { .tc-badge { top: 3px; left: 3px; max-width: calc(100% - 6px); padding: .12rem .3rem; font-size: .42rem; letter-spacing: .04em; } }
 
 /* "See more", "All papers", "All updates" and "Read update": grey, to sit with the skip buttons */
 .sec-head-dh .more, #featuredPapers .more, #natReports .more, #latestUpdates .more {
@@ -5059,3 +5058,13 @@ button.skip:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px;
 .sq-go { background: #464B53; }
 .sq-go:hover { background: #23262B; opacity: 1; }
 @media (max-width: 760px) { .sec-head-dh .more, #featuredPapers .more, #natReports .more, #latestUpdates .more { height: 36px; padding: 0 .8rem; font-size: .8rem; } }
+
+/* the About menu's ICT Patrons and ICT Talent Pool land on their sections below the sticky bar */
+#patrons, #talent { scroll-margin-top: calc(var(--nav-h) + 30px); }
+
+/* home: the video, its "Up next" list and its caption share one thin black frame, as does the
+   news carousel with its summary */
+#homeVideo .vid-layout, #sqTrends { padding: 14px; border: 1px solid #111; border-radius: 16px; background: #fff; }
+#homeVideo .vid-queue { box-shadow: none; }
+#sqTrends .sq-copy { margin-top: 18px; }
+@media (max-width: 760px) { #homeVideo .vid-layout, #sqTrends { padding: 10px; border-radius: 14px; } }

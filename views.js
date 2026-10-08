@@ -229,7 +229,7 @@ function mainNav(active, q) {
     ['/research', 'Research', 'doc', [['/research/submit', 'Submit Paper', 'plus']], 'Research'],
     ['/partners', 'Our Partners', 'globe', null, 'Partners'],
     ['/careers', 'Careers', 'briefcase', null, 'Careers'],
-    ['/about', 'About', 'info', [['/about/team', 'Our Team', 'users']], 'About'],
+    ['/about', 'About', 'info', [['/about/team', 'Our Team', 'users'], ['/about/team#patrons', 'ICT Patrons', 'sparkle'], ['/about/team#talent', 'ICT Talent Pool', 'code']], 'About'],
   ];
   const isActive = (href, sub) => active === href || (sub || []).some(([h]) => active === h);
   const navItem = ([href, label, ic, sub, short]) => {
@@ -3668,39 +3668,39 @@ const LAPTOP = `<svg class="tc-laptop" viewBox="0 0 48 34" aria-hidden="true">
   <rect x="1.5" y="25.3" width="45" height="1.7" rx=".85" fill="#C7CCD3"/>
   <path d="M19.5 26.2h9l-.7 1.3h-7.6z" fill="#8A9099"/>
 </svg>`;
-// National ICT Patrons: ambassadors and individuals who support ICT in Liberia. Sample profiles
+// National ICT Patrons: individuals who support ICT in Liberia; each card names their cause. Sample profiles
 // (the owner asked for mock patrons), with AI-generated portraits in public/img/patrons of people
 // who do not exist; the page says so.
 const PATRONS = [
-  { name: 'Dr. Miatta Gbanyan', img: 'miatta-gbanyan', role: 'ICT Goodwill Ambassador', badge: 'Ambassador',
+  { name: 'Dr. Miatta Gbanyan', img: 'miatta-gbanyan', role: 'Patron, Girls in ICT', badge: 'Girls in ICT',
     bio: 'Champions digital skills for girls and women in all 15 counties.',
     edu: ['PhD Education Technology, University of Cape Town', 'BA Education, University of Liberia'],
-    exp: [['ICT Goodwill Ambassador', 'NIIS', '2026 to now'], ['Director of digital learning', 'National education programme', '2015 to 2025'], ['Lecturer', 'University of Liberia', '2005 to 2015']] },
-  { name: 'Augustus Barkpor', img: 'augustus-barkpor', role: 'Diaspora Tech Ambassador, United States', badge: 'Ambassador',
+    exp: [['Patron, Girls in ICT', 'NIIS', '2026 to now'], ['Director of digital learning', 'National education programme', '2015 to 2025'], ['Lecturer', 'University of Liberia', '2005 to 2015']] },
+  { name: 'Augustus Barkpor', img: 'augustus-barkpor', role: 'Patron, Diaspora Tech Network', badge: 'Diaspora tech',
     bio: 'Connects Liberian engineers abroad with projects at home.',
     edu: ['MSc Computer Engineering', 'BSc Physics, University of Liberia'],
-    exp: [['Diaspora Tech Ambassador', 'NIIS', '2026 to now'], ['Engineering manager', 'Software company, United States', '2010 to now']] },
-  { name: 'Hawa Sackor', img: 'hawa-sackor', role: 'Patron, Rural Connectivity', badge: 'Patron',
+    exp: [['Patron, Diaspora Tech Network', 'NIIS', '2026 to now'], ['Engineering manager', 'Software company, United States', '2010 to now']] },
+  { name: 'Hawa Sackor', img: 'hawa-sackor', role: 'Patron, Rural Connectivity', badge: 'Rural connectivity',
     bio: 'Funds solar-powered internet points for rural schools.',
     edu: ['MBA, University of Liberia'],
     exp: [['Patron, Rural Connectivity', 'NIIS', '2026 to now'], ['Founder', 'Family business group, Monrovia', '1995 to now']] },
-  { name: 'Edwin Toweh', img: 'edwin-toweh', role: 'Patron, Startup Fund', badge: 'Patron',
+  { name: 'Edwin Toweh', img: 'edwin-toweh', role: 'Patron, Startup Fund', badge: 'Startups',
     bio: 'Backs early-stage Liberian tech startups with seed grants.',
     edu: ['BBA Finance, University of Liberia', 'Executive MBA'],
     exp: [['Patron, Startup Fund', 'NIIS', '2026 to now'], ['Managing partner', 'Investment firm, Monrovia', '2012 to now']] },
-  { name: 'Dr. Fatumata Jalloh', img: 'fatumata-jalloh', role: 'Ambassador, Digital Health', badge: 'Ambassador',
+  { name: 'Dr. Fatumata Jalloh', img: 'fatumata-jalloh', role: 'Patron, Digital Health', badge: 'Digital health',
     bio: 'Advocates for digital patient records in county hospitals.',
     edu: ['MD, A.M. Dogliotti College of Medicine', 'MPH, University of Liberia'],
-    exp: [['Ambassador, Digital Health', 'NIIS', '2026 to now'], ['Physician', 'County referral hospital', '2008 to now']] },
-  { name: 'Thomas Gweh', img: 'thomas-gweh', role: 'Patron, Coding Clubs', badge: 'Patron',
+    exp: [['Patron, Digital Health', 'NIIS', '2026 to now'], ['Physician', 'County referral hospital', '2008 to now']] },
+  { name: 'Thomas Gweh', img: 'thomas-gweh', role: 'Patron, Coding Clubs', badge: 'Coding clubs',
     bio: 'Sponsors after-school coding clubs in Montserrado and Bong.',
     edu: ['BSc Electrical Engineering, University of Liberia'],
     exp: [['Patron, Coding Clubs', 'NIIS', '2026 to now'], ['Chief executive', 'Engineering services company', '2005 to now']] },
-  { name: 'Christiana Nimely', img: 'christiana-nimely', role: 'Ambassador, Women in Tech', badge: 'Ambassador',
+  { name: 'Christiana Nimely', img: 'christiana-nimely', role: 'Patron, Women in Tech', badge: 'Women in tech',
     bio: 'Mentors young women starting careers in ICT.',
     edu: ['BSc Computer Science, Cuttington University', 'Certificate in Entrepreneurship'],
-    exp: [['Ambassador, Women in Tech', 'NIIS', '2026 to now'], ['Founder', 'Software studio, Monrovia', '2016 to now']] },
-  { name: 'Joseph Gbeh', img: 'joseph-gbeh', role: 'Patron, Open Data', badge: 'Patron',
+    exp: [['Patron, Women in Tech', 'NIIS', '2026 to now'], ['Founder', 'Software studio, Monrovia', '2016 to now']] },
+  { name: 'Joseph Gbeh', img: 'joseph-gbeh', role: 'Patron, Open Data', badge: 'Open data',
     bio: 'Supports open public access to Liberia’s ICT statistics.',
     edu: ['MA Public Administration, University of Liberia'],
     exp: [['Patron, Open Data', 'NIIS', '2026 to now'], ['Civil servant', 'Public administration', '1985 to 2022']] },
@@ -3724,7 +3724,7 @@ exports.team = (ctx) => {
   const card = (kind, list, folder) => (m) => {
     const i = list.indexOf(m), src = `/img/${folder}/${m.img}.jpg?v=${ASSET_V}`;
     return `<article class="tc-card" data-person="${kind}" data-i="${i}" style="--k:${Math.min(i, 7)}" tabindex="0" role="button" aria-label="${esc(m.name)}, ${esc(m.role)}. Open profile">
-          <div class="tc-media"><img class="tc-photo" src="${src}" alt="" width="600" height="600" loading="lazy" decoding="async">${m.badge ? `<span class="tc-badge is-${m.badge.toLowerCase()}">${esc(m.badge)}</span>` : ''}</div>
+          <div class="tc-media"><img class="tc-photo" src="${src}" alt="" width="600" height="600" loading="lazy" decoding="async">${m.badge ? `<span class="tc-badge">${esc(m.badge)}</span>` : ''}</div>
           <div class="tc-info">
             <span class="tc-name">${esc(m.name)}</span>
             <span class="tc-role">${esc(m.role)}</span>
@@ -3740,7 +3740,7 @@ exports.team = (ctx) => {
         </article>`;
   };
   // a row of studio cards in a panel: the team, and the patrons
-  const studio = ({ id, kind, list, folder, mark, words, title, note, label, extra = '' }) => `<section class="tc ${extra} wrap" aria-labelledby="${id}-h">
+  const studio = ({ id, kind, list, folder, mark, words, title, note, label, extra = '', anchor = '' }) => `<section class="tc ${extra} wrap"${anchor ? ` id="${anchor}"` : ''} aria-labelledby="${id}-h">
       <div class="tc-panel">
         <div class="tc-head">
           <div>
@@ -3789,10 +3789,10 @@ exports.team = (ctx) => {
     ${studio({ id: 'tc', kind: 'team', list: TEAM_MEMBERS, folder: 'team', mark: LAPTOP, words: ['Who', 'we', 'are'],
       title: 'The people<br>behind NIIS.', label: 'Team members', note: 'Sample profiles with AI-generated placeholder photos, shown until appointments are confirmed.' })}
 
-    ${studio({ id: 'pc', kind: 'patron', list: PATRONS, folder: 'patrons', mark: MEDAL, words: ['Ambassadors', '&', 'patrons'], extra: 'is-patrons',
+    ${studio({ id: 'pc', kind: 'patron', list: PATRONS, folder: 'patrons', mark: MEDAL, words: ['Our', 'patrons'], extra: 'is-patrons', anchor: 'patrons',
       title: 'National ICT<br>Patrons.', label: 'Patrons', note: 'Sample profiles with AI-generated placeholder photos.' })}
 
-    <section class="tp wrap" aria-labelledby="tp-h">
+    <section class="tp wrap" id="talent" aria-labelledby="tp-h">
       <div class="tp-panel">
         <div class="tp-head">
           <div>

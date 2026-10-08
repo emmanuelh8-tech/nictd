@@ -3526,18 +3526,10 @@ exports.reports = (ctx, { indicators = [], domainLabels = {} } = {}) => {
 };
 
 // ============ OUR TEAM ============
-// A carousel of team members, then the field teams county by county. The members are sample
+// A carousel of team members, the National ICT Patrons, then the National ICT Talent Pool. The members are sample
 // profiles (the owner asked for twelve mock Liberian staff until real appointments, names and
 // photographs are supplied). Their photographs in public/img/team are AI-generated portraits of
-// people who do not exist, never photographs of real people, and the page says so. The county
-// headcounts come from deliverables/NICTD-Cost-Schedule.xlsx (Field Team Cost).
-const TEAM_COUNTIES = [
-  // county, enumerators, KII collectors, supervisors, research leads
-  ['Montserrado', 13, 3, 3, 1], ['Nimba', 9, 3, 2, 1], ['Bong', 9, 3, 2, 1], ['Lofa', 8, 2, 2, 1],
-  ['Grand Bassa', 8, 2, 2, 1], ['Margibi', 8, 2, 2, 1], ['Maryland', 7, 2, 2, 1], ['Grand Cape Mount', 7, 2, 2, 1],
-  ['Grand Gedeh', 7, 2, 2, 1], ['Sinoe', 7, 2, 2, 1], ['Bomi', 7, 2, 2, 1], ['Gbarpolu', 7, 2, 2, 1],
-  ['River Cess', 7, 2, 2, 1], ['River Gee', 7, 2, 2, 1], ['Grand Kru', 7, 2, 2, 1],
-];
+// people who do not exist, never photographs of real people, and the page says so.
 // sample members; img is the slug of their photograph in public/img/team
 const TEAM_MEMBERS = [
   { name: 'Musu Kollie', img: 'musu-kollie', role: 'Survey / Project Director', bio: 'Leads the data mining phase from the first county wave to the national release, and answers for the whole programme.' },
@@ -3676,18 +3668,63 @@ const LAPTOP = `<svg class="tc-laptop" viewBox="0 0 48 34" aria-hidden="true">
   <rect x="1.5" y="25.3" width="45" height="1.7" rx=".85" fill="#C7CCD3"/>
   <path d="M19.5 26.2h9l-.7 1.3h-7.6z" fill="#8A9099"/>
 </svg>`;
+// National ICT Patrons: ambassadors and individuals who support ICT in Liberia. Sample profiles
+// (the owner asked for mock patrons), with AI-generated portraits in public/img/patrons of people
+// who do not exist; the page says so.
+const PATRONS = [
+  { name: 'Dr. Miatta Gbanyan', img: 'miatta-gbanyan', role: 'ICT Goodwill Ambassador', badge: 'Ambassador',
+    bio: 'Champions digital skills for girls and women in all 15 counties.',
+    edu: ['PhD Education Technology, University of Cape Town', 'BA Education, University of Liberia'],
+    exp: [['ICT Goodwill Ambassador', 'NIIS', '2026 to now'], ['Director of digital learning', 'National education programme', '2015 to 2025'], ['Lecturer', 'University of Liberia', '2005 to 2015']] },
+  { name: 'Augustus Barkpor', img: 'augustus-barkpor', role: 'Diaspora Tech Ambassador, United States', badge: 'Ambassador',
+    bio: 'Connects Liberian engineers abroad with projects at home.',
+    edu: ['MSc Computer Engineering', 'BSc Physics, University of Liberia'],
+    exp: [['Diaspora Tech Ambassador', 'NIIS', '2026 to now'], ['Engineering manager', 'Software company, United States', '2010 to now']] },
+  { name: 'Hawa Sackor', img: 'hawa-sackor', role: 'Patron, Rural Connectivity', badge: 'Patron',
+    bio: 'Funds solar-powered internet points for rural schools.',
+    edu: ['MBA, University of Liberia'],
+    exp: [['Patron, Rural Connectivity', 'NIIS', '2026 to now'], ['Founder', 'Family business group, Monrovia', '1995 to now']] },
+  { name: 'Edwin Toweh', img: 'edwin-toweh', role: 'Patron, Startup Fund', badge: 'Patron',
+    bio: 'Backs early-stage Liberian tech startups with seed grants.',
+    edu: ['BBA Finance, University of Liberia', 'Executive MBA'],
+    exp: [['Patron, Startup Fund', 'NIIS', '2026 to now'], ['Managing partner', 'Investment firm, Monrovia', '2012 to now']] },
+  { name: 'Dr. Fatumata Jalloh', img: 'fatumata-jalloh', role: 'Ambassador, Digital Health', badge: 'Ambassador',
+    bio: 'Advocates for digital patient records in county hospitals.',
+    edu: ['MD, A.M. Dogliotti College of Medicine', 'MPH, University of Liberia'],
+    exp: [['Ambassador, Digital Health', 'NIIS', '2026 to now'], ['Physician', 'County referral hospital', '2008 to now']] },
+  { name: 'Thomas Gweh', img: 'thomas-gweh', role: 'Patron, Coding Clubs', badge: 'Patron',
+    bio: 'Sponsors after-school coding clubs in Montserrado and Bong.',
+    edu: ['BSc Electrical Engineering, University of Liberia'],
+    exp: [['Patron, Coding Clubs', 'NIIS', '2026 to now'], ['Chief executive', 'Engineering services company', '2005 to now']] },
+  { name: 'Christiana Nimely', img: 'christiana-nimely', role: 'Ambassador, Women in Tech', badge: 'Ambassador',
+    bio: 'Mentors young women starting careers in ICT.',
+    edu: ['BSc Computer Science, Cuttington University', 'Certificate in Entrepreneurship'],
+    exp: [['Ambassador, Women in Tech', 'NIIS', '2026 to now'], ['Founder', 'Software studio, Monrovia', '2016 to now']] },
+  { name: 'Joseph Gbeh', img: 'joseph-gbeh', role: 'Patron, Open Data', badge: 'Patron',
+    bio: 'Supports open public access to Liberia’s ICT statistics.',
+    edu: ['MA Public Administration, University of Liberia'],
+    exp: [['Patron, Open Data', 'NIIS', '2026 to now'], ['Civil servant', 'Public administration', '1985 to 2022']] },
+];
+// a medal in its own colours: gold, on a ribbon in the flag's red and blue
+const MEDAL = `<svg class="tc-laptop" viewBox="0 0 40 40" aria-hidden="true">
+  <defs><radialGradient id="mdGold" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#FFE9A3"/><stop offset=".55" stop-color="#E2AE2F"/><stop offset="1" stop-color="#A9761A"/></radialGradient></defs>
+  <path d="M12 2h7l-2 14h-6z" fill="#C8102E"/><path d="M21 2h7l-3 14h-6z" fill="#1C4C9E"/>
+  <circle cx="20" cy="26" r="11" fill="url(#mdGold)" stroke="#9A6A14" stroke-width="1"/>
+  <circle cx="20" cy="26" r="7.4" fill="none" stroke="#FFF3C4" stroke-opacity=".7" stroke-width="1"/>
+  <path d="M20 20.6l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#FFF6D6"/>
+</svg>`;
 exports.team = (ctx) => {
-  const maxCounty = Math.max(...TEAM_COUNTIES.map((c) => c[1] + c[2] + c[3] + c[4]));
-  const fieldTotal = TEAM_COUNTIES.reduce((s, c) => s + c[1] + c[2] + c[3] + c[4], 0);
-  const n = TEAM_MEMBERS.length;
   const pad = (v) => String(v).padStart(2, '0');
-  // the team's rows fill column by column, so the first eight are laid in reading order
-  const first = TEAM_MEMBERS.slice(0, 8), top = first.slice(0, 4), low = first.slice(4);
-  const laid = top.flatMap((m, c) => (low[c] ? [m, low[c]] : [m])).concat(TEAM_MEMBERS.slice(8));
-  const card = (m) => {
-    const i = TEAM_MEMBERS.indexOf(m), src = `/img/team/${m.img}.jpg?v=${ASSET_V}`;
-    return `<article class="tc-card" data-person="team" data-i="${i}" style="--k:${Math.min(i, 7)}" tabindex="0" role="button" aria-label="${esc(m.name)}, ${esc(m.role)}. Open profile">
-          <div class="tc-media"><img class="tc-photo" src="${src}" alt="" width="600" height="600" loading="lazy" decoding="async"></div>
+  // two rows filled column by column, so the first eight are laid in reading order
+  const interleave = (list) => {
+    const first = list.slice(0, 8), top = first.slice(0, 4), low = first.slice(4);
+    return top.flatMap((m, c) => (low[c] ? [m, low[c]] : [m])).concat(list.slice(8));
+  };
+  // a studio card: the portrait, the name and role; on hover the person and their links; a click opens the profile
+  const card = (kind, list, folder) => (m) => {
+    const i = list.indexOf(m), src = `/img/${folder}/${m.img}.jpg?v=${ASSET_V}`;
+    return `<article class="tc-card" data-person="${kind}" data-i="${i}" style="--k:${Math.min(i, 7)}" tabindex="0" role="button" aria-label="${esc(m.name)}, ${esc(m.role)}. Open profile">
+          <div class="tc-media"><img class="tc-photo" src="${src}" alt="" width="600" height="600" loading="lazy" decoding="async">${m.badge ? `<span class="tc-badge is-${m.badge.toLowerCase()}">${esc(m.badge)}</span>` : ''}</div>
           <div class="tc-info">
             <span class="tc-name">${esc(m.name)}</span>
             <span class="tc-role">${esc(m.role)}</span>
@@ -3702,6 +3739,29 @@ exports.team = (ctx) => {
           </div>
         </article>`;
   };
+  // a row of studio cards in a panel: the team, and the patrons
+  const studio = ({ id, kind, list, folder, mark, words, title, note, label, extra = '' }) => `<section class="tc ${extra} wrap" aria-labelledby="${id}-h">
+      <div class="tc-panel">
+        <div class="tc-head">
+          <div>
+            <p class="tc-eyebrow">${mark}${words.map((w) => `<b>${esc(w)}</b>`).join('')}</p>
+            <h2 id="${id}-h" class="tc-title">${title}</h2>
+          </div>
+          <div class="tc-ctrl">
+            <span class="tc-count" aria-hidden="true"><b data-row-at>${pad(Math.min(8, list.length))}</b> / ${pad(list.length)}</span>
+            <button type="button" class="tc-arrow skip" data-row-step="-1" aria-label="Previous ${esc(label)}">${icon('chevrons', 'icn ui-flip')}</button>
+            <button type="button" class="tc-arrow skip" data-row-step="1" aria-label="Next ${esc(label)}">${icon('chevrons')}</button>
+          </div>
+        </div>
+        <div class="tc-track" data-row="${kind}" role="region" aria-label="${esc(label)}, ${list.length} in all" tabindex="-1">
+          ${interleave(list).map(card(kind, list, folder)).join('')}
+        </div>
+        <div class="tc-foot">
+          <div class="tc-progress" aria-hidden="true"><i></i></div>
+          <p class="tc-note">${esc(note)}</p>
+        </div>
+      </div>
+    </section>`;
   const tPlace = (i) => (i < 16 ? `grid-row:${Math.floor(i / 4) + 1};grid-column:${(i % 4) + 1}` : `grid-row:${((i - 16) % 4) + 1};grid-column:${5 + Math.floor((i - 16) / 4)}`);
   const tCard = (t, i) => `<article class="tp-card" data-person="talent" data-i="${i}" data-field="${esc(t.field)}" style="--k:${Math.min(i, 7)};${tPlace(i)}" tabindex="0" role="button" aria-label="${esc(t.name)}, ${esc(t.role)}, ${esc(t.county)}. Open profile">
             <img class="tp-photo" src="/img/talent/${t.img}.jpg?v=${ASSET_V}" alt="" width="600" height="800" loading="lazy" decoding="async">
@@ -3716,37 +3776,21 @@ exports.team = (ctx) => {
               </div></div>
             </div>
           </article>`;
-  // what the details window shows
+  // what the profile window shows
   const people = {
     team: TEAM_MEMBERS.map((m) => ({ name: m.name, role: m.role, img: `/img/team/${m.img}.jpg?v=${ASSET_V}`, bio: m.bio, ...(PERSON_MORE[m.name] || {}) })),
+    patron: PATRONS.map((m) => ({ name: m.name, role: m.role, badge: m.badge, img: `/img/patrons/${m.img}.jpg?v=${ASSET_V}`, bio: m.bio, edu: m.edu, exp: m.exp })),
     talent: TALENTS.map((t) => ({ name: t.name, role: t.role, img: `/img/talent/${t.img}.jpg?v=${ASSET_V}`, bio: t.note, county: t.county, field: t.field, skills: t.skills, ...(PERSON_MORE[t.name] || {}) })),
   };
   return shell(ctx, {
     title: 'Our Team', active: '/about/team', workspaceActive: 'about', body: `
   ${pageHeader('team', 'Our Team', 'The people who collect, check and publish Liberia’s ICT data.')}
   <div class="tm">
-    <section class="tc wrap" aria-labelledby="tc-h">
-      <div class="tc-panel">
-        <div class="tc-head">
-          <div>
-            <p class="tc-eyebrow">${LAPTOP}<b>Who</b><b>we</b><b>are</b></p>
-            <h2 id="tc-h" class="tc-title">The people<br>behind NIIS.</h2>
-          </div>
-          <div class="tc-ctrl">
-            <span class="tc-count" aria-hidden="true"><b data-tc-at>${pad(Math.min(8, n))}</b> / ${pad(n)}</span>
-            <button type="button" class="tc-arrow skip" data-tc="-1" aria-label="Previous team members">${icon('chevrons', 'icn ui-flip')}</button>
-            <button type="button" class="tc-arrow skip" data-tc="1" aria-label="Next team members">${icon('chevrons')}</button>
-          </div>
-        </div>
-        <div class="tc-track" id="tcTrack" role="region" aria-label="Team members, ${n} in all" tabindex="-1">
-          ${laid.map(card).join('')}
-        </div>
-        <div class="tc-foot">
-          <div class="tc-progress" aria-hidden="true"><i></i></div>
-          <p class="tc-note">Sample profiles with AI-generated placeholder photos, shown until appointments are confirmed.</p>
-        </div>
-      </div>
-    </section>
+    ${studio({ id: 'tc', kind: 'team', list: TEAM_MEMBERS, folder: 'team', mark: LAPTOP, words: ['Who', 'we', 'are'],
+      title: 'The people<br>behind NIIS.', label: 'Team members', note: 'Sample profiles with AI-generated placeholder photos, shown until appointments are confirmed.' })}
+
+    ${studio({ id: 'pc', kind: 'patron', list: PATRONS, folder: 'patrons', mark: MEDAL, words: ['Ambassadors', '&', 'patrons'], extra: 'is-patrons',
+      title: 'National ICT<br>Patrons.', label: 'Patrons', note: 'Sample profiles with AI-generated placeholder photos.' })}
 
     <section class="tp wrap" aria-labelledby="tp-h">
       <div class="tp-panel">
@@ -3775,53 +3819,31 @@ exports.team = (ctx) => {
         </div>
       </div>
     </section>
-
-    <section class="tm-counties wrap" aria-labelledby="tm-c-h">
-      <div class="tm-head tm-head-split">
-        <div>
-          ${eyebrow('In every county')}
-          <h2 id="tm-c-h" data-rise-head>Field teams, county by county</h2>
-          <p class="tm-c-lede">${fieldTotal} field staff planned across all ${TEAM_COUNTIES.length} counties, from the project cost schedule.</p>
-        </div>
-        <ul class="tm-legend" aria-label="Legend">
-          <li><i class="k-enum"></i>Enumerators</li><li><i class="k-kii"></i>KII collectors</li><li><i class="k-sup"></i>Supervisors</li><li><i class="k-lead"></i>Research lead</li>
-        </ul>
-      </div>
-      <ol class="tm-grid">
-        ${TEAM_COUNTIES.map(([name, e, k, s, l], j) => {
-          const t = e + k + s + l;
-          return `<li style="--k:${j}">
-          <div class="tm-c-top"><h3>${esc(name)}</h3><b>${t}</b></div>
-          <div class="tm-stack" style="--t:${(t / maxCounty).toFixed(3)}" role="img" aria-label="${esc(name)}: ${e} enumerators, ${k} KII collectors, ${s} supervisors, ${l} research lead">
-            <i class="k-enum" style="flex:${e}"></i><i class="k-kii" style="flex:${k}"></i><i class="k-sup" style="flex:${s}"></i><i class="k-lead" style="flex:${l}"></i>
-          </div>
-          <p class="tm-c-split">${e} · ${k} · ${s} · ${l}</p>
-        </li>`;
-        }).join('')}
-      </ol>
-    </section>
   </div>
-  <dialog class="pm" id="pm" aria-labelledby="pm-name">
-    <button type="button" class="pm-x" data-pm-close aria-label="Close">${icon('x')}</button>
-    <div class="pm-in">
-      <div class="pm-photo"><img alt="" width="600" height="600"></div>
-      <div class="pm-body">
-        <p class="pm-kind"></p>
-        <h2 id="pm-name"></h2>
-        <p class="pm-role"></p>
-        <p class="pm-bio"></p>
-        <div class="pm-sec"><h3>Education</h3><ul class="pm-edu"></ul></div>
-        <div class="pm-sec"><h3>Experience</h3><ol class="pm-exp"></ol></div>
-        <div class="pm-sec" data-pm-skills><h3>Skills</h3><ul class="pm-skills"></ul></div>
-        <div class="pm-social"></div>
+  <div class="pm-wrap" id="pmWrap" hidden>
+    <div class="pm-scrim" data-pm-close></div>
+    <div class="pm" id="pm" role="dialog" aria-modal="true" aria-labelledby="pm-name" tabindex="-1">
+      <button type="button" class="pm-x" data-pm-close aria-label="Close">${icon('x')}</button>
+      <div class="pm-in">
+        <div class="pm-photo"><img alt="" width="600" height="600"></div>
+        <div class="pm-body">
+          <p class="pm-kind"></p>
+          <h2 id="pm-name"></h2>
+          <p class="pm-role"></p>
+          <p class="pm-bio"></p>
+          <div class="pm-sec"><h3>Education</h3><ul class="pm-edu"></ul></div>
+          <div class="pm-sec"><h3>Experience</h3><ol class="pm-exp"></ol></div>
+          <div class="pm-sec" data-pm-skills><h3>Skills</h3><ul class="pm-skills"></ul></div>
+          <div class="pm-social"></div>
+        </div>
+      </div>
+      <div class="pm-nav">
+        <button type="button" class="skip" data-pm-step="-1" aria-label="Previous profile">${icon('chevrons', 'icn ui-flip')}</button>
+        <span class="pm-count" aria-hidden="true"></span>
+        <button type="button" class="skip" data-pm-step="1" aria-label="Next profile">${icon('chevrons')}</button>
       </div>
     </div>
-    <div class="pm-nav">
-      <button type="button" class="skip" data-pm-step="-1" aria-label="Previous profile">${icon('chevrons', 'icn ui-flip')}</button>
-      <span class="pm-count" aria-hidden="true"></span>
-      <button type="button" class="skip" data-pm-step="1" aria-label="Next profile">${icon('chevrons')}</button>
-    </div>
-  </dialog>
+  </div>
   <template id="pmSocial">${socialLinks('', true)}</template>
   <script>window.__NICTD_PAGE__='team';window.__PEOPLE__=${JSON.stringify(people).replace(/</g, '\\u003c')};</script>`,
   });

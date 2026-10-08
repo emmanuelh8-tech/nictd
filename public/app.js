@@ -945,7 +945,8 @@
   // A scroll-snapping row of cards with skip buttons, a counter, a progress line and mouse drag;
   // fingers get the browser's own momentum and snapping. o: { item, at, total, bar, prev, next, onTap }
   function rowCarousel(track, o) {
-    function cards() { return qsa(o.item, track).filter(function (c) { return !c.hidden; }); }
+    var all = qsa(o.item, track);
+    function cards() { return all.filter(function (c) { return !c.hidden; }); }
     function pad(n) { return String(n).padStart(2, '0'); }
     // one column's width: the gap between the first two distinct column edges
     function stepW() {
@@ -954,7 +955,7 @@
       return track.clientWidth;
     }
     function perView() { return Math.max(1, Math.round(track.clientWidth / stepW())); }
-    // the counter shows how many have come into view
+    // the counter shows how many have come into view (at least half of a card)
     function sync() {
       var max = track.scrollWidth - track.clientWidth, x = track.scrollLeft, view = Math.min(1, track.clientWidth / track.scrollWidth);
       var edge = track.getBoundingClientRect().right - 2, cs = cards();
@@ -994,12 +995,13 @@
       track.scrollTo({ left: Math.round(track.scrollLeft / w) * w, behavior: REDUCE ? 'auto' : 'smooth' });
       unsnap = setTimeout(function () { track.classList.remove('is-drag'); }, 450);
     });
+    // a drag is not a click, and a placeholder link goes nowhere (and opens nothing)
     track.addEventListener('click', function (e) {
       if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; return; }
-      if (e.target.closest('a[href="#"]')) { e.preventDefault(); e.stopPropagation(); return; }
-      var c = e.target.closest(o.item);
-      if (c) o.onTap(c);
+      if (e.target.closest('a[href="#"]')) { e.preventDefault(); e.stopPropagation(); }
     }, true);
+    // each card listens for itself, which every phone browser honours
+    all.forEach(function (c) { c.addEventListener('click', function () { o.onTap(c); }); });
     // the keyboard walks the cards in reading order
     track.addEventListener('keydown', function (e) {
       var c = e.target.closest(o.item);
@@ -1018,17 +1020,23 @@
     return { sync: sync, reset: function () { track.scrollTo({ left: 0 }); sync(); } };
   }
 
-  // ---- a person's profile: name, role, education, experience and links, with skip buttons to the next
+  // ---- a person's profile: name, role, education, experience and links, with skip buttons to the
+  // next. A layer of its own (not the browser's dialog element), so it opens the same on every phone.
   function initPeople() {
-    var pm = qs('#pm'), P = window.__PEOPLE__;
-    if (!pm || !P) return null;
-    var tpl = qs('#pmSocial'), cur = null, from = null;
+    var wrap = qs('#pmWrap'), pm = qs('#pm'), P = window.__PEOPLE__;
+    if (!wrap || !pm || !P) return null;
+    var tpl = qs('#pmSocial'), cur = null, from = null, hideT = 0;
+    var KIND = {
+      team: function () { return 'NIIS team'; },
+      patron: function (p) { return 'National ICT ' + p.badge; },
+      talent: function (p) { return 'ICT talent · ' + p.field + ' · ' + p.county; },
+    };
     function li(text) { var l = document.createElement('li'); l.textContent = text; return l; }
     function fill(kind, i) {
       var list = P[kind], p = list[i];
       cur = { kind: kind, i: i };
       qs('.pm-photo img', pm).src = p.img;
-      qs('.pm-kind', pm).textContent = kind === 'team' ? 'NIIS team' : 'ICT talent · ' + p.field + ' · ' + p.county;
+      qs('.pm-kind', pm).textContent = KIND[kind](p);
       qs('#pm-name', pm).textContent = p.name;
       qs('.pm-role', pm).textContent = p.role;
       qs('.pm-bio', pm).textContent = p.bio || '';
@@ -1048,27 +1056,40 @@
       soc.innerHTML = tpl.innerHTML;
       qsa('a', soc).forEach(function (a) { a.setAttribute('aria-label', p.name + a.getAttribute('aria-label')); });
       qs('.pm-count', pm).textContent = (i + 1) + ' / ' + list.length;
-      qs('.pm-body', pm).scrollTop = 0;
+      qs('.pm-body', pm).scrollTop = 0; qs('.pm-in', pm).scrollTop = 0;
       if (!REDUCE) { var b = qs('.pm-in', pm); b.classList.remove('is-swap'); void b.offsetWidth; b.classList.add('is-swap'); }
     }
     function open(kind, i, card) {
       from = card || null;
       fill(kind, i);
-      if (!pm.open) { if (pm.showModal) pm.showModal(); else pm.setAttribute('open', ''); document.documentElement.classList.add('ui-locked'); }
+      if (wrap.classList.contains('is-open')) return;
+      clearTimeout(hideT);
+      wrap.hidden = false;
+      void wrap.offsetWidth;
+      wrap.classList.add('is-open');
+      document.documentElement.classList.add('ui-locked');
+      try { pm.focus({ preventScroll: true }); } catch (e) { pm.focus(); }
     }
-    function close() { if (pm.close) pm.close(); else { pm.removeAttribute('open'); onClose(); } }
-    function onClose() { document.documentElement.classList.remove('ui-locked'); if (from) from.focus({ preventScroll: true }); }
+    function close() {
+      if (!wrap.classList.contains('is-open')) return;
+      wrap.classList.remove('is-open');
+      document.documentElement.classList.remove('ui-locked');
+      hideT = setTimeout(function () { wrap.hidden = true; }, REDUCE ? 0 : 280);
+      if (from) try { from.focus({ preventScroll: true }); } catch (e) {}
+    }
     function step(d) { if (!cur) return; var n = P[cur.kind].length; fill(cur.kind, (cur.i + d + n) % n); }
-    pm.addEventListener('close', onClose);
-    pm.addEventListener('click', function (e) {
-      if (e.target === pm || e.target.closest('[data-pm-close]')) { close(); return; }
+    wrap.addEventListener('click', function (e) {
+      if (e.target.closest('[data-pm-close]')) { close(); return; }
       if (e.target.closest('a[href="#"]')) { e.preventDefault(); return; }
       var s = e.target.closest('[data-pm-step]');
       if (s) step(Number(s.dataset.pmStep));
     });
-    pm.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+    document.addEventListener('keydown', function (e) {
+      if (!wrap.classList.contains('is-open')) return;
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
       else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+      else trapTab(e, pm);
     });
     return open;
   }
@@ -1076,15 +1097,17 @@
   function initTeam() {
     var root = qs('.tm');
     if (!root) return;
-    initInView('.tc-panel, .tp-panel, .tm-grid');
+    initInView('.tc-panel, .tp-panel');
     var openPerson = initPeople() || function () {};
     function openCard(c) { openPerson(c.dataset.person, Number(c.dataset.i), c); }
 
-    // ---- the team: two rows of four, filled column by column
-    var track = qs('#tcTrack');
-    if (track) rowCarousel(track, {
-      item: '.tc-card', at: qs('[data-tc-at]'), bar: qs('.tc-progress i'),
-      prev: qs('[data-tc="-1"]'), next: qs('[data-tc="1"]'), onTap: openCard,
+    // ---- the team and the patrons: studio cards, two rows of four, filled column by column
+    qsa('.tc-track[data-row]').forEach(function (track) {
+      var sec = track.closest('.tc');
+      rowCarousel(track, {
+        item: '.tc-card', at: qs('[data-row-at]', sec), bar: qs('.tc-progress i', sec),
+        prev: qs('[data-row-step="-1"]', sec), next: qs('[data-row-step="1"]', sec), onTap: openCard,
+      });
     });
 
     // ---- the talent pool: four rows of four in reading order, filtered by field

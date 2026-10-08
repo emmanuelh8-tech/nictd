@@ -39,16 +39,13 @@
   --shadow-lg: 0 4px 10px rgba(11,44,99,.08), 0 16px 40px rgba(11,44,99,.12);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-/* The canvas: white, with a barely-there wallpaper of carved African masks (public/img/brand/
-   mask-pattern-light.webp, a seamless tile cut from the artwork, set on white in very pale grey and
-   drawn at about two thirds of its size): there if you look for it. Text needs no ground of its own. The pattern
-   belongs to html, because the root element's background is the one that propagates to the canvas
-   and so covers the whole viewport however short the page is. body must stay transparent: an opaque
-   fill there would paint over the wallpaper across the entire document. */
+/* The canvas: white, wallpapered with a binary-code watermark. The pattern belongs to
+   html, because the root element’s background is the one that propagates to the canvas
+   and so covers the whole viewport however short the page is. body must stay transparent
+   — an opaque fill there would paint over the watermark across the entire document. */
 html {
-  background-color: #fff;
-  background-image: url("/img/brand/mask-pattern-light.webp");
-  background-size: 185px auto;
+  background-color: var(--canvas);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%27192%27%20viewBox%3D%270%200%20300%20192%27%3E%3Cg%20fill%3D%27%231A1A1A%27%20font-family%3D%27ui-monospace%2CSFMono-Regular%2CMenlo%2CConsolas%2Cmonospace%27%20font-size%3D%2711%27%20text-anchor%3D%27middle%27%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2712%27%20opacity%3D%270.0295%27%3E0000010000101101010000001%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2728%27%20opacity%3D%270.0388%27%3E1100110011101000000100001%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2744%27%20opacity%3D%270.0382%27%3E1010001111011010001010000%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2760%27%20opacity%3D%270.0398%27%3E0000000101001111100011010%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2776%27%20opacity%3D%270.0377%27%3E0010011000000100000010111%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2792%27%20opacity%3D%270.0316%27%3E0111011100001001010001100%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27108%27%20opacity%3D%270.0334%27%3E0110110010010100100101010%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27124%27%20opacity%3D%270.0302%27%3E1011100110000110000001110%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27140%27%20opacity%3D%270.0366%27%3E1000110110001101101010110%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27156%27%20opacity%3D%270.0341%27%3E0011000011001000111011000%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27172%27%20opacity%3D%270.0313%27%3E0000110110100101001101101%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27188%27%20opacity%3D%270.0396%27%3E1001010010001100001010101%3C%2Ftext%3E%3Ctext%20x%3D%27138%27%20y%3D%2712%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27234%27%20y%3D%2712%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27258%27%20y%3D%2760%27%20opacity%3D%270.042%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27246%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%2730%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27102%27%20y%3D%2776%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27282%27%20y%3D%2792%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27162%27%20y%3D%2728%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27114%27%20y%3D%2792%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%2776%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27114%27%20y%3D%27108%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27234%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27294%27%20y%3D%2712%27%20opacity%3D%270.042%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27162%27%20y%3D%2744%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-repeat: repeat;
 }
 body { background: transparent; }
@@ -5065,6 +5062,9 @@ button.skip:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px;
 #sqTrends .sq-card { border: 1px solid #111; }
 #homeVideo .vid-queue { border: 1px solid #111; box-shadow: none; }
 
-/* About: the partner logo tiles and the light sections take the mask wallpaper too */
+/* The About page alone wears a barely-there wallpaper of carved African masks (public/img/brand/
+   mask-pattern-light.webp, a seamless tile cut from the artwork, very pale grey on white) in place of
+   the binary canvas: on the page itself, its partner logo tiles and its light sections. */
+html:has(.ab-hero) { background-image: url("/img/brand/mask-pattern-light.webp"); background-size: 185px auto; }
 .ab-frame--white, .ab-bench, .cs .ab-faq { background-color: #fff; background-image: url("/img/brand/mask-pattern-light.webp"); background-size: 185px auto; background-repeat: repeat; }
 .ab-frame--white { --g: transparent; }

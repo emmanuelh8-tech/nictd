@@ -39,14 +39,15 @@
   --shadow-lg: 0 4px 10px rgba(11,44,99,.08), 0 16px 40px rgba(11,44,99,.12);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-/* The canvas: a pale wallpaper of carved African masks (public/img/brand/mask-pattern.webp, a
-   seamless tile cut from the artwork, drawn at 80% so the masks sit a little smaller). The pattern
+/* The canvas: white, with a faint wallpaper of carved African masks (public/img/brand/
+   mask-pattern-white.webp, a seamless tile cut from the artwork and set on white, drawn at 80% so
+   the masks sit a little smaller). Text needs no ground of its own on it. The pattern
    belongs to html, because the root element's background is the one that propagates to the canvas
    and so covers the whole viewport however short the page is. body must stay transparent: an opaque
    fill there would paint over the wallpaper across the entire document. */
 html {
-  background-color: #E5EEE8;
-  background-image: url("/img/brand/mask-pattern.webp");
+  background-color: #fff;
+  background-image: url("/img/brand/mask-pattern-white.webp");
   background-size: 230px auto;
   background-repeat: repeat;
 }
@@ -4135,10 +4136,6 @@ html { -webkit-text-size-adjust: 100%; }
   .paper-cover-lg { width: 112px; }
 }
 
-/* Text and buttons that sit straight on the binary canvas get a white ground of their own, so the
-   pattern stays on the page but never runs behind the words (app.js adds the class; light text is
-   left alone, since it is meant for a dark ground). Inline words get a highlight per line. */
-.on-canvas { background-color: #fff; box-shadow: 0 0 0 3px #fff; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 
 /* ---- drop-downs never push their row wider than the screen: a long name ends in an ellipsis ---- */
 .xdd, .selector-field { min-width: 0; }
@@ -5069,5 +5066,5 @@ button.skip:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px;
 #homeVideo .vid-queue { border: 1px solid #111; box-shadow: none; }
 
 /* About: the partner logo tiles and the light sections take the mask wallpaper too */
-.ab-frame--white, .ab-bench, .cs .ab-faq { background-color: #E5EEE8; background-image: url("/img/brand/mask-pattern.webp"); background-size: 230px auto; background-repeat: repeat; }
+.ab-frame--white, .ab-bench, .cs .ab-faq { background-color: #fff; background-image: url("/img/brand/mask-pattern-white.webp"); background-size: 230px auto; background-repeat: repeat; }
 .ab-frame--white { --g: transparent; }

@@ -10,7 +10,7 @@
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "{public/img/**,image-manifest.json}",
+      "includeFiles": "{public/img/**,public/fonts/**,image-manifest.json}",
       "maxDuration": 60
     }
   },

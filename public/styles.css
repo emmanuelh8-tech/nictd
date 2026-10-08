@@ -5062,9 +5062,6 @@ button.skip:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px;
 /* the About menu's ICT Patrons and ICT Talent Pool land on their sections below the sticky bar */
 #patrons, #talent { scroll-margin-top: calc(var(--nav-h) + 30px); }
 
-/* home: the video, its "Up next" list and its caption share one thin black frame, as does the
-   news carousel with its summary */
-#homeVideo .vid-layout, #sqTrends { padding: 14px; border: 1px solid #111; border-radius: 16px; background: #fff; }
-#homeVideo .vid-queue { box-shadow: none; }
-#sqTrends .sq-copy { margin-top: 18px; }
-@media (max-width: 760px) { #homeVideo .vid-layout, #sqTrends { padding: 10px; border-radius: 14px; } }
+/* home: a thin black edge on each news card and on the "Up next" box */
+#sqTrends .sq-card { border: 1px solid #111; }
+#homeVideo .vid-queue { border: 1px solid #111; box-shadow: none; }

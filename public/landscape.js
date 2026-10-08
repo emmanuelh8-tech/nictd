@@ -645,7 +645,7 @@
       agencyEl.textContent = m.agency || 'n/a';
       descEl.textContent = m.description || '';
       mockEl.hidden = !m.is_mock;
-      document.title = m.name + ' · Data Landscape · NICTD';
+      document.title = m.name + ' · Data Landscape · NIIS';
     }
 
     function syncYearInput() {

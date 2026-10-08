@@ -1,4 +1,4 @@
-// server.js, NICTD (National ICT Database of Liberia): HTTP server, auth, role-based access, public API.
+// server.js, NIIS (National ICT Intelligence System of Liberia): HTTP server, auth, role-based access, public API.
 // Data layer: Supabase Postgres via PostgREST (supadb.js). Zero npm dependencies. Run: node server.js
 'use strict';
 const http = require('node:http');
@@ -148,8 +148,8 @@ const CV_MAX = 4 * 1024 * 1024;   // under the 4.5 MB request limit of a hosted 
 const CV_TYPES = { pdf: 'application/pdf', doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' };
 const applyLog = new Map();   // ip -> recent submission times, a light brake on repeat sends
 const APPLY_LOG = path.join(APPLY_DIR, 'applications.jsonl');
-// The reference an applicant keeps: the date sent and four random hex digits, e.g. NICTD-261003-7F3A
-const applicationRef = () => 'NICTD-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + crypto.randomBytes(2).toString('hex').toUpperCase();
+// The reference an applicant keeps: the date sent and four random hex digits, e.g. NIIS-261003-7F3A
+const applicationRef = () => 'NIIS-' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + crypto.randomBytes(2).toString('hex').toUpperCase();
 // The CV's real kind from its first bytes, so a renamed file is caught: PDF, legacy Word (OLE)
 // or .docx (a zip). Returns the extension to store it under, or null.
 function cvKind(name, buf) {
@@ -220,9 +220,16 @@ const FRAME_GUARD = {
   'Content-Security-Policy': "frame-ancestors 'self'",
   'X-Content-Type-Options': 'nosniff',
 };
+// The project is NIIS, the National ICT Intelligence System. Records written under the old name
+// (NICTD, the National ICT Database) still sit in the database; every page shows them under the
+// current one. Only whole words change: NICTD inside an identifier (__NICTD_PAGE__) is left alone.
+function currentName(html) {
+  return html.replace(/National ICT Database(?: of Liberia)?(?: Project)?/g, 'National ICT Intelligence System').replace(/\bNICTD\b/g, 'NIIS');
+}
 function send(res, status, body, headers = {}) {
+  const type = headers['Content-Type'] || 'text/html; charset=utf-8';
   res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', ...FRAME_GUARD, ...headers });
-  res.end(body);
+  res.end(typeof body === 'string' && type.startsWith('text/html') ? currentName(body) : body);
 }
 function json(res, status, obj) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
@@ -345,12 +352,12 @@ async function handler(req, res) {
     if (REVIEW) {
       res.setHeader('X-Robots-Tag', 'noindex, nofollow');
       if (req.method !== 'GET' && req.method !== 'HEAD') {
-        return send(res, 403, views.errorPage(null, 'This is a review preview of NICTD: signing in and sending forms are turned off.'));
+        return send(res, 403, views.errorPage(null, 'This is a review preview of NIIS: signing in and sending forms are turned off.'));
       }
     }
     // a fresh serverless instance waits for its first load instead of turning the visitor away
     if (!cache.ready) {
-      try { await ready; } catch { return send(res, 503, '<h1>NICTD is starting up…</h1><p>Connecting to the database. Refresh in a moment.</p>'); }
+      try { await ready; } catch { return send(res, 503, '<h1>NIIS is starting up…</h1><p>Connecting to the database. Refresh in a moment.</p>'); }
     }
     imagestore.refreshIfStale();
 
@@ -519,10 +526,14 @@ async function handler(req, res) {
           heroTitle: getContent('hero_title', 'The definitive source of ICT statistics and digital-development data for Liberia.'),
           heroSub: getContent('hero_sub', ''),
           homeVideo: getContent('home_video', '/media/generated/hero.mp4'),
-          homeVideoTitle: getContent('home_video_title', 'About the National ICT Database Project'),
+          homeVideoTitle: getContent('home_video_title', 'About the National ICT Intelligence System'),
           homeVideoCaption: getContent('home_video_caption', ''),
           homeVideoPlaylist: getContent('home_video_playlist', ''),
         }));
+      }
+      if (p === '/about/team') {
+        logEvent('page_view', p, user);
+        return send(res, 200, views.team(ctx, { indicators: listIndicators(user) }));
       }
       if (p === '/about') {
         logEvent('page_view', p, user);
@@ -564,7 +575,7 @@ async function handler(req, res) {
         // gate downloads: must be downloadable & live (admins may always fetch)
         if (!canManage && (!paper.downloadable || paper.status !== 'published' || !paper.visible || paper.deleted)) return send(res, 403, views.forbidden(ctx));
         logEvent('download', p, user);
-        const md = `# ${paper.title}\n\n**Authors:** ${paper.authors}\n**Published:** ${paper.published_on}\n\n## Abstract\n\n${paper.abstract}\n\n## Report\n\n${paper.body || ''}\n\n---\nNICTD, National ICT Database of Liberia (demonstration document)\n`;
+        const md = `# ${paper.title}\n\n**Authors:** ${paper.authors}\n**Published:** ${paper.published_on}\n\n## Abstract\n\n${paper.abstract}\n\n## Report\n\n${paper.body || ''}\n\n---\nNIIS, National ICT Intelligence System of Liberia (demonstration document)\n`;
         return send(res, 200, md, { 'Content-Type': 'text/markdown; charset=utf-8', 'Content-Disposition': `attachment; filename="paper-${paper.id}.md"` });
       }
       if (p === '/updates') {
@@ -605,7 +616,7 @@ async function handler(req, res) {
       }
       if (p === '/reports') {
         logEvent('page_view', p, user);
-        return send(res, 200, views.reports(ctx));
+        return send(res, 200, views.reports(ctx, { indicators: listIndicators(user), domainLabels: DOMAIN_LABELS }));
       }
       if (p === '/careers') {
         logEvent('page_view', p, user);
@@ -617,7 +628,7 @@ async function handler(req, res) {
         const role = views.CAREER_ROLES.find((r) => views.careerSlug(r) === applyMatch[1]);
         if (!role) return send(res, 404, views.notFound(ctx));
         logEvent('page_view', p, user);
-        const ref = /^NICTD-\d{6}-[0-9A-F]{4}$/.test(url.searchParams.get('ref') || '') ? url.searchParams.get('ref') : '';
+        const ref = /^(?:NIIS|NICTD)-\d{6}-[0-9A-F]{4}$/.test(url.searchParams.get('ref') || '') ? url.searchParams.get('ref') : '';
         return send(res, 200, views.careerApply(ctx, { role, counties: cache.counties.map((c) => c.name), sent: url.searchParams.get('sent') === '1', reference: ref }));
       }
       if (p === '/indicators') {
@@ -1264,5 +1275,5 @@ ready.catch((e) => console.error(e.message));
 
 module.exports = handler;
 if (require.main === module) {
-  http.createServer(handler).listen(PORT, () => console.log(`NICTD running at http://localhost:${PORT} (data: Supabase${REVIEW ? ', review mode: read-only' : ''})`));
+  http.createServer(handler).listen(PORT, () => console.log(`NIIS running at http://localhost:${PORT} (data: Supabase${REVIEW ? ', review mode: read-only' : ''})`));
 }

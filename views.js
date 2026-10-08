@@ -1,4 +1,4 @@
-// views.js, HTML templates for NICTD (National ICT Database of Liberia).
+// views.js, HTML templates for NIIS (National ICT Intelligence System).
 // Original design system; not a copy of any real organization's branding.
 'use strict';
 
@@ -67,6 +67,9 @@ const ICONS = {
   rotate: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
   login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>',
   check: '<polyline points="4.5 12.5 9.5 17.5 19.5 7"/>',
+  eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff: '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
+  copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
   upload: '<path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>',
 };
 function icon(name, cls = 'icn') { return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`; }
@@ -225,7 +228,7 @@ function mainNav(active, q) {
     ['/research', 'Research', 'doc', [['/research/submit', 'Submit Paper', 'plus']], 'Research'],
     ['/partners', 'Our Partners', 'globe', null, 'Partners'],
     ['/careers', 'Careers', 'briefcase', null, 'Careers'],
-    ['/about', 'About', 'info', null, 'About'],
+    ['/about', 'About', 'info', [['/about/team', 'Our Team', 'users']], 'About'],
   ];
   const isActive = (href, sub) => active === href || (sub || []).some(([h]) => active === h);
   const navItem = ([href, label, ic, sub, short]) => {
@@ -293,31 +296,23 @@ function footerDh() {
   return `<footer class="footer-dh">${seal}
     <div class="footer-grid">
       <div>
-        <h4 data-perch="final">About NICTD</h4>
-        <p>The National ICT Database of Liberia (NICTD) is the official source of ICT statistics and digital-development data for Liberia, tracking connectivity, affordability, market structure and digital governance across all 15 counties.</p>
-        <div class="footer-social">
-          <a href="#" aria-label="X / Twitter">${icon('share')}</a>
-          <a href="#" aria-label="LinkedIn">${icon('users')}</a>
-          <a href="#" aria-label="Instagram">${icon('camera')}</a>
-        </div>
+        <h4 data-perch="final">About NIIS</h4>
+        <p>The National ICT Intelligence System (NIIS) is the official source of ICT statistics and digital-development data for Liberia, tracking connectivity, affordability, market structure and digital governance across all 15 counties.</p>
+        <!-- brand icons: Font Awesome Free 6.5.2 (CC BY 4.0), each on its own brand colour -->
+        <div class="footer-social"><a class="s-fb" href="#" aria-label="Facebook"><svg viewBox="0 0 320 512" aria-hidden="true"><path d="M80 299.3V512H196V299.3h86.5l18-97.8H196V166.9c0-51.7 20.3-71.5 72.7-71.5c16.3 0 29.4 .4 37 1.2V7.9C291.4 4 256.4 0 236.2 0C129.3 0 80 50.5 80 159.4v42.1H14v97.8H80z"/></svg></a><a class="s-x" href="#" aria-label="X"><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg></a><a class="s-li" href="#" aria-label="LinkedIn"><svg viewBox="0 0 448 512" aria-hidden="true"><path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"/></svg></a><a class="s-ig" href="#" aria-label="Instagram"><svg viewBox="0 0 448 512" aria-hidden="true"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg></a></div>
       </div>
-      <div><h4>Ministry Links</h4>
-        <a href="/about">Ministry of Posts &amp; Telecommunications</a>
+      <div><h4>Links</h4>
         <a href="/about">Liberia Telecommunications Authority</a>
+        <a href="/about">Ministry of Posts &amp; Telecommunications</a>
+        <a href="/about">Harris &amp; Associates LLC</a>
         <a href="/research">Research Papers</a>
         <a href="/updates">Updates</a>
       </div>
-      <div><h4>Connect</h4>
-        <a href="/query">Data Query builder</a>
-        <a href="/login">Log In</a>
-        <a href="/register">Request an account</a>
-      </div>
     </div>
     <div class="footer-bottom-strip"><div class="footer-bottom-inner">
-      <nav><a href="/about">Contact</a><a href="/about">Privacy Notice</a><a href="/about">Accessibility</a><a href="/about">Report an Issue</a></nav>
-      <span class="mono" style="font-size:.72rem;color:#6E8194">© 2026 NICTD</span>
+      <nav><a href="/about">Contact</a><a href="/about">Privacy Notice</a><a href="/about">Accessibility</a></nav>
+      <span class="mono" style="font-size:.72rem;color:#6E8194">© 2026 NIIS</span>
     </div></div>
-    <p class="footer-credit">Data curated by the ICT Statistics &amp; Policy Unit, Ministry of Posts and Telecommunications. Platform developed by Harris &amp; Associates LLC. Figures shown are demonstration data pending production feeds.</p>
   </footer>`;
 }
 // Cache-buster stamped at server start so edited CSS/JS is never served stale from the browser cache.
@@ -329,7 +324,7 @@ const SITE_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsd
 function publicLayout(ctx, { title, active = '', body, extraHead = '', q = '' }) {
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#ffffff">
-<title>${esc(title)} · NICTD</title>
+<title>${esc(title)} · NIIS</title>
 ${FONT_HEAD}
 <link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
 ${FAVICON}
@@ -353,7 +348,7 @@ function appLayout(ctx, { title, active = '', body, extraHead = '' }) {
   const initials = u.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#ffffff">
-<title>${esc(title)} · NICTD</title>
+<title>${esc(title)} · NIIS</title>
 ${FONT_HEAD}
 <link rel="stylesheet" href="/assets/styles.css?v=${ASSET_V}">
 ${FAVICON}
@@ -364,7 +359,7 @@ ${extraHead}
 <div class="app">
   <aside class="sidebar">
     <a class="sb-brand" href="/portal">${sealLogo(38)}
-      <span class="sb-brand-text"><strong>NICTD</strong><span>Liberia ICT Data</span></span>
+      <span class="sb-brand-text"><strong>NIIS</strong><span>Liberia ICT Intelligence</span></span>
     </a>
     <nav class="sb-nav">
       <span class="sb-section-label">Workspace</span>
@@ -393,7 +388,7 @@ ${extraHead}
   </aside>
   <div class="content">
     <div class="content-topbar">
-      <span class="crumb">NICTD<strong>${esc(title)}</strong></span>
+      <span class="crumb">NIIS<strong>${esc(title)}</strong></span>
       <span class="topbar-actions"><span class="role-chip ${u.role === 'admin' ? 'admin' : ''}">${esc(roleLabel)}</span></span>
     </div>
     <div class="page-body">${body}</div>
@@ -436,7 +431,7 @@ function selectorRow(idPrefix = '') {
 
 // ============ HOME ============
 exports.home = (ctx, { headlines, papers, keyStats, dashboards, indicatorsForSearch, counties, lastUpdated, heroTitle, heroSub,
-  homeVideo = '', homeVideoTitle = 'About the National ICT Database Project', homeVideoCaption = '', homeVideoPlaylist = '' }) => {
+  homeVideo = '', homeVideoTitle = 'About the National ICT Intelligence System', homeVideoCaption = '', homeVideoPlaylist = '' }) => {
   return shell(ctx, {
     title: 'Home', active: '/', body: `
   ${heroSlider()}
@@ -460,7 +455,7 @@ exports.home = (ctx, { headlines, papers, keyStats, dashboards, indicatorsForSea
 };
 
 // Scroll-triggered image slider hero. Six slides cross-fade as the visitor scrolls through a tall
-// sticky band, opening with the President and closing with Kenya. Each carries either the NICTD intro
+// sticky band, opening with the President and closing with Kenya. Each carries either the NIIS intro
 // or one verified quotation. Images live at /img/hero/slide-{1..6}, numbered in display order, and are
 // overridable per slot from the image admin screen. The search selector stays persistent below.
 const HERO_SLIDES = [
@@ -471,7 +466,7 @@ const HERO_SLIDES = [
     pos: 'center 22%',
     who: 'H.E. Joseph Nyuma Boakai, Sr.', role: 'President of the Republic of Liberia',
     meta: 'Liberia Technology Summit 2026, 21 July · emansion.gov.lr' },
-  { img: 'slide-2', title: 'Liberia’s National ICT\nDatabase Project', sub: 'Liberia’s Data, owned by Liberia.' },
+  { img: 'slide-2', title: 'National ICT\nIntelligence System', sub: 'Liberia’s Data, owned by Liberia.' },
   { img: 'slide-3', quote: 'If we cannot measure the contribution of technology to GDP, we cannot monetize it.',
     pos: 'center 20%',
     who: 'Mr. Claver Gatete', role: 'UN Under-Secretary-General · Executive Secretary, UNECA',
@@ -594,9 +589,9 @@ const FEATURED_PAPERS = [
   { id: 1, tag: 'Flagship Report', img: 'connectivity', title: 'State of Connectivity in Liberia 2025', author: 'ICT Statistics & Policy Unit', date: 'Aug 2025' },
   { id: 4, tag: 'National Baseline', img: 'national', title: 'National Digital Transformation Strategy: Progress Review', author: 'Ministry of Posts & Telecommunications', date: 'Jul 2025' },
   { id: 3, tag: 'Report', img: 'governance', title: 'Digital Trust, National ID & E-Government Baseline', author: 'Governance & Data Protection Desk', date: 'Jun 2025' },
-  { id: 2, tag: 'Joint Study', img: 'education', title: 'ICT in Education: School Connectivity & Device Access', author: 'Ministry of Education · NICTD', date: 'May 2025' },
+  { id: 2, tag: 'Joint Study', img: 'education', title: 'ICT in Education: School Connectivity & Device Access', author: 'Ministry of Education · NIIS', date: 'May 2025' },
   { id: 3, tag: 'Working Paper', img: 'fintech', title: 'Mobile Money & Financial Inclusion Across the 15 Counties', author: 'Digital Economy Working Group', date: 'Apr 2025' },
-  { id: 1, tag: 'Policy Brief', img: 'broadband', title: 'The Urban-Rural Broadband Divide: County Evidence', author: 'NICTD Research', date: 'Mar 2025' },
+  { id: 1, tag: 'Policy Brief', img: 'broadband', title: 'The Urban-Rural Broadband Divide: County Evidence', author: 'NIIS Research', date: 'Mar 2025' },
 ];
 function featuredPapers() {
   const card = (p) => `<a class="fp-card" href="/research/${p.id}">
@@ -702,19 +697,19 @@ const featuredPapersScript = `
 // img keys point at the "reports" image collection, which is kept separate from the research
 // papers and the hero slider so no picture appears twice on the site.
 const NATIONAL_REPORTS = [
-  { img: 'sector-performance', year: 2025,
+  { img: 'sector-performance', year: 2025, domains: ['market', 'access'],
     tag: 'Sector Report', title: 'Liberia ICT Sector Performance Report 2025', date: 'Q3 2025',
     desc: 'Subscriptions, traffic, revenue and infrastructure rollout across the national telecom sector.' },
-  { img: 'broadband-coverage', year: 2025,
+  { img: 'broadband-coverage', year: 2025, domains: ['connectivity', 'access'],
     tag: 'Assessment', title: 'National Broadband Coverage & Quality Assessment', date: 'Aug 2025',
     desc: 'Measured coverage, speed and reliability by county, with the verified connectivity-gap index.' },
-  { img: 'market-pricing', year: 2025,
+  { img: 'market-pricing', year: 2025, domains: ['affordability', 'market'],
     tag: 'Market Review', title: 'Telecom Market Competition & Pricing Review', date: 'Jul 2025',
     desc: 'Tariff baskets, market share and affordability of voice and data relative to household income.' },
-  { img: 'digital-inclusion', year: 2025,
+  { img: 'digital-inclusion', year: 2025, domains: ['inclusion', 'skills'],
     tag: 'Inclusion', title: 'Digital Inclusion & Gender Access Report', date: 'Jun 2025',
     desc: 'Who is online and who is not, device ownership, skills and the gender access gap.' },
-  { img: 'cybersecurity', year: 2025,
+  { img: 'cybersecurity', year: 2025, domains: ['trust'],
     tag: 'Governance', title: 'Cybersecurity & Data Protection Readiness', date: 'May 2025',
     desc: 'National cyber posture, incident response capacity and data-protection compliance.' },
 ];
@@ -1136,7 +1131,7 @@ const homeVideoScript = `
 })();
 `;
 
-// Liberia ICT Trends: a squeeze carousel. One update holds the open panel and the rest narrow
+// Liberia ICT News & Updates: a squeeze carousel. One update holds the open panel and the rest narrow
 // into slats down the right; opening one widens it and slides the strip along, while the copy
 // and button underneath cross-fade to match. Rendered complete on the server (first panel
 // open, its copy showing), then latestUpdatesScript below takes over the motion.
@@ -1204,7 +1199,7 @@ function latestUpdates(headlines) {
   const data = JSON.stringify(slides.map(({ title, img, cat, date, href }) => ({ title, img, cat, date, href }))).replace(/</g, '\\u003c');
   return `<section class="wrap section reveal" id="latestUpdates" style="padding-top:0">
     <div class="sec-head-dh">
-      <h2 id="sqTrendsTitle" data-perch>Liberia ICT Trends</h2>
+      <h2 id="sqTrendsTitle" data-perch>Liberia ICT News &amp; Updates</h2>
       <div class="sq-nav">
         <a class="more" href="/updates">All updates ${icon('arrow')}</a>
         ${n > 1 ? `<button type="button" class="sq-arrow" data-sq-step="-1" aria-label="Previous update">${SQ_BACK}</button><button type="button" class="sq-arrow" data-sq-step="1" aria-label="Next update">${SQ_NEXT}</button>` : ''}
@@ -1336,6 +1331,22 @@ const latestUpdatesScript = `
     if(reduce.matches||hovering||focused||!seen||document.hidden) return;
     timer=setTimeout(function(){ step(1,true); },2000);
   }
+  // a finger swipes it: left for the next update, right for the one before
+  var sx=null, sy=0, swiping=false, eatClick=false;
+  root.addEventListener('pointerdown',function(e){ if(e.pointerType==='mouse') return; sx=e.clientX; sy=e.clientY; swiping=false; });
+  root.addEventListener('pointermove',function(e){
+    if(sx===null) return;
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    if(!swiping && Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)){ swiping=true; clearTimeout(timer); }
+  });
+  root.addEventListener('pointerup',function(e){
+    if(sx===null) return;
+    var dx=e.clientX-sx; sx=null;
+    if(swiping && Math.abs(dx)>36){ step(dx<0?1:-1); eatClick=true; }
+    else arm();
+  });
+  root.addEventListener('pointercancel',function(){ sx=null; arm(); });
+  root.addEventListener('click',function(e){ if(eatClick){ e.preventDefault(); e.stopPropagation(); eatClick=false; } },true);
   root.addEventListener('mouseenter',function(){ hovering=true; arm(); });
   root.addEventListener('mouseleave',function(){ hovering=false; arm(); });
   section.addEventListener('focusin',function(){ focused=true; arm(); });
@@ -1741,82 +1752,189 @@ exports.landscape = (ctx, { indicators, meta, year, years, counties }) => shell(
 });
 
 // ============ INDICATOR CATALOGUE ============
-exports.catalogue = (ctx, { indicators, domainOrder, domainLabels, q = '' }) => shell(ctx, {
-  title: 'Indicator Catalogue', active: '/indicators', workspaceActive: 'indicators', q, body: `
-  <div class="wrap section">
-    <p class="kicker">Catalogue</p>
-    <h1>Indicator Catalogue</h1>
-    <p class="lede-sm">Every indicator tracked by NICTD, with definitions, methodology and source metadata. Select a row for full details.</p>
-    <input class="catalogue-search" id="catalogue-search" type="search" placeholder="Search indicators…" value="${esc(q)}">
-    <div class="catalogue-filters">
-      <span class="pill-chip active" data-domain="">All categories</span>
-      ${domainOrder.map((d) => `<span class="pill-chip" data-domain="${d}">${esc(domainLabels[d])}</span>`).join('')}
+// Search, a category rail and a collection-frequency switch over every indicator the reader may
+// see. Rows are grouped by category, and a row opens the indicator's full record in a side sheet
+// (app.js, initCatalogue). Every figure on the page is counted from the catalogue itself.
+const tierOf = (m) => ((String(m || '').match(/Quality tier: ([^.]+)/) || [])[1] || '').trim();
+// A small label above a page title, shared by the catalogue, query, reports, team and log-in pages
+const eyebrow = (text) => `<p class="ui-eyebrow"><i aria-hidden="true"></i>${esc(text)}</p>`;
+exports.catalogue = (ctx, { indicators, domainOrder, domainLabels, q = '' }) => {
+  const byDomain = {};
+  indicators.forEach((i) => (byDomain[i.domain] = byDomain[i.domain] || []).push(i));
+  const domains = domainOrder.filter((d) => byDomain[d]);
+  const total = indicators.length;
+  const agencies = new Set(indicators.map((i) => i.agency).filter(Boolean)).size;
+  const counties = Math.max(0, ...indicators.map((i) => Number(i.coverage) || 0));
+  const pers = ['Quarterly', 'Annual', 'Biennial'].map((p) => [p, indicators.filter((i) => i.periodicity === p).length]).filter(([, n]) => n);
+  const mockN = indicators.filter((i) => i.is_mock).length;
+  const maxN = Math.max(1, ...domains.map((d) => byDomain[d].length));
+  const row = (i) => {
+    const tier = tierOf(i.methodology);
+    return `<button type="button" class="ic-row" data-code="${esc(i.code)}" data-domain="${esc(i.domain)}" data-per="${esc(i.periodicity || '')}"
+        data-name="${esc(i.name)}" data-search="${esc((i.name + ' ' + i.description + ' ' + (i.agency || '') + ' ' + i.unit + ' ' + i.code).toLowerCase())}">
+      <span class="ic-row-main">
+        <span class="ic-row-name"><span class="ic-row-t">${esc(i.name)}</span>${i.headline ? '<em class="ic-flag">Headline</em>' : ''}</span>
+        <span class="ic-row-desc">${esc(i.description)}</span>
+      </span>
+      <span class="ic-row-meta">
+        <span class="ic-meta-unit">${esc(i.unit)}</span>
+        ${i.periodicity ? `<span class="ic-meta-per">${esc(i.periodicity)}</span>` : ''}
+        ${tier ? `<span class="ic-meta-tier">${esc(tier.replace(/^Tier (\d)\s*/, 'Tier $1 · '))}</span>` : ''}
+      </span>
+      <span class="ic-row-src">${esc(i.agency || '')}</span>
+      <i class="ic-row-go" aria-hidden="true">${icon('arrow')}</i>
+    </button>`;
+  };
+  return shell(ctx, {
+    title: 'Indicator Catalogue', active: '/indicators', workspaceActive: 'indicators', q, body: `
+  <div class="ic">
+    <header class="ic-hero wrap">
+      <div class="ic-hero-l">
+        ${eyebrow('Indicator Catalogue')}
+        <h1 data-rise-head>Every indicator, with its definition and source</h1>
+        <p class="ui-lede">Definitions, methods and sources for each indicator NIIS tracks. Open one to read its full record, then take it to the Data Explorer or into a query.</p>
+      </div>
+      <div class="ic-hero-r">
+        <dl class="ui-stats">
+          <div><dt>Indicators</dt><dd data-count="${total}">${total}</dd></div>
+          <div><dt>Categories</dt><dd data-count="${domains.length}">${domains.length}</dd></div>
+          <div><dt>Source agencies</dt><dd data-count="${agencies}">${agencies}</dd></div>
+          <div><dt>Counties</dt><dd data-count="${counties}">${counties}</dd></div>
+        </dl>
+        <figure class="ic-spark" aria-label="Indicators per category">
+          <div class="ic-spark-bars">${domains.map((d, n) => `<button type="button" class="ic-spark-bar" data-domain="${d}" style="--h:${(byDomain[d].length / maxN).toFixed(3)};--i:${n}" aria-label="${esc(domainLabels[d])}: ${byDomain[d].length} indicators"><i></i><span class="ic-spark-tip">${esc(domainLabels[d])}<b>${byDomain[d].length}</b></span></button>`).join('')}</div>
+          <figcaption>Indicators per category. Select a bar to filter.</figcaption>
+        </figure>
+      </div>
+    </header>
+    ${mockN ? `<p class="ic-note wrap"><span aria-hidden="true"></span>${mockN === total ? 'The figures behind every indicator' : `The figures behind ${mockN} indicators`} are placeholders for demonstration, not official statistics.</p>` : ''}
+
+    <div class="ic-tools-band">
+      <div class="ic-tools wrap">
+        <div class="ui-search" role="search">
+          ${icon('search')}
+          <input id="catalogue-search" type="search" placeholder="Search ${total} indicators by name, source or unit" aria-label="Search indicators" value="${esc(q)}" autocomplete="off">
+          <button type="button" class="ui-search-x" aria-label="Clear the search"${q ? '' : ' hidden'}>${icon('x')}</button>
+          <kbd aria-hidden="true">/</kbd>
+        </div>
+        <div class="ui-seg" role="group" aria-label="How often it is collected">
+          <button type="button" class="is-on" data-per="" aria-pressed="true">Any frequency</button>
+          ${pers.map(([p, n]) => `<button type="button" data-per="${p}" aria-pressed="false">${p} <b>${n}</b></button>`).join('')}
+        </div>
+        <p class="ic-count" aria-live="polite"><b id="ic-shown">${total}</b> of ${total} indicators</p>
+      </div>
     </div>
-    <table class="data-table">
-      <thead><tr><th>Indicator</th><th>Category</th><th>Unit</th><th>Source</th><th>Last updated</th><th class="num">Coverage</th></tr></thead>
-      <tbody id="catalogue-tbody">
-        ${indicators.map((i) => `<tr class="cat-row" data-code="${esc(i.code)}" data-domain="${esc(i.domain)}" data-search="${esc((i.name + ' ' + i.description).toLowerCase())}">
-          <td><strong>${esc(i.name)}</strong>${i.access_level !== 'public' ? ` <span class="tag">${esc(i.access_level)}</span>` : ''}</td>
-          <td>${esc(i.domainLabel)}</td><td class="mono">${esc(i.unit)}</td><td>${esc(i.agency || '')}</td>
-          <td class="mono">${esc(i.lastUpdated)}</td><td class="num mono">${i.coverage} / 15</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
+
+    <div class="ic-body wrap">
+      <nav class="ic-rail" aria-label="Categories">
+        <p class="ic-rail-h">Categories</p>
+        <button type="button" class="ic-cat is-on" data-domain="" aria-pressed="true"><span>All categories</span><b>${total}</b></button>
+        ${domains.map((d) => `<button type="button" class="ic-cat" data-domain="${d}" aria-pressed="false"><span>${esc(domainLabels[d])}</span><b>${byDomain[d].length}</b></button>`).join('')}
+      </nav>
+      <div class="ic-list" id="catalogue-tbody">
+        ${domains.map((d, n) => `<section class="ic-group" data-group="${d}" aria-labelledby="ic-g-${d}">
+          <header class="ic-group-head"><span class="ic-idx">${String(n + 1).padStart(2, '0')}</span><h2 id="ic-g-${d}">${esc(domainLabels[d])}</h2><span class="ic-group-n" data-gn>${byDomain[d].length}</span></header>
+          <div class="ic-rows">${byDomain[d].map(row).join('')}</div>
+        </section>`).join('')}
+        <div class="ui-empty" hidden>
+          <div class="ui-empty-art" aria-hidden="true">${'<i></i>'.repeat(9)}</div>
+          <h3>No indicator matches <span id="ic-empty-q"></span></h3>
+          <p>Try a broader word, or clear the filters to see all ${total}.</p>
+          <button type="button" class="ui-btn" data-reset>Clear filters</button>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="drawer-overlay" id="drawer-overlay">
-    <div class="drawer-panel">
-      <div class="drawer-head"><h3 id="drawer-title"></h3><button class="drawer-close" type="button">${icon('x')}</button></div>
-      <div class="drawer-body" id="drawer-body"></div>
-    </div>
+  <div class="ic-sheet" id="drawer-overlay" hidden>
+    <div class="ic-sheet-scrim" data-close></div>
+    <aside class="ic-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1">
+      <header class="ic-sheet-head">
+        <p class="ic-sheet-cat" id="drawer-cat"></p>
+        <div class="ic-sheet-nav">
+          <button type="button" data-step="-1" aria-label="Previous indicator">${icon('chevron', 'icn ui-flip')}</button>
+          <button type="button" data-step="1" aria-label="Next indicator">${icon('chevron')}</button>
+          <button type="button" class="drawer-close" data-close aria-label="Close">${icon('x')}</button>
+        </div>
+      </header>
+      <div class="ic-sheet-body" id="drawer-body"></div>
+    </aside>
   </div>
   <script>window.__NICTD_PAGE__='catalogue';window.__CATALOGUE_STATE__=${JSON.stringify({ indicators })};</script>`,
-});
+  });
+};
 
 // ============ DATA QUERY BUILDER ============
-exports.query = (ctx, { indicators, domainOrder, domainLabels, counties, years }) => shell(ctx, {
-  title: 'Data Query', active: '/query', workspaceActive: 'query', body: `
-  <div class="wrap section">
-    <p class="kicker">Custom extract</p>
-    <h1>Data Query builder</h1>
-    <p class="lede-sm">Build a custom extract across indicators, counties and years. Preview updates live; download as CSV, JSON or XLSX.</p>
-    <div class="query-layout">
-      <div class="query-build-panel">
-        <h3>Build your query</h3>
-        <div class="selector-field">
-          <label>Indicators</label>
-          ${xddMulti('dd-query-indicators', 'Select indicators…')}
+// Four numbered steps on the left (indicators, counties, years, format), each showing when it is
+// done; the live preview, the API call and the download on the right. Logic: app.js, initQueryBuilder.
+exports.query = (ctx, { indicators, domainOrder, domainLabels, counties, years }) => {
+  const step = (n, key, title, sub, inner) => `<section class="qb-step" data-step="${key}">
+        <header class="qb-step-head">
+          <span class="qb-num" aria-hidden="true"><b>${n}</b>${icon('check')}</span>
+          <div><h2>${title}</h2><p>${sub}</p></div>
+          <span class="qb-state" data-state>${key === 'yrs' || key === 'fmt' ? 'Set' : 'None yet'}</span>
+        </header>
+        ${inner}
+      </section>`;
+  const fmts = [['csv', 'CSV', 'Spreadsheets, R, Stata'], ['json', 'JSON', 'Apps and scripts'], ['xlsx', 'Excel', 'Opens in Excel']];
+  return shell(ctx, {
+    title: 'Data Query', active: '/query', workspaceActive: 'query', body: `
+  <div class="qb">
+    <header class="qb-hero wrap">
+      ${eyebrow('Data Query')}
+      <h1 data-rise-head>Build your own extract</h1>
+      <p class="ui-lede">Choose indicators, counties and years. The preview updates as you go; download the result or call it straight from the API.</p>
+    </header>
+    <div class="qb-layout wrap">
+      <div class="qb-steps">
+        ${step(1, 'ind', 'Indicators', 'What to measure', `${xddMulti('dd-query-indicators', 'Choose indicators')}
+        <div class="qb-chips" data-chips="ind"></div>`)}
+        ${step(2, 'cty', 'Counties', 'Where', `${xddMulti('dd-query-counties', 'Choose counties', `Select all ${counties.length} counties`)}
+        <div class="qb-chips" data-chips="cty"></div>
+        <div class="qb-quick"><button type="button" class="ui-chip" data-all-counties>All ${counties.length} counties</button><button type="button" class="ui-chip" data-clear-counties hidden>Clear counties</button></div>`)}
+        ${step(3, 'yrs', 'Years', 'When', `<div class="qb-years">
+          <div class="qb-field"><label for="year-from">From</label><select id="year-from">${years.map((y) => `<option${y === years[0] ? ' selected' : ''}>${y}</option>`).join('')}</select></div>
+          <div class="qb-field"><label for="year-to">To</label><select id="year-to">${years.map((y) => `<option${y === years[years.length - 1] ? ' selected' : ''}>${y}</option>`).join('')}</select></div>
         </div>
-        <div class="selector-field">
-          <label>Counties</label>
-          ${xddMulti('dd-query-counties', 'Select counties…', 'Select all 15 counties')}
-        </div>
-        <div class="query-range-row">
-          <div class="selector-field"><label>From</label><select id="year-from">${years.map((y) => `<option ${y === years[0] ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
-          <div class="selector-field"><label>To</label><select id="year-to">${years.map((y) => `<option ${y === years[years.length - 1] ? 'selected' : ''}>${y}</option>`).join('')}</select></div>
-        </div>
-        <div class="selector-field">
-          <label>Output format</label>
-          <div class="format-toggle">
-            <label class="format-opt"><input type="radio" name="fmt" value="csv" checked><span>CSV</span></label>
-            <label class="format-opt"><input type="radio" name="fmt" value="json"><span>JSON</span></label>
-            <label class="format-opt"><input type="radio" name="fmt" value="xlsx"><span>XLSX</span></label>
-          </div>
-        </div>
-        <div class="query-build-actions">
-          <button class="btn btn-gold" id="btn-generate-download" type="button">${icon('download')} Download</button>
-          <button class="btn btn-outline" id="btn-save-query" type="button">Save query</button>
-        </div>
+        <div class="qb-track" aria-hidden="true">${years.map((y) => `<span data-y="${y}" class="on"><i></i><em>${y}</em></span>`).join('')}</div>`)}
+        ${step(4, 'fmt', 'Format', 'How you receive it', `<div class="qb-fmts" role="radiogroup" aria-label="Output format">
+          ${fmts.map(([v, l, d], i) => `<label class="qb-fmt"><input type="radio" name="fmt" value="${v}"${i ? '' : ' checked'}><span><b>${l}</b><em>${d}</em></span></label>`).join('')}
+        </div>`)}
       </div>
-      <div class="query-results-panel">
-        <div class="sec-head-dh"><h2 style="margin:0">Live preview</h2><span class="mono muted" id="query-count" style="font-size:.78rem"></span></div>
-        <div class="panel query-preview-table">
-          <table class="data-table" id="query-preview"><thead><tr><th>Indicator</th><th>County</th><th class="num">Year</th><th class="num">Value</th><th>Unit</th></tr></thead><tbody></tbody></table>
+      <div class="qb-result">
+        <div class="qb-panel" data-rise-block>
+          <header class="qb-panel-head">
+            <div><p class="ui-k">Live preview</p><p class="qb-summary" id="qb-summary">Nothing selected yet</p></div>
+            <span class="qb-count" id="query-count"></span>
+          </header>
+          <div class="qb-table-wrap">
+            <table class="qb-table" id="query-preview"><thead><tr><th>Indicator</th><th>County</th><th class="num">Year</th><th class="num">Value</th><th>Unit</th></tr></thead><tbody></tbody></table>
+            <div class="ui-empty qb-empty" id="qb-empty">
+              <div class="ui-empty-art" aria-hidden="true">${'<i></i>'.repeat(9)}</div>
+              <h3>Your preview appears here</h3>
+              <p>Choose at least one indicator and one county.</p>
+            </div>
+          </div>
+          <p class="qb-more" id="qb-more" hidden></p>
+          <div class="qb-api">
+            <div class="qb-api-head"><span class="ui-k">API call</span><button type="button" class="qb-copy" id="qb-copy" disabled>${icon('copy')}<span>Copy</span></button></div>
+            <code id="api-call-box">Choose indicators and counties to build the call.</code>
+          </div>
+          <footer class="qb-actions">
+            <button class="ui-btn ui-btn-primary" id="btn-generate-download" type="button" disabled>${icon('download')}<span>Download</span></button>
+            <button class="ui-btn" id="btn-save-query" type="button" disabled>Save query</button>
+          </footer>
+          <form class="qb-save" id="qb-save" hidden>
+            <label for="qb-save-name">Name this query</label>
+            <div class="qb-save-row"><input id="qb-save-name" maxlength="120" placeholder="e.g. Connectivity, all counties" required><button type="submit" class="ui-btn ui-btn-primary">Save</button><button type="button" class="ui-btn" data-cancel>Cancel</button></div>
+          </form>
+          ${ctx.user ? '' : '<p class="qb-hint">Saving queries needs an account. <a href="/login">Log in</a> or <a href="/register">request access</a>.</p>'}
         </div>
       </div>
     </div>
   </div>
-  <script>window.__NICTD_PAGE__='query';window.__QUERY_STATE__=${JSON.stringify({ years, indicators: indicators.map((i) => ({ value: i.code, label: i.name, group: domainLabels[i.domain] })), counties: counties.map((c) => ({ value: c.name, label: c.name })) })};</script>`,
-});
+  <script>window.__NICTD_PAGE__='query';window.__QUERY_STATE__=${JSON.stringify({ signedIn: !!ctx.user, years, indicators: indicators.map((i) => ({ value: i.code, label: i.name, group: domainLabels[i.domain] })), counties: counties.map((c) => ({ value: c.name, label: c.name })) })};</script>`,
+  });
+};
 
 // ============ DASHBOARDS ============
 // One dashboards page: the title itself is the filter, pick a dashboard and it loads in place.
@@ -2010,7 +2128,7 @@ function policyEmblem(kind) {
 // above the closing line. Every figure is live from the catalogue or the
 // programme; every photo is one of the site's own.
 exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => {
-  const DEFAULT_MISSION = "The National ICT Database of Liberia (NICTD) is a private-sector-led national initiative advancing Liberia's data sovereignty, and the country's official, continuously maintained source of ICT statistics, infrastructure, usage, affordability, market structure, digital trust and governance, and sustainability, disaggregated across all 15 counties. NICTD exists to give researchers, policymakers, donors and the public a single, trustworthy place to find and compare Liberia's digital-development data.";
+  const DEFAULT_MISSION = "The National ICT Intelligence System (NIIS) is a private-sector-led national initiative advancing Liberia's data sovereignty, and the country's official, continuously maintained source of ICT statistics, infrastructure, usage, affordability, market structure, digital trust and governance, and sustainability, disaggregated across all 15 counties. NIIS exists to give researchers, policymakers, donors and the public a single, trustworthy place to find and compare Liberia's digital-development data.";
   const statement = String(mission || DEFAULT_MISSION).trim();
 
   // live from the catalogue where the database has it; programme figures from the programme
@@ -2024,7 +2142,7 @@ exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => 
   const story = [
     ['The mission', statement],
     ['The problem', 'For two decades Liberia’s digital-development story has been told with numbers produced somewhere else: estimated rather than observed, national rather than local, and always a reporting cycle behind the decisions they are meant to inform.'],
-    ['The answer', 'The law is already in place: a Data Protection Act in 2026, and data sovereignty among the eight priorities of the National Digital Strategy. What has not moved is the infrastructure. NICTD is that missing layer: the database, the collection pipeline and the platform that turn a commitment on paper into a working national asset.'],
+    ['The answer', 'The law is already in place: a Data Protection Act in 2026, and data sovereignty among the eight priorities of the National Digital Strategy. What has not moved is the infrastructure. NIIS is that missing layer: the database, the collection pipeline and the platform that turn a commitment on paper into a working national asset.'],
   ];
 
   // [title, label, body, photo, alt]
@@ -2054,7 +2172,7 @@ exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => 
 
   const alignment = [
     ['ARREST Agenda for Inclusive Development', '2025-2029',
-      'ICT modernization sits in the Infrastructure pillar. NICTD is the measurement layer it is judged against.', 'lr'],
+      'ICT modernization sits in the Infrastructure pillar. NIIS is the measurement layer it is judged against.', 'lr'],
     ['National Digital Strategy', '2025-2029',
       'Cybersecurity and data sovereignty is one of its eight priorities. This is that pillar, made operational.', 'lr'],
     ['Data Protection Act', 'Enacted 2026',
@@ -2077,14 +2195,14 @@ exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => 
   ];
 
   const faqs = [
-    ['How is NICTD data licensed?', 'All open data published through NICTD is available under an open licence for research, journalism and policy use, with attribution to the ICT Statistics & Policy Unit, Ministry of Posts and Telecommunications. Open by default is a design principle, not a concession.'],
+    ['How is NIIS data licensed?', 'All open data published through NIIS is available under an open licence for research, journalism and policy use, with attribution to the ICT Statistics & Policy Unit, Ministry of Posts and Telecommunications. Open by default is a design principle, not a concession.'],
     ['How often is the data updated?', 'Most indicators refresh annually following the national survey wave; a subset fed by operator data-sharing agreements refreshes biennially. Each indicator’s periodicity is shown in the Indicator Catalogue.'],
-    ['How is this different from the data international agencies already publish on Liberia?', 'International datasets are indispensable and we use them. But where national returns are incomplete they are modelled or trend-projected, and they report Liberia as one national figure. NICTD collects observed values, disaggregates them to all 15 counties, and publishes the method alongside the number.'],
-    ['Is NICTD a government body or a private initiative?', 'NICTD is a private-sector-led initiative delivering a national public good, working with the Ministry of Posts and Telecommunications and contributing agencies under data-sharing cooperation. The platform is built to be handed to, and sustained by, Liberian institutions.'],
+    ['How is this different from the data international agencies already publish on Liberia?', 'International datasets are indispensable and we use them. But where national returns are incomplete they are modelled or trend-projected, and they report Liberia as one national figure. NIIS collects observed values, disaggregates them to all 15 counties, and publishes the method alongside the number.'],
+    ['Is NIIS a government body or a private initiative?', 'NIIS is a private-sector-led initiative delivering a national public good, working with the Ministry of Posts and Telecommunications and contributing agencies under data-sharing cooperation. The platform is built to be handed to, and sustained by, Liberian institutions.'],
     ['What happens when donor funding ends?', 'The programme is designed for transition, not dependency: infrastructure hosted in-country, methodology documented and published, staff recruited and trained locally, and a services and licensing model intended to carry recurring costs after the establishment phase.'],
-    ['How do you protect personal data?', 'NICTD publishes aggregate, anonymized statistics only. It collects no individual-level personal data beyond what is required to produce those aggregates, in line with Liberia’s Data Protection Act.'],
+    ['How do you protect personal data?', 'NIIS publishes aggregate, anonymized statistics only. It collects no individual-level personal data beyond what is required to produce those aggregates, in line with Liberia’s Data Protection Act.'],
     ['How do I request a new indicator?', 'Registered users can reach the ICT Statistics & Policy Unit directly through the platform’s messaging system once logged in.'],
-    ['Can I use this data in a publication?', 'Yes, cite NICTD and the ICT Statistics & Policy Unit. Values are demonstration data pending production feeds; check the methodology note on each indicator before publication.'],
+    ['Can I use this data in a publication?', 'Yes, cite NIIS and the ICT Statistics & Policy Unit. Values are demonstration data pending production feeds; check the methodology note on each indicator before publication.'],
   ];
 
   const sdg = imgs.url('partnerLogos', 'sdg');
@@ -2116,7 +2234,7 @@ exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => 
       <div class="cs-wrap">
         <span class="cs-mark" aria-hidden="true"></span>
         <h2 id="abStoryTitle" class="cs-h2" aria-label="Data sovereignty, made operational.">${csDecode('Data sovereignty, made operational.')}</h2>
-        ${stats.length ? `<div class="ab-stats" role="list" aria-label="NICTD in numbers">${stats.map(([n, l, s], i) => `
+        ${stats.length ? `<div class="ab-stats" role="list" aria-label="NIIS in numbers">${stats.map(([n, l, s], i) => `
           <div class="ab-stat" role="listitem"${rise(i)}>
             <p class="ab-stat-n" data-count="${n}">${n}</p>
             <p class="ab-stat-l">${esc(l)}</p>
@@ -2306,7 +2424,7 @@ exports.submitPaper = (ctx, { errors = [], values = {}, done = false } = {}) => 
     title: 'Submit a Paper', active: '/research', workspaceActive: 'research', body: `
   ${pageHeader('research', 'Submit a Paper', 'Send research, a working paper or a policy brief to the ICT Statistics & Policy Unit for review.')}
   <div class="wrap section sp2-wrap">
-    <p class="sp2-lede">Anyone can submit, no account needed. A reviewer reads every paper before it goes into the NICTD research library.</p>
+    <p class="sp2-lede">Anyone can submit, no account needed. A reviewer reads every paper before it goes into the NIIS research library.</p>
 
     ${errors.length ? `<div class="sp2-alert" role="alert"><b>A few things need fixing before this can be sent.</b>
       <ul>${errors.map((e) => `<li>${esc(e.message)}</li>`).join('')}</ul></div>` : ''}
@@ -2727,7 +2845,7 @@ function partnerBook(partners) {
       <div class="bk-copy wrap">
         <p class="bk-kicker">Partnership</p>
         <h1 class="bk-title">Our Partners</h1>
-        <p class="bk-sub">The institutions that build, supply and govern the National ICT Database of Liberia.</p>
+        <p class="bk-sub">The institutions that build, supply and govern the National ICT Intelligence System.</p>
       </div>
       <div class="bk-hint" id="bkHint">Scroll to turn the page</div>
       <div class="bk-progress"><i id="bkBar"></i></div>
@@ -2814,7 +2932,7 @@ function rpCover(p) {
   const year = String(p.published_on || '').slice(0, 4);
   return `<div class="rp-cover rp-cover--${RP_SERIES[p.tag] || 'navy'}" aria-hidden="true">
       <span class="rp-cover-spine"></span>
-      <span class="rp-cover-top"><b>NICTD</b><span>${esc(p.tag)}</span></span>
+      <span class="rp-cover-top"><b>NIIS</b><span>${esc(p.tag)}</span></span>
       <span class="rp-cover-title">${esc(p.title)}</span>
       <span class="rp-cover-foot"><span>${esc(p.authors)}</span><span>${esc(year)}</span></span>
     </div>`;
@@ -2844,7 +2962,7 @@ exports.research = (ctx, { papers = [], canManage = false, canSubmit = false, no
     title: 'Research Papers', active: '/research', workspaceActive: 'research', body: `
   ${videoHero({ src: '/media/research-hero.mp4', poster: '/media/research-hero-poster.jpg',
     kicker: 'Research', title: 'Liberia ICT Research Hub',
-    sub: 'Published research and reports drawing on the National ICT Database.' })}
+    sub: 'Published research and reports drawing on the National ICT Intelligence System.' })}
   ${researchPromo()}
   <div class="wrap section page-black">
     ${notice ? `<div class="alert alert-ok">${esc(notice)}</div>` : ''}
@@ -3077,7 +3195,7 @@ const newsNoticesScript = `
 })();`;
 
 // ============ ONE UPDATE ============
-// The page an ICT Trends update opens: a dated entry in NICTD's record, read like a changelog.
+// The page an ICT News & Updates entry opens: a dated entry in NIIS's record, read like a changelog.
 // The date holds a rail of its own beside the entry; the record underneath lists every update
 // with this one's place marked. Text and photo only, by the user's choice.
 // A stated statistic: a percentage, a currency amount, a decimal, or a count in millions or
@@ -3124,10 +3242,10 @@ exports.updatePage = (ctx, { items, index }) => {
       <div class="upd-main">
         <h1 id="updTitle" aria-label="${esc(title)}"><span aria-hidden="true">${riseWords(title)}</span></h1>
         <p class="upd-lead">${esc(body)}</p>
-        ${demo ? `<p class="upd-demo" role="note">${icon('info')}<span><strong>Demonstration data.</strong> The figures in this update come from NICTD's demonstration dataset. Live Ministry feeds are not public yet, so they are not official statistics.</span></p>` : ''}
+        ${demo ? `<p class="upd-demo" role="note">${icon('info')}<span><strong>Demonstration data.</strong> The figures in this update come from NIIS's demonstration dataset. Live Ministry feeds are not public yet, so they are not official statistics.</span></p>` : ''}
         <figure class="upd-figure">
           <img src="${esc(photo)}" alt="" width="1200" height="675" decoding="async">
-          <figcaption>Illustrative photo from the NICTD image library.</figcaption>
+          <figcaption>Illustrative photo from the NIIS image library.</figcaption>
         </figure>
         <section class="upd-record" aria-labelledby="updRecordTitle">
           <h2 id="updRecordTitle">The record</h2>
@@ -3273,28 +3391,264 @@ exports.partners = (ctx, { partners = [] }) => {
 };
 
 // ============ ICT REPORTS ============
-exports.reports = (ctx) => shell(ctx, {
-  title: 'ICT Reports', active: '/reports', workspaceActive: 'reports', body: `
-  ${pageHeader('reports', 'ICT Reports', 'Official statistical and sector reports from the ICT Statistics & Policy Unit.')}
-  <div class="wrap section page-black">
-    ${libraryFilter('Search reports by title, topic or category…', [...new Set(NATIONAL_REPORTS.map((r) => r.year))].sort((a, b) => b - a), NATIONAL_REPORTS.length)}
-    <div class="fp-grid">
-      ${NATIONAL_REPORTS.map((r) => `<article class="fp-card" data-lib-item
-        data-lib-year="${r.year}"
-        data-lib-search="${esc((r.title + ' ' + r.tag + ' ' + r.desc + ' ' + r.date).toLowerCase())}">
-        <div class="fp-thumb" style="${slotBg('reports', r.img, true)}"></div>
-        <div class="fp-body">
-          <span class="tag">${esc(r.tag)}</span>
-          <h4>${esc(r.title)}</h4>
-          <p style="font-size:.86rem;margin:0 0 .6rem">${esc(r.desc)}</p>
-          <div class="fp-meta">${esc(r.date)}</div>
+// Under the banner: the latest release as a feature, the counts, the library (type chips and a
+// search, cards that rearrange as they filter), and a publication timeline. Each report opens a
+// summary with the catalogue categories its subject draws on. There are no report files on the
+// platform yet, so the page offers no download. Logic: app.js, initReports.
+const REPORT_MONTH = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12, Q1: 3, Q2: 6, Q3: 9, Q4: 12 };
+const reportOrder = (r) => r.year * 100 + (REPORT_MONTH[String(r.date).split(' ')[0]] || 0);
+exports.reports = (ctx, { indicators = [], domainLabels = {} } = {}) => {
+  const byDomain = {};
+  indicators.forEach((i) => (byDomain[i.domain] = byDomain[i.domain] || []).push(i));
+  const list = NATIONAL_REPORTS.map((r, i) => ({ ...r, i, bg: slotBg('reports', r.img, true) }));
+  const latest = list.slice().sort((a, b) => reportOrder(b) - reportOrder(a))[0];
+  const tags = [...new Set(list.map((r) => r.tag))];
+  const covered = [...new Set(list.flatMap((r) => r.domains || []))].filter((d) => byDomain[d]);
+  const related = (r) => (r.domains || []).filter((d) => byDomain[d]).map((d) => ({ d, label: domainLabels[d] || d, n: byDomain[d].length, names: byDomain[d].slice(0, 5).map((x) => x.name) }));
+  const chipsFor = (r) => related(r).map((x) => `<a class="ui-chip" href="/indicators?domain=${x.d}">${esc(x.label)} <b>${x.n}</b></a>`).join('');
+  const card = (r) => `<article class="rx-card" data-rp-item data-tag="${esc(r.tag)}" data-search="${esc((r.title + ' ' + r.tag + ' ' + r.desc + ' ' + r.date).toLowerCase())}">
+        <button type="button" class="rx-card-hit" data-open="${r.i}" aria-label="Read the summary: ${esc(r.title)}"></button>
+        <div class="rx-card-img" style="${r.bg}"><span class="rx-card-n">${String(r.i + 1).padStart(2, '0')}</span></div>
+        <div class="rx-card-body">
+          <p class="rx-card-meta"><span class="rx-tag">${esc(r.tag)}</span><span>${esc(r.date)}</span></p>
+          <h3>${esc(r.title)}</h3>
+          <p>${esc(r.desc)}</p>
+          <span class="rx-card-go">Read the summary ${icon('arrow')}</span>
         </div>
-      </article>`).join('')}
-    </div>
-    <p class="lib-empty" data-lib-empty style="display:none">No reports match that search. Clear the box or pick a different year.</p>
+      </article>`;
+  const timeline = list.slice().sort((a, b) => reportOrder(a) - reportOrder(b));
+  const state = list.map((r) => ({ title: r.title, tag: r.tag, date: r.date, desc: r.desc, bg: r.bg, related: related(r) }));
+  return shell(ctx, {
+    title: 'ICT Reports', active: '/reports', workspaceActive: 'reports', body: `
+  ${pageHeader('reports', 'ICT Reports', 'Official statistical and sector reports from the ICT Statistics & Policy Unit.')}
+  <div class="rx">
+    <section class="rx-feature wrap">
+      ${eyebrow('Latest release')}
+      <article class="rx-feat" data-rise-block>
+        <div class="rx-feat-img" style="${latest.bg}"><span class="rx-feat-date">${esc(latest.date)}</span></div>
+        <div class="rx-feat-body">
+          <span class="rx-tag">${esc(latest.tag)}</span>
+          <h2 data-rise-head>${esc(latest.title)}</h2>
+          <p class="rx-feat-desc">${esc(latest.desc)}</p>
+          ${related(latest).length ? `<div class="rx-related"><p class="ui-k">The data behind it</p><div class="rx-chips">${chipsFor(latest)}</div></div>` : ''}
+          <div class="rx-actions">
+            <button type="button" class="ui-btn ui-btn-primary" data-open="${latest.i}">Read the summary ${icon('arrow')}</button>
+            <a class="ui-btn" href="/data">Explore the data</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="rx-stats-band wrap">
+      <dl class="ui-stats">
+        <div><dt>Reports published</dt><dd data-count="${list.length}">${list.length}</dd></div>
+        <div><dt>Report types</dt><dd data-count="${tags.length}">${tags.length}</dd></div>
+        <div><dt>Latest release</dt><dd>${esc(latest.date)}</dd></div>
+        <div><dt>Indicator categories drawn on</dt><dd data-count="${covered.length}">${covered.length}</dd></div>
+      </dl>
+    </section>
+
+    <section class="rx-lib wrap" aria-labelledby="rx-lib-h">
+      <div class="rx-lib-head">
+        <h2 id="rx-lib-h" data-rise-head>All reports</h2>
+        <div class="ui-search" role="search">
+          ${icon('search')}
+          <input id="rx-q" type="search" placeholder="Search reports" aria-label="Search reports" autocomplete="off">
+          <button type="button" class="ui-search-x" aria-label="Clear the search" hidden>${icon('x')}</button>
+        </div>
+      </div>
+      <div class="rx-tags" role="group" aria-label="Report type">
+        <button type="button" class="ui-chip is-on" data-tag="" aria-pressed="true">All <b>${list.length}</b></button>
+        ${tags.map((t) => `<button type="button" class="ui-chip" data-tag="${esc(t)}" aria-pressed="false">${esc(t)} <b>${list.filter((r) => r.tag === t).length}</b></button>`).join('')}
+      </div>
+      <div class="rx-grid is-all" id="rx-grid">${list.map(card).join('')}</div>
+      <div class="ui-empty" hidden>
+        <div class="ui-empty-art" aria-hidden="true">${'<i></i>'.repeat(9)}</div>
+        <h3>No report matches that search</h3>
+        <p>Clear the box or pick a different report type.</p>
+        <button type="button" class="ui-btn" data-reset>Show all reports</button>
+      </div>
+    </section>
+
+    <section class="rx-time wrap" aria-labelledby="rx-time-h">
+      <h2 id="rx-time-h" data-rise-head>Publication timeline</h2>
+      <ol class="rx-tl">
+        ${timeline.map((r, k) => `<li style="--k:${k}">
+          <span class="rx-tl-date">${esc(r.date)}</span>
+          <span class="rx-tl-dot" aria-hidden="true"></span>
+          <button type="button" class="rx-tl-t" data-open="${r.i}">${esc(r.title)}</button>
+          <span class="rx-tl-tag">${esc(r.tag)}</span>
+        </li>`).join('')}
+      </ol>
+    </section>
   </div>
-  <script>${libraryFilterScript}</script>`,
-});
+  <dialog class="rx-modal" id="rx-modal" aria-labelledby="rx-m-title">
+    <div class="rx-m-img" id="rx-m-img"></div>
+    <button type="button" class="rx-m-x" data-close aria-label="Close">${icon('x')}</button>
+    <div class="rx-m-body">
+      <p class="rx-card-meta"><span class="rx-tag" id="rx-m-tag"></span><span id="rx-m-date"></span></p>
+      <h2 id="rx-m-title"></h2>
+      <p id="rx-m-desc"></p>
+      <div id="rx-m-rel"></div>
+      <div class="rx-actions"><a class="ui-btn ui-btn-primary" href="/data">Explore the data ${icon('arrow')}</a><button type="button" class="ui-btn" data-close>Close</button></div>
+    </div>
+  </dialog>
+  <script>window.__NICTD_PAGE__='reports';window.__REPORTS__=${JSON.stringify(state)};</script>`,
+  });
+};
+
+// ============ OUR TEAM ============
+// The institutions behind NIIS, then the team planned for the data mining phase. Every role and
+// headcount comes from deliverables/NICTD-Cost-Schedule.xlsx (Data Team, Field Team Cost and Cost
+// Summary sheets); pay grades and costs stay out of the public page. Names and photographs are
+// added as people are appointed; until then the page shows roles, never invented people.
+const TEAM_PLAN = {
+  director: { title: 'Survey / Project Director', resp: 'Central management of the data mining phase.' },
+  data: [
+    { title: 'Data Team Lead', resp: 'Owns the processing pipeline, the review queue and final sign-off.', n: 1 },
+    { title: 'Sampling Statistician', resp: 'Weighting, county estimates, precision and error checks.', n: 1 },
+    { title: 'Database / CAPI Engineer', resp: 'Builds the CAPI instrument, the sync server and the upload pipeline into NIIS.', n: 2, role: 'Data Engineer' },
+    { title: 'GIS / Mapping Analyst', resp: 'Enumeration-area frames, geocoding and county map preparation.', n: 1, role: 'GIS / Mapping Analyst' },
+    { title: 'Data Quality Analyst', resp: 'Validation rules, cleaning, outlier and consistency review.', n: 4 },
+    { title: 'Data Processing Clerk', resp: 'Coding open responses, data-entry backup and reconciliation.', n: 6 },
+  ],
+  field: [
+    { key: 'enum', title: 'Enumerators', resp: 'Collect household and facility ICT data on tablets across assigned enumeration areas.', role: 'Field Enumerator (CAPI)' },
+    { key: 'kii', title: 'Facility / KII collectors', resp: 'Run key-informant interviews and facility visits.' },
+    { key: 'sup', title: 'Field supervisors', resp: 'Lead an enumerator team, run spot checks and back-checks, and clear daily uploads.', role: 'Field Supervisor' },
+    { key: 'lead', title: 'County research leads', resp: 'Own sampling, stakeholder liaison and data quality for one county.', role: 'County Research Lead' },
+  ],
+  // county: [enumerators, KII collectors, supervisors, research leads]
+  counties: [
+    ['Montserrado', 13, 3, 3, 1], ['Nimba', 9, 3, 2, 1], ['Bong', 9, 3, 2, 1], ['Lofa', 8, 2, 2, 1],
+    ['Grand Bassa', 8, 2, 2, 1], ['Margibi', 8, 2, 2, 1], ['Maryland', 7, 2, 2, 1], ['Grand Cape Mount', 7, 2, 2, 1],
+    ['Grand Gedeh', 7, 2, 2, 1], ['Sinoe', 7, 2, 2, 1], ['Bomi', 7, 2, 2, 1], ['Gbarpolu', 7, 2, 2, 1],
+    ['River Cess', 7, 2, 2, 1], ['River Gee', 7, 2, 2, 1], ['Grand Kru', 7, 2, 2, 1],
+  ],
+};
+exports.team = (ctx, { indicators = [] } = {}) => {
+  const P = TEAM_PLAN;
+  const FK = ['enum', 'kii', 'sup', 'lead'];
+  const fieldN = (k) => P.counties.reduce((s, c) => s + c[1 + FK.indexOf(k)], 0);
+  const fieldTotal = FK.reduce((s, k) => s + fieldN(k), 0);
+  const dataTotal = P.data.reduce((s, r) => s + r.n, 0);
+  const teamTotal = fieldTotal + dataTotal + 1; // the cost schedule's workforce recap counts the director
+  const maxCounty = Math.max(...P.counties.map((c) => c[1] + c[2] + c[3] + c[4]));
+  // how many catalogue indicators each institution supplies, counted from the live catalogue
+  const sourced = (re) => indicators.filter((i) => re.test(i.agency || '')).length;
+  const ltaN = sourced(/LTA|Telecommunications Authority/);
+  const moptN = sourced(/Posts|MoPT|ICT Statistics/);
+  const openRole = (title) => {
+    const r = title && CAREER_ROLES.find((x) => x.title === title);
+    return r ? `<a class="tm-open" href="/careers/apply/${careerSlug(r)}">Open role ${icon('arrow')}</a>` : '';
+  };
+  const dots = (n) => n <= 12 ? `<span class="tm-dots" aria-hidden="true">${'<i></i>'.repeat(n)}</span>` : '';
+  const logo = (key, mono) => imgs.exists('partnerLogos', key)
+    ? `<img src="${esc(imgs.url('partnerLogos', key))}" alt="" width="64" height="64" loading="lazy" decoding="async">`
+    : `<span class="tm-mono">${esc(mono)}</span>`;
+  const inst = [
+    { logo: logo('mopt', 'MoPT'), name: 'Ministry of Posts & Telecommunications', role: 'Policy lead', body: 'Home of the ICT Statistics & Policy Unit, which curates the data and handles recruitment.', fact: moptN ? `Source agency for ${moptN} catalogue indicators` : '' },
+    { logo: logo('lta', 'LTA'), name: 'Liberia Telecommunications Authority', role: 'Sector regulator', body: 'Supplies the network and market data: subscriptions, sites, coverage, speeds and quality of service.', fact: ltaN ? `Source agency for ${ltaN} catalogue indicators` : '' },
+    { logo: '<span class="tm-mono">H&amp;A</span>', name: 'Harris & Associates LLC', role: 'Platform developer', body: 'Developed the NIIS platform: the database, the Data Explorer, the API and this website.', fact: '' },
+  ];
+  return shell(ctx, {
+    title: 'Our Team', active: '/about/team', workspaceActive: 'about', body: `
+  ${pageHeader('team', 'Our Team', 'The institutions behind NIIS, and the team that collects, checks and publishes its data.')}
+  <div class="tm">
+    <section class="tm-inst wrap" aria-labelledby="tm-inst-h">
+      <div class="tm-head">
+        ${eyebrow('Who runs NIIS')}
+        <h2 id="tm-inst-h" data-rise-head>Three institutions, one national data system</h2>
+      </div>
+      <div class="tm-inst-grid">
+        ${inst.map((x, k) => `<article class="tm-inst-card" style="--k:${k}">
+          <div class="tm-inst-logo">${x.logo}</div>
+          <p class="tm-inst-role">${esc(x.role)}</p>
+          <h3>${esc(x.name)}</h3>
+          <p>${esc(x.body)}</p>
+          ${x.fact ? `<p class="tm-inst-fact">${icon('database')}<span>${esc(x.fact)}</span></p>` : ''}
+        </article>`).join('')}
+      </div>
+    </section>
+
+    <section class="tm-org wrap" aria-labelledby="tm-org-h">
+      <div class="tm-head tm-head-split">
+        <div>
+          ${eyebrow('The project team')}
+          <h2 id="tm-org-h" data-rise-head>The team planned for the data mining phase</h2>
+        </div>
+        <p>From the project cost schedule: ${teamTotal} people, with a Survey / Project Director, a central data team of ${dataTotal} and field teams of ${fieldTotal} across all ${P.counties.length} counties. Names and photographs appear here as people are appointed.</p>
+      </div>
+      <dl class="ui-stats">
+        <div><dt>Planned team</dt><dd data-count="${teamTotal}">${teamTotal}</dd></div>
+        <div><dt>Field teams</dt><dd data-count="${fieldTotal}">${fieldTotal}</dd></div>
+        <div><dt>Data team</dt><dd data-count="${dataTotal}">${dataTotal}</dd></div>
+        <div><dt>Counties</dt><dd data-count="${P.counties.length}">${P.counties.length}</dd></div>
+      </dl>
+      <div class="tm-chart">
+        <div class="tm-lead">
+          <span class="tm-avatar" aria-hidden="true">${icon('users')}</span>
+          <div><p class="tm-inst-role">Central management</p><h3>${esc(P.director.title)}</h3><p>${esc(P.director.resp)}</p></div>
+        </div>
+        <div class="tm-wires" aria-hidden="true"><i class="tm-wire-v"></i><i class="tm-wire-h"></i><i class="tm-wire-l"></i><i class="tm-wire-r"></i></div>
+        <div class="tm-branches">
+          <div class="tm-branch">
+            <header><h3>Data team</h3><b data-count="${dataTotal}">${dataTotal}</b></header>
+            <p class="tm-branch-sub">Cleans, validates, weights, codes, maps and uploads the field data into NIIS.</p>
+            <ul class="tm-roles">${P.data.map((r, k) => `<li style="--k:${k}">
+              <div class="tm-role-top"><h4>${esc(r.title)}</h4><span class="tm-n">${r.n}</span></div>
+              <p>${esc(r.resp)}</p>
+              <div class="tm-role-foot">${dots(r.n)}${openRole(r.role)}</div>
+            </li>`).join('')}</ul>
+          </div>
+          <div class="tm-branch">
+            <header><h3>Field teams</h3><b data-count="${fieldTotal}">${fieldTotal}</b></header>
+            <p class="tm-branch-sub">Collect the survey and facility data in every county, wave by wave.</p>
+            <ul class="tm-roles">${P.field.map((r, k) => `<li style="--k:${k}">
+              <div class="tm-role-top"><h4>${esc(r.title)}</h4><span class="tm-n">${fieldN(r.key)}</span></div>
+              <p>${esc(r.resp)}</p>
+              <div class="tm-bar" aria-hidden="true"><i style="--w:${(fieldN(r.key) / fieldN('enum')).toFixed(3)}"></i></div>
+              <div class="tm-role-foot">${openRole(r.role)}</div>
+            </li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tm-counties wrap" aria-labelledby="tm-c-h">
+      <div class="tm-head tm-head-split">
+        <div>
+          ${eyebrow('In every county')}
+          <h2 id="tm-c-h" data-rise-head>Field teams, county by county</h2>
+        </div>
+        <ul class="tm-legend" aria-label="Legend">
+          <li><i class="k-enum"></i>Enumerators</li><li><i class="k-kii"></i>KII collectors</li><li><i class="k-sup"></i>Supervisors</li><li><i class="k-lead"></i>Research lead</li>
+        </ul>
+      </div>
+      <ol class="tm-grid">
+        ${P.counties.map(([name, e, k, s, l], n) => {
+          const t = e + k + s + l;
+          return `<li style="--k:${n}">
+          <div class="tm-c-top"><h3>${esc(name)}</h3><b>${t}</b></div>
+          <div class="tm-stack" style="--t:${(t / maxCounty).toFixed(3)}" role="img" aria-label="${esc(name)}: ${e} enumerators, ${k} KII collectors, ${s} supervisors, ${l} research lead">
+            <i class="k-enum" style="flex:${e}"></i><i class="k-kii" style="flex:${k}"></i><i class="k-sup" style="flex:${s}"></i><i class="k-lead" style="flex:${l}"></i>
+          </div>
+          <p class="tm-c-split">${e} · ${k} · ${s} · ${l}</p>
+        </li>`;
+        }).join('')}
+      </ol>
+    </section>
+
+    <section class="tm-cta wrap">
+      <div class="tm-cta-in" data-rise-block>
+        <div><h2>Join the team</h2><p>Field and data roles are recruited as each collection wave opens.</p></div>
+        <a class="ui-btn ui-btn-light" href="/careers">See open roles ${icon('arrow')}</a>
+      </div>
+    </section>
+  </div>
+  <script>window.__NICTD_PAGE__='team';</script>`,
+  });
+};
 
 // ============ CAREERS ============
 const CAREER_ROLES = [
@@ -3305,7 +3659,7 @@ const CAREER_ROLES = [
   { title: 'County Research Lead', unit: 'Research', type: 'Contract', place: '15 counties', year: '2026',
     desc: 'Own sampling, stakeholder liaison and data quality for one county, and conduct key-informant interviews.' },
   { title: 'Data Engineer', unit: 'Data Team', type: 'Full-time', place: 'Monrovia', year: '2026',
-    desc: 'Build the collection-to-database pipeline, sync services and the publishing path into NICTD.' },
+    desc: 'Build the collection-to-database pipeline, sync services and the publishing path into NIIS.' },
   { title: 'GIS / Mapping Analyst', unit: 'Data Team', type: 'Full-time', place: 'Monrovia', year: '2026',
     desc: 'Maintain enumeration-area frames, geocode incoming records and prepare county map layers.' },
 ];
@@ -3372,7 +3726,7 @@ exports.careers = (ctx) => {
       </video>
       <div class="cs-film-scrim" aria-hidden="true"></div>
       <div class="cs-wrap cs-hero-in">
-        <h1 id="csTitle" class="cs-h1" aria-label="Careers at NICTD. Built and run by Liberians.">${csDecode('Careers at NICTD.')}${csDecode('Built and run by Liberians.', 'cs-dim')}</h1>
+        <h1 id="csTitle" class="cs-h1" aria-label="Careers at NIIS. Built and run by Liberians.">${csDecode('Careers at NIIS.')}${csDecode('Built and run by Liberians.', 'cs-dim')}</h1>
         <div class="cs-ctas">
           ${csBtn('#csRoles', 'See open roles')}
           <a class="cs-btn cs-btn-dark" href="#csJoin"><span>How to join</span></a>
@@ -3390,7 +3744,7 @@ exports.careers = (ctx) => {
         </figure>
         <dl class="cs-rows">
           <div class="cs-row"><dt><span class="cs-tag">The mission</span></dt><dd data-fill>Creating jobs and opportunities for young Liberians is part of what this programme is for.</dd></div>
-          <div class="cs-row"><dt><span class="cs-tag">The work</span></dt><dd data-fill>The National ICT Database is built and run by Liberians. Every phase, from field collection to data engineering and the platform itself, is staffed and skilled locally.</dd></div>
+          <div class="cs-row"><dt><span class="cs-tag">The work</span></dt><dd data-fill>The National ICT Intelligence System is built and run by Liberians. Every phase, from field collection to data engineering and the platform itself, is staffed and skilled locally.</dd></div>
           <div class="cs-row"><dt><span class="cs-tag">The path</span></dt><dd data-fill>Training is provided for field roles, and the experience carries forward into ICT research, statistics and data careers well beyond this programme.</dd></div>
         </dl>
       </div>
@@ -3440,9 +3794,9 @@ exports.careers = (ctx) => {
 
 // ============ APPLICATION SENT ============
 // The end of the process: a drawn check, a burst of the page's blue squares, the headline, and
-// the reference the applicant keeps. The reference carries the date it was sent (NICTD-YYMMDD-XXXX).
+// the reference the applicant keeps. The reference carries the date it was sent (NIIS-YYMMDD-XXXX).
 function careerSent(ctx, role, reference) {
-  const m = /^NICTD-(\d{2})(\d{2})(\d{2})-/.exec(reference || '');
+  const m = /^(?:NIIS|NIIS)-(\d{2})(\d{2})(\d{2})-/.exec(reference || '');
   const sentOn = m ? `${+m[3]} ${UPD_MONTHS[+m[2] - 1]} 20${m[1]}` : '';
   const field = role.unit === 'Data Collection';
   const burst = Array.from({ length: 14 }, (_, i) => `<i style="--a:${Math.round(i * (360 / 14) + (i % 2) * 9)}deg;--d:${i % 3 === 0 ? 7.4 : i % 3 === 1 ? 5.6 : 6.4}rem;--s:${i % 2 ? 5 : 7}px;--t:${(i % 4) * 40}ms"></i>`).join('');
@@ -3533,7 +3887,7 @@ exports.careerApply = (ctx, { role, counties = [], errors = [], values = {}, fai
               <textarea name="cover_note" rows="4" maxlength="2000" data-count${invalid('cover_note')}>${val('cover_note')}</textarea>
               <span class="cs-hint"><span data-count-out>${(values.cover_note || '').length}</span> of 2000 characters</span>${errText('cover_note')}</label>
             <label class="cs-consent"><input type="checkbox" name="consent" value="yes" required${values.consent ? ' checked' : ''}${invalid('consent')}>
-              <span>NICTD may keep my application and CV to assess me for this role.</span></label>${errText('consent')}
+              <span>NIIS may keep my application and CV to assess me for this role.</span></label>${errText('consent')}
           </fieldset>
           <div class="cs-hp" aria-hidden="true"><label>Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label></div>
           <button type="submit" class="cs-btn cs-btn-submit"><span data-submit-label>Send application</span><i aria-hidden="true">${icon('arrow')}</i></button>
@@ -3574,29 +3928,70 @@ exports.careerApply = (ctx, { role, counties = [], errors = [], values = {}, fai
 };
 
 // ============ AUTH ============
+// Log in: the national seal and what the workspace holds on a navy panel (its grid cells light up
+// one by one), the form on the right. The demonstration accounts fill the form with one tap.
+// Logic: app.js, initLogin.
+const DEMO_ACCOUNTS = [
+  ['Administrator', 'admin@nictd.gov.lr', 'Admin!2026'],
+  ['Stakeholder', 'stakeholder@partner.org', 'Stake!2026'],
+  ['Researcher', 'researcher@example.com', 'Research!2026'],
+];
 exports.login = (ctx, { error }) => publicLayout(ctx, {
   title: 'Log In', body: `
-  ${pageHeader('login', 'Log In', 'Access the secured NICTD workspace.')}
-  <div class="auth-wrap"><div class="auth-card">
-    <h1>${icon('shield')} Log in</h1>
-    <p class="muted">Access to the secured workspace is role-based: authorized public users, stakeholders and administrators each see what their role permits.</p>
-    ${error ? `<div class="alert alert-error">${esc(error)}</div>` : ''}
-    <form method="post" action="/login">
-      <label>Email<input name="email" type="email" required autofocus></label>
-      <label>Password<input name="password" type="password" required></label>
-      <button class="btn btn-teal" type="submit" style="margin-top:1rem">Log in</button>
-    </form>
-    <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--line)">
-      <p class="muted" style="margin-bottom:.6rem">Don't have an account? Submit your details and the administration team will create one for you.</p>
-      <a class="btn btn-outline" href="/register">Request Access</a>
+  <section class="lg">
+    <div class="lg-brand">
+      <div class="lg-cells" aria-hidden="true">${'<i></i>'.repeat(96)}</div>
+      <div class="lg-brand-in">
+        <a class="lg-seal" href="/">
+          ${imgs.exists('brand', 'seal') ? `<img src="${esc(imgs.url('brand', 'seal'))}" alt="" width="54" height="58" decoding="async">` : sealLogo(54)}
+          <span><strong>NIIS</strong><span>National ICT Intelligence System</span></span>
+        </a>
+        <h2>The secured workspace for Liberia’s ICT data</h2>
+        <ul class="lg-list">
+          <li>${icon('database')}<span><b>Data Explorer</b>Map, trend and county table for every indicator your role can see.</span></li>
+          <li>${icon('sliders')}<span><b>Data Query</b>Build custom extracts, save them and download them again.</span></li>
+          <li>${icon('chat')}<span><b>Messages</b>A direct line to the ICT Statistics &amp; Policy Unit.</span></li>
+        </ul>
+        <p class="lg-note">Access is role-based: public users, stakeholders and administrators each see what their role permits.</p>
+      </div>
     </div>
-    <details class="demo-creds"><summary>Demonstration accounts</summary>
-      <table class="mono"><tr><td>admin@nictd.gov.lr</td><td>Admin!2026</td></tr>
-      <tr><td>stakeholder@partner.org</td><td>Stake!2026</td></tr>
-      <tr><td>researcher@example.com</td><td>Research!2026</td></tr></table>
-      <p style="margin-top:.5rem">All 50 accounts: <span class="mono">docs/USER-CREDENTIALS.md</span></p>
-    </details>
-  </div></div>`,
+    <div class="lg-side">
+      <div class="lg-card">
+        ${eyebrow('Log in')}
+        <h1>Welcome back</h1>
+        <p class="lg-sub">Use the email your account was created with.</p>
+        <div class="lg-alert" role="alert"${error ? '' : ' hidden'}>${icon('info')}<span>${esc(error || '')}</span></div>
+        <form method="post" action="/login" class="lg-form" novalidate>
+          <div class="lg-field">
+            <label for="lg-email">Email</label>
+            <input id="lg-email" name="email" type="email" autocomplete="username" required autofocus placeholder="name@organisation.org">
+            <p class="lg-err" data-for="lg-email" hidden>Enter the email for your account.</p>
+          </div>
+          <div class="lg-field">
+            <label for="lg-pass">Password</label>
+            <div class="lg-pass">
+              <input id="lg-pass" name="password" type="password" autocomplete="current-password" required>
+              <button type="button" class="lg-eye" aria-label="Show password" aria-pressed="false">${icon('eye', 'icn lg-eye-on')}${icon('eyeoff', 'icn lg-eye-off')}</button>
+            </div>
+            <p class="lg-err" data-for="lg-pass" hidden>Enter your password.</p>
+          </div>
+          <button class="lg-submit" type="submit"><span class="lg-submit-t">Log in</span><span class="lg-spin" aria-hidden="true"></span><i aria-hidden="true">${icon('arrow')}</i></button>
+        </form>
+        <p class="lg-alt">No account yet? <a href="/register">Request access</a></p>
+        <details class="lg-demo">
+          <summary><span>Demonstration accounts</span>${icon('chevron')}</summary>
+          <ul>
+            ${DEMO_ACCOUNTS.map(([role, email, pass]) => `<li>
+              <span class="lg-demo-who"><b>${role}</b><code>${esc(email)}</code><code>${esc(pass)}</code></span>
+              <button type="button" class="ui-chip" data-fill-email="${esc(email)}" data-fill-pass="${esc(pass)}">Use</button>
+            </li>`).join('')}
+          </ul>
+          <p>All 50 accounts: <code>docs/USER-CREDENTIALS.md</code></p>
+        </details>
+      </div>
+    </div>
+  </section>
+  <script>window.__NICTD_PAGE__='login';</script>`,
 });
 exports.register = (ctx, { error, success, form = {} }) => publicLayout(ctx, {
   title: 'Request Access', body: `
@@ -3641,7 +4036,7 @@ exports.portal = (ctx, stats) => {
     title: 'Overview', active: 'portal', body: `
     <p class="kicker">Workspace</p>
     <h1>Welcome back, ${esc(u.name.split(' ')[0])}</h1>
-    <p class="lede-sm">Here is the current state of NICTD.</p>
+    <p class="lede-sm">Here is the current state of NIIS.</p>
     <div class="kpi-grid">
       ${stat('Data points published', fmt(stats.dataPoints))}
       ${stat('Indicators tracked', fmt(stats.indicators))}
@@ -3853,7 +4248,7 @@ exports.admin = (ctx, { users, pending, reviewed, indicators, counties, settings
       <label>Key numbers strip, exactly 4 indicator codes, comma-separated<input name="key_numbers" class="mono" value="${esc(siteContent.key_numbers || '')}" placeholder="mobile_subscriptions,internet_penetration,…"></label>
       <label>Homepage video, YouTube link/ID, or an on-platform path
         <input name="home_video" class="mono" value="${esc(siteContent.home_video || '')}" placeholder="https://youtu.be/XXXXXXXX  ·  or  /media/generated/hero.mp4"></label>
-      <label>Video section title<input name="home_video_title" maxlength="140" value="${esc(siteContent.home_video_title || '')}" placeholder="About the National ICT Database Project"></label>
+      <label>Video section title<input name="home_video_title" maxlength="140" value="${esc(siteContent.home_video_title || '')}" placeholder="About the National ICT Intelligence System"></label>
       <label>Video caption (optional)<textarea name="home_video_caption" rows="2" maxlength="600">${esc(siteContent.home_video_caption || '')}</textarea></label>
       <label>Video playlist, one per line as <code>Title | YouTube link or /path.mp4</code>, or
         <code>Title | Channel | link</code> to credit a third-party channel (first line is the main player)
@@ -4044,7 +4439,7 @@ const adminVideoScript = `
 const apiDocsBody = `
   <p class="kicker">Open data programme</p>
   <h1>Public API · v1</h1>
-  <p class="lede-sm">Free JSON API over NICTD. No key required for public series; authenticated sessions automatically unlock deeper series permitted by their role.</p>
+  <p class="lede-sm">Free JSON API over NIIS. No key required for public series; authenticated sessions automatically unlock deeper series permitted by their role.</p>
   ${[
     ['GET /api/v1/indicators', 'List indicators visible at your access level, with catalogue metadata.', '{ "data": [ { "code": "internet_penetration", "name": "Internet penetration", "domain": "connectivity", "unit": "% of population", ... } ] }'],
     ['GET /api/v1/counties', 'List the 15 counties with population and area.', '{ "data": [ { "id": 11, "name": "Montserrado", "capital": "Bensonville", ... } ] }'],

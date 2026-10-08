@@ -40,7 +40,7 @@ async function start() {
   // ---- stage: one transparent canvas over the page, under the nav bar
   const canvas = document.createElement('canvas');
   canvas.className = 'robo-bird'; canvas.setAttribute('aria-hidden', 'true');
-  canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:80';
+  canvas.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100vh;height:100lvh;pointer-events:none;z-index:80';
   document.body.appendChild(canvas);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, SMALL.matches ? 2 : 1.5));
@@ -65,7 +65,11 @@ async function start() {
 
   let W = 1, H = 1, s = 0.01, birdPx = 80;
   function resize() {
-    W = innerWidth; H = innerHeight;
+    // the bird's size is fixed by the large viewport, so the phone's address bar coming and going
+    // never rescales it; only a real change (rotation, a resized window) does
+    const w = innerWidth, h = canvas.clientHeight || innerHeight;
+    if (w === W && Math.abs(h - H) < 2) { perches.forEach((p) => { p.letter = null; }); return; }
+    W = w; H = h;
     renderer.setSize(W, H, false); camera.aspect = W / H; camera.updateProjectionMatrix();
     s = (2 * D * Math.tan((FOV * Math.PI) / 360)) / H;  // world units per pixel at the page plane
     birdPx = SMALL.matches ? clamp(W * 0.135, 46, 58) : clamp(H * 0.095, 66, 92);
@@ -614,8 +618,7 @@ async function start() {
     worm.object.visible = wormOn;
     if (wormOn) { worm.object.position.copy(toWorld(wh.x, wh.y)); worm.setGround(worm.object.position.y); }
     frameN++;
-    const still = state === S.PERCHED && now - lastScroll > 0.4 && busyT <= 0 && !ep && bird.timeInMode > 1.2;
-    render(((draw && root.visible) || wormOn) && (!SMALL.matches || !still || frameN % 2 === 0));
+    render((draw && root.visible) || wormOn);
   }
   function render(draw) {
     if (draw) { renderer.render(scene, camera); rendered = true; }

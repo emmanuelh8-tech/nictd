@@ -7,6 +7,13 @@
    near-white #F5F7FB (background) · dark navy body text.
    Display: Besley (a Clarendon serif, the face of 19th-century public notices) ·
    UI, body and figures: Public Sans (a typeface made for government services) */
+/* Every number on the site in a seven-segment display face: DSEG7 Classic (SIL Open Font
+   Licence, keshikan), for the digits 0-9 only, first in every font stack below, so letters and
+   punctuation keep their own fonts. */
+@font-face { font-family: 'NIIS Digits'; src: url('https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Regular.woff2') format('woff2');
+  font-weight: 100 599; unicode-range: U+0030-0039; size-adjust: 88%; font-display: swap; ascent-override: 92%; }
+@font-face { font-family: 'NIIS Digits'; src: url('https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2') format('woff2');
+  font-weight: 600 900; unicode-range: U+0030-0039; size-adjust: 88%; font-display: swap; ascent-override: 92%; }
 :root {
   /* Liberian-flag identity: navy primary, blue accents, red CTAs, white surfaces. */
   --navy: #0B2C63;
@@ -31,8 +38,8 @@
   --green: #1C5BB8;
   --red: #C8102E;
   --nav-h: 3.75rem;
-  --serif: 'Besley', Georgia, serif;
-  --sans: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
+  --serif: 'NIIS Digits', 'Besley', Georgia, serif;
+  --sans: 'NIIS Digits', 'Public Sans', 'Segoe UI', system-ui, sans-serif;
   --radius: 10px;
   --radius-lg: 14px;
   --shadow: 0 1px 2px rgba(11,44,99,.06), 0 6px 18px rgba(11,44,99,.07);
@@ -4324,10 +4331,6 @@ html { -webkit-text-size-adjust: 100%; }
   transition: transform .9s cubic-bezier(.16,1,.3,1), opacity .7s ease, filter .8s ease; transition-delay: calc(var(--i, 0) * 75ms); }
 .hx.is-in .hw > span { opacity: 1; transform: none; filter: blur(0); }
 .hx-head h2.hx { position: relative; }
-.hx-head h2.hx::after { content: none; }
-.hx-head h2.hx::after { content: ''; position: absolute; left: 0; bottom: -.42rem; width: 2.6rem; height: 3px; border-radius: 3px; background: #C8102E;
-  transform: scaleX(0); transform-origin: left; transition: transform .9s cubic-bezier(.16,1,.3,1) .35s; }
-.hx-head.is-in h2.hx::after { transform: scaleX(1); }
 .hx-head > :not(h2) { opacity: 0; transform: translateY(10px); transition: opacity .6s ease .45s, transform .7s cubic-bezier(.16,1,.3,1) .45s; }
 .hx-head.is-in > :not(h2) { opacity: 1; transform: none; }
 .hx-block { opacity: 0; transform: translateY(28px) scale(.985); transition: opacity .8s ease .15s, transform 1s cubic-bezier(.16,1,.3,1) .15s; }
@@ -4339,7 +4342,7 @@ html { -webkit-text-size-adjust: 100%; }
 .sec-head-dh .more .icn { transition: transform .3s cubic-bezier(.16,1,.3,1); }
 .sec-head-dh .more:hover .icn { transform: translateX(4px); }
 @media (prefers-reduced-motion: reduce) {
-  .hx .hw > span, .hx-head > :not(h2), .hx-block, .hx-head h2.hx::after { transition: none; opacity: 1; transform: none; filter: none; }
+  .hx .hw > span, .hx-head > :not(h2), .hx-block { transition: none; opacity: 1; transform: none; filter: none; }
 }
 
 /* ==========================================================================
@@ -5085,7 +5088,7 @@ html:has(.ab-hero) { background-image: url("/img/brand/mask-pattern-light.webp")
    Category labels ("Report", "Sector report", "Assessment"...) are set in Marvin Visions as plain
    text, with no pill behind them; bylines and dates ("by ... · Jun 2025") in Kazimir. Both are
    licensed faces loaded from public/fonts when present (views.js); Righteous and Spectral stand in. */
-:root { --font-label: 'Marvin Visions', 'Righteous', 'Public Sans', system-ui, sans-serif; --font-byline: 'Kazimir', 'Spectral', Georgia, serif; }
+:root { --font-label: 'NIIS Digits', 'Marvin Visions', 'Righteous', 'Public Sans', system-ui, sans-serif; --font-byline: 'NIIS Digits', 'Kazimir', 'Spectral', Georgia, serif; }
 .tag, .rx-tag, .rp-tag, .rx-tl-tag { font-family: var(--font-label); font-weight: 400; letter-spacing: .07em; }
 .tag { padding: 0; border-radius: 0; background: none; }
 .fp-meta, .rc-meta, .rx-card-meta, .rp-meta, .rp-authors, .authors, .media-meta { font-family: var(--font-byline); font-size: 1.04em; }
@@ -5134,4 +5137,99 @@ html:has(.ab-hero) { background-image: url("/img/brand/mask-pattern-light.webp")
   84% { transform: translateY(-.03em) rotate(-1.5deg); }
   93% { transform: translateY(.01em) rotate(.4deg); }
   100% { transform: none; }
+}
+
+/* the hero quotes' source line ("State House, Nairobi · president.go.ke") in Righteous */
+.hs-qmeta { font-family: 'NIIS Digits', 'Righteous', var(--sans); letter-spacing: .03em; }
+
+/* ============ PROGRAMS ============ */
+.pg { padding: 2.6rem 0 4.5rem; }
+.pg-sec + .pg-sec { margin-top: 4.2rem; }
+.pg-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); align-items: end; gap: 1rem 3rem; margin-bottom: 1.6rem; }
+.pg-head h2 { margin: .55rem 0 0; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem); line-height: 1.1; letter-spacing: -.01em; }
+.pg-head > p { color: var(--muted); }
+.pg-note { margin-top: 1rem; font-size: .8rem; color: var(--faint); }
+.pg-stages { display: grid; gap: .5rem; margin: 1.4rem 0 0; padding: 0; list-style: none; }
+.pg-stages li { display: grid; grid-template-columns: 3rem minmax(0, 1.4fr) minmax(0, 1fr) 9.5rem; align-items: center; gap: 1rem; padding: .85rem 1.1rem; background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  opacity: 0; transform: translateY(10px); transition: opacity .5s calc(var(--k) * 60ms), transform .5s var(--ui-ease) calc(var(--k) * 60ms); }
+.pg-stages.is-in li { opacity: 1; transform: none; }
+.pg-stage-n { font: 700 1.5rem/1 var(--sans); color: var(--gold); }
+.pg-stage-t { font-weight: 650; color: var(--navy); }
+.pg-stage-bar { height: 8px; overflow: hidden; border-radius: 999px; background: var(--line-soft); }
+.pg-stage-bar i { display: block; width: calc(var(--w) * 100%); height: 100%; border-radius: inherit; background: var(--navy-600); transform: scaleX(0); transform-origin: left; transition: transform .9s var(--ui-ease) calc(var(--k) * 60ms + .2s); }
+.pg-stages.is-in .pg-stage-bar i { transform: scaleX(1); }
+.pg-stage-d { font-size: .86rem; color: var(--muted); text-align: right; }
+.pg-stage-d b { font-size: 1.05rem; color: var(--navy); }
+.pg-events { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin: 0; padding: 0; list-style: none; }
+.pg-event { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr); background: #fff; border: 1px solid #111; border-radius: 14px; overflow: hidden;
+  opacity: 0; transform: translateY(12px); transition: opacity .5s calc(var(--k) * 60ms), transform .5s var(--ui-ease) calc(var(--k) * 60ms), box-shadow .3s; }
+.pg-events.is-in .pg-event { opacity: 1; transform: none; }
+.pg-event:hover { box-shadow: var(--shadow-lg); }
+.pg-date { display: grid; align-content: center; justify-items: center; gap: .35rem; padding: 1rem .5rem; background: #0E1420; color: #fff; text-align: center; }
+.pg-date b { font: 700 2.1rem/1 var(--sans); color: #FF4D5E; text-shadow: 0 0 12px rgba(255,77,94,.45); }
+.pg-date span { font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #C3C9D2; }
+.pg-event-in { display: grid; gap: .35rem; align-content: start; padding: 1rem 1.15rem 1.1rem; }
+.pg-event-in h3 { margin: 0; font-size: 1.12rem; }
+.pg-event-in p { font-size: .88rem; color: var(--muted); }
+.pg-where { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-top: .2rem; font-size: .8rem !important; color: var(--navy) !important; font-weight: 600; }
+.pg-dot { color: var(--faint); }
+.pg-train { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .9rem; }
+.pg-course { display: flex; flex-direction: column; gap: .55rem; padding: 1.2rem 1.25rem 1.3rem; background: #fff; border: 1px solid var(--line); border-radius: 16px;
+  opacity: 0; transform: translateY(12px); transition: opacity .5s calc(var(--k) * 60ms), transform .5s var(--ui-ease) calc(var(--k) * 60ms), box-shadow .3s, border-color .3s; }
+.pg-train.is-in .pg-course { opacity: 1; transform: none; }
+.pg-course:hover { border-color: #464B53; box-shadow: var(--shadow-lg); }
+.pg-course-top { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.pg-course h3 { margin: 0; font-size: 1.15rem; }
+.pg-course > p { font-size: .9rem; color: var(--muted); }
+.pg-facts { display: grid; gap: .35rem; margin: .3rem 0 .4rem; padding: .7rem 0 0; border-top: 1px solid var(--line-soft); }
+.pg-facts > div { display: grid; grid-template-columns: 4.4rem minmax(0, 1fr); gap: .5rem; font-size: .86rem; }
+.pg-facts dt { font-size: .66rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); padding-top: .15rem; }
+.pg-facts dd { margin: 0; color: var(--ink); }
+.pg-facts dd b { font-size: 1rem; color: var(--navy); }
+.pg-course .ui-btn { align-self: flex-start; margin-top: auto; }
+.pg-status { padding: .2rem .55rem; border-radius: 999px; font-size: .68rem; font-weight: 700; white-space: nowrap; }
+.pg-status.is-open { background: #E3F4E8; color: #1E6B3A; }
+.pg-status.is-opening-soon { background: #EEF1F5; color: #464B53; }
+.pg-status.is-by-invitation { background: var(--gold-soft); color: var(--gold); }
+.pg-films { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; }
+.pg-film { display: flex; flex-direction: column; gap: .35rem; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.pg-film-img { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 10; overflow: hidden; border: 1px solid #111; border-radius: 14px; background-size: cover; background-position: center; transition: transform .4s var(--ui-ease); }
+.pg-film:hover .pg-film-img { transform: translateY(-3px); }
+.pg-play { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 999px; background: rgba(255,255,255,.92); box-shadow: 0 8px 24px rgba(0,0,0,.3); transition: transform .3s var(--ui-spring); }
+.pg-play svg { width: 22px; height: 22px; margin-left: 3px; fill: #0E1420; }
+.pg-film:hover .pg-play { transform: scale(1.1); }
+.pg-film-t { margin-top: .3rem; font: 600 1rem/1.25 var(--serif); color: var(--navy); }
+.pg-film-b { font-size: .82rem; color: var(--muted); }
+.pg-film:focus-visible .pg-film-img, .pg-photo:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.pg-photos { columns: 4 220px; column-gap: .8rem; }
+.pg-photo { display: block; width: 100%; margin: 0 0 .8rem; padding: 0; overflow: hidden; border: 0; border-radius: 12px; background: #EEF1F5; cursor: zoom-in; break-inside: avoid; }
+.pg-photo img { display: block; width: 100%; height: auto; transition: transform .6s var(--ui-ease), filter .4s; }
+.pg-photo:hover img { transform: scale(1.04); filter: saturate(1.1); }
+/* the viewer */
+.lb-wrap { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1rem; }
+.lb-wrap[hidden] { display: none; }
+.lb-scrim { position: absolute; inset: 0; background: rgba(8,10,14,.86); opacity: 0; transition: opacity .25s; }
+.lb { position: relative; display: flex; flex-direction: column; gap: .8rem; width: min(1100px, 100%); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); outline: none; opacity: 0; transform: scale(.97); transition: opacity .3s, transform .35s var(--ui-ease); }
+.lb-wrap.is-open .lb-scrim { opacity: 1; }
+.lb-wrap.is-open .lb { opacity: 1; transform: none; }
+.lb-stage { display: grid; place-items: center; min-height: 0; flex: 1; }
+.lb-stage.is-swap { animation: icSwap .35s var(--ui-ease); }
+.lb-stage img, .lb-stage video { display: block; max-width: 100%; max-height: calc(100dvh - 9rem); border-radius: 12px; background: #000; }
+.lb-foot { display: flex; align-items: center; justify-content: center; gap: 1rem; }
+.lb-cap { max-width: 46rem; text-align: center; font-size: .9rem; color: #E3E6EA; }
+.lb-x { position: absolute; top: -.4rem; right: -.4rem; z-index: 2; width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 999px; background: #fff; color: #0E1420; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+@media (max-width: 1000px) { .pg-train { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pg-films { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .pg-head { grid-template-columns: minmax(0, 1fr); }
+  .pg-stages li { grid-template-columns: 2.2rem minmax(0, 1fr); row-gap: .4rem; }
+  .pg-stage-bar { grid-column: 2; }
+  .pg-stage-d { grid-column: 2; text-align: left; }
+  .pg-events, .pg-train { grid-template-columns: minmax(0, 1fr); }
+  .pg-event { grid-template-columns: 5rem minmax(0, 1fr); }
+  .pg-date b { font-size: 1.7rem; }
+  .pg-photos { columns: 2; }
+  .lb-x { top: .3rem; right: .3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pg-stages li, .pg-stage-bar i, .pg-event, .pg-course { transition: none !important; opacity: 1; transform: none; }
 }

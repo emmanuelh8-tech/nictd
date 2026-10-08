@@ -67,6 +67,7 @@ const ICONS = {
   rotate: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>',
   login: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>',
   check: '<polyline points="4.5 12.5 9.5 17.5 19.5 7"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   chevrons: '<polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/>',
   eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
   eyeoff: '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>',
@@ -239,7 +240,7 @@ function mainNav(active, q) {
     ['/reports', 'ICT Reports', 'chart', null, 'Reports'],
     ['/research', 'Research', 'doc', [['/research/submit', 'Submit Paper', 'plus']], 'Research'],
     ['/partners', 'Our Partners', 'globe', null, 'Partners'],
-    ['/careers', 'Careers', 'briefcase', null, 'Careers'],
+    ['/careers', 'Careers', 'briefcase', [['/careers/programs', 'Programs', 'calendar']], 'Careers'],
     ['/about', 'About', 'info', [['/about/team', 'Our Team', 'users'], ['/about/team#patrons', 'ICT Patrons', 'sparkle'], ['/about/team#talent', 'ICT Talent Pool', 'code']], 'About'],
   ];
   const isActive = (href, sub) => active === href || (sub || []).some(([h]) => active === h);
@@ -3857,6 +3858,175 @@ exports.team = (ctx) => {
   </div>
   <template id="pmSocial">${socialLinks('', true)}</template>
   <script>window.__NICTD_PAGE__='team';window.__PEOPLE__=${JSON.stringify(people).replace(/</g, '\\u003c')};</script>`,
+  });
+};
+
+// ============ PROGRAMS (/careers/programs) ============
+// The programme, what is coming up, trainings and bootcamps, and the work on film and in pictures.
+// The programme's numbers and stages are the data mining phase design (docs/DATA-MINING-PHASE.md).
+// The field trainings are the ones Careers describes; the events, the other bootcamps and their dates
+// are a sample schedule (the owner asked for the page before the calendar exists) and the page says so.
+// The films and photographs are the site's own media.
+const PROGRAMME_STAGES = [
+  ['Design, sampling frame and enumeration-area selection', 2, 'weeks'],
+  ['Questionnaires built and programmed for the tablets', 2, 'weeks, alongside stage 1'],
+  ['Recruitment and training of the field teams', 1, 'week'],
+  ['Pilot in two counties', 3, 'days'],
+  ['Main fieldwork, all 15 counties at once', 3, 'weeks'],
+  ['Cleaning, validation and weighting', 2, 'weeks'],
+  ['County estimates and upload to NIIS', 1, 'week'],
+];
+const PROGRAM_EVENTS = [
+  { d: 22, m: 'Oct', y: 2026, kind: 'Webinar', title: 'NIIS Data Explorer walkthrough', place: 'Online', time: '10:00 GMT',
+    body: 'A live tour of the Data Explorer, the Indicator Catalogue and the API, for researchers and journalists.' },
+  { d: 5, m: 'Nov', y: 2026, kind: 'Training', title: 'Enumerator training, Bong County wave', place: 'Gbarnga', time: 'Five days',
+    body: 'Paid training on the tablet questionnaire for the Bong field team, before the county wave opens.' },
+  { d: 18, m: 'Nov', y: 2026, kind: 'Workshop', title: 'Data journalism workshop', place: 'Monrovia', time: 'Two days',
+    body: 'Finding, checking and telling stories with Liberia’s ICT figures, with the people who collect them.' },
+  { d: 3, m: 'Dec', y: 2026, kind: 'Bootcamp', title: 'Girls in ICT coding day', place: 'Kakata', time: '09:00 to 16:00',
+    body: 'A first day of coding for secondary-school girls, with mentors from the NIIS team and its patrons.' },
+  { d: 14, m: 'Jan', y: 2027, kind: 'Forum', title: 'County data validation forum', place: 'Ganta', time: 'One day',
+    body: 'County officials review the first estimates for their counties before they are published.' },
+  { d: 6, m: 'Mar', y: 2027, kind: 'Community', title: 'Open Data Day Monrovia', place: 'Monrovia', time: 'All day',
+    body: 'Open talks and a hands-on hack session on Liberia’s public ICT data.' },
+];
+const PROGRAM_TRAININGS = [
+  { title: 'Field enumerator training', kind: 'Training', len: 1, unit: 'week', where: 'In each county, before its wave', who: 'New field enumerators', status: 'Open', href: '/careers',
+    body: 'Paid training on the tablet questionnaire, sampling and interview practice. No survey experience needed.' },
+  { title: 'Field supervisor training', kind: 'Training', len: 1, unit: 'week', where: 'In each county, before its wave', who: 'Field supervisors', status: 'Open', href: '/careers',
+    body: 'Leading an enumerator team: spot checks, back-checks and clearing the daily uploads.' },
+  { title: 'Data quality bootcamp', kind: 'Bootcamp', len: 2, unit: 'weeks', where: 'Monrovia', who: 'Graduates in statistics or IT', status: 'Opening soon',
+    body: 'Validation rules, cleaning and outlier review on real survey data, alongside the NIIS data team.' },
+  { title: 'GIS and mapping bootcamp', kind: 'Bootcamp', len: 1, unit: 'week', where: 'Monrovia', who: 'Geography and IT students', status: 'Opening soon',
+    body: 'Enumeration-area frames, geocoding and county maps with open tools.' },
+  { title: 'Data journalism workshop', kind: 'Workshop', len: 2, unit: 'days', where: 'Monrovia', who: 'Reporters and editors', status: 'By invitation',
+    body: 'Using the Data Explorer and the API to find and check stories.' },
+  { title: 'Young coders bootcamp', kind: 'Bootcamp', len: 3, unit: 'weeks', where: 'Kakata and Gbarnga', who: 'School leavers', status: 'Opening soon',
+    body: 'Web basics, data and a first app, in three weeks of evenings and Saturdays.' },
+];
+const PROGRAM_FILMS = [
+  { src: '/media/about-hero-720.mp4', poster: '/media/about-hero-poster.jpg', title: 'Into the counties', body: 'Field teams on the road to the households they survey.' },
+  { src: '/media/careers-hero-720.mp4', poster: '/media/careers-hero-poster.jpg', title: 'The network at dusk', body: 'The masts that carry Liberia’s connections, as the city lights up.' },
+  { src: '/media/mission.mp4', poster: '/media/mission-poster.jpg', title: 'Monrovia from above', body: 'The capital’s streets, where the first data waves begin.' },
+  { src: '/media/research-hero.mp4', poster: '/media/research-hero-poster.jpg', title: 'Where research happens', body: 'A university campus from the air.' },
+];
+const PROGRAM_PHOTOS = [
+  ['/img/about/field-tall.jpg', 'A field enumerator recording survey answers on a tablet in a village.'],
+  ['/img/about/analysts.jpg', 'Analysts working at computers in an office.'],
+  ['/img/about/field.jpg', 'Two survey workers walking a dirt road toward a village.'],
+  ['/img/about/colleagues.jpg', 'Two young colleagues talking on the steps outside an office.'],
+  ['/img/about/sovereignty.jpg', 'A corridor of server racks in a data centre.'],
+  ['/img/about/man-phone.jpg', 'A man checking his phone on a busy Monrovia street.'],
+  ['/img/about/wwd-junction.jpg', 'A Monrovia roundabout from the air.'],
+  ['/img/about/analyst-sq.jpg', 'An analyst reviewing charts at her desk.'],
+  ['/img/about/wwd-cruiser.jpg', 'A field vehicle being loaded for the road.'],
+  ['/img/about/hero.jpg', 'A telecom mast against the evening sky.'],
+];
+exports.programs = (ctx) => {
+  const maxLen = Math.max(...PROGRAMME_STAGES.map(([, n, u]) => (u.startsWith('day') ? n / 7 : n)));
+  const status = (s) => `<span class="pg-status is-${s.toLowerCase().replace(/\s+/g, '-')}">${esc(s)}</span>`;
+  return publicLayout(ctx, {
+    title: 'Programs', active: '/careers/programs', body: `
+  ${pageHeader('programs', 'Programs', 'The NIIS programme, its trainings and bootcamps, what is coming up, and the work on film and in pictures.')}
+  <div class="pg">
+    <section class="pg-sec wrap" aria-labelledby="pg-prog-h">
+      <div class="pg-head">
+        <div>${eyebrow('The programme')}<h2 id="pg-prog-h" data-rise-head>The NIIS data mining phase</h2></div>
+        <p>Field teams in all 15 counties collect the household, school and price data that NIIS publishes. The counties run at the same time, so the whole cycle, from design to upload, takes about eleven weeks.</p>
+      </div>
+      <dl class="ui-stats">
+        <div><dt>Household interviews</dt><dd data-count="9980">9,980</dd></div>
+        <div><dt>Enumeration areas</dt><dd data-count="574">574</dd></div>
+        <div><dt>Field staff</dt><dd data-count="197">197</dd></div>
+        <div><dt>Weeks, design to upload</dt><dd data-count="11">11</dd></div>
+      </dl>
+      <ol class="pg-stages" data-rise-block>
+        ${PROGRAMME_STAGES.map(([what, n, unit], i) => `<li style="--k:${i};--w:${((unit.startsWith('day') ? n / 7 : n) / maxLen).toFixed(3)}">
+          <span class="pg-stage-n">${i + 1}</span>
+          <span class="pg-stage-t">${esc(what)}</span>
+          <span class="pg-stage-bar" aria-hidden="true"><i></i></span>
+          <span class="pg-stage-d"><b>${n}</b> ${esc(unit)}</span>
+        </li>`).join('')}
+      </ol>
+    </section>
+
+    <section class="pg-sec wrap" aria-labelledby="pg-ev-h">
+      <div class="pg-head">
+        <div>${eyebrow('Coming up')}<h2 id="pg-ev-h" data-rise-head>Upcoming events</h2></div>
+        <p>Trainings, workshops and open days across the counties.</p>
+      </div>
+      <ol class="pg-events">
+        ${PROGRAM_EVENTS.map((e, i) => `<li class="pg-event" style="--k:${i}">
+          <div class="pg-date" aria-label="${e.d} ${e.m} ${e.y}"><b>${String(e.d).padStart(2, '0')}</b><span>${esc(e.m)} ${e.y}</span></div>
+          <div class="pg-event-in">
+            <span class="tag">${esc(e.kind)}</span>
+            <h3>${esc(e.title)}</h3>
+            <p>${esc(e.body)}</p>
+            <p class="pg-where">${icon('pin')}<span>${esc(e.place)}</span><span class="pg-dot" aria-hidden="true">·</span><span>${esc(e.time)}</span></p>
+          </div>
+        </li>`).join('')}
+      </ol>
+      <p class="pg-note">Sample schedule: the events and their dates are placeholders until the programme calendar is confirmed.</p>
+    </section>
+
+    <section class="pg-sec wrap" aria-labelledby="pg-tr-h">
+      <div class="pg-head">
+        <div>${eyebrow('Learn with us')}<h2 id="pg-tr-h" data-rise-head>Trainings and bootcamps</h2></div>
+        <p>Field training opens with each county wave. The bootcamps grow the people who will run the system.</p>
+      </div>
+      <div class="pg-train">
+        ${PROGRAM_TRAININGS.map((t, i) => `<article class="pg-course" style="--k:${i}">
+          <div class="pg-course-top"><span class="tag">${esc(t.kind)}</span>${status(t.status)}</div>
+          <h3>${esc(t.title)}</h3>
+          <p>${esc(t.body)}</p>
+          <dl class="pg-facts">
+            <div><dt>Length</dt><dd><b>${t.len}</b> ${esc(t.unit)}</dd></div>
+            <div><dt>Where</dt><dd>${esc(t.where)}</dd></div>
+            <div><dt>For</dt><dd>${esc(t.who)}</dd></div>
+          </dl>
+          ${t.href ? `<a class="ui-btn" href="${t.href}">See the field roles ${icon('arrow')}</a>` : ''}
+        </article>`).join('')}
+      </div>
+      <p class="pg-note">The bootcamps and workshops are planned; their details are placeholders until each one opens.</p>
+    </section>
+
+    <section class="pg-sec wrap" aria-labelledby="pg-vid-h">
+      <div class="pg-head">
+        <div>${eyebrow('Watch')}<h2 id="pg-vid-h" data-rise-head>Videos</h2></div>
+        <p>The programme on film.</p>
+      </div>
+      <div class="pg-films">
+        ${PROGRAM_FILMS.map((f, i) => `<button type="button" class="pg-film" data-lb="film" data-i="${i}" aria-label="Play: ${esc(f.title)}">
+          <span class="pg-film-img" style="background-image:url('${f.poster}')"><i class="pg-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></i></span>
+          <span class="pg-film-t">${esc(f.title)}</span>
+          <span class="pg-film-b">${esc(f.body)}</span>
+        </button>`).join('')}
+      </div>
+    </section>
+
+    <section class="pg-sec wrap" aria-labelledby="pg-img-h">
+      <div class="pg-head">
+        <div>${eyebrow('In pictures')}<h2 id="pg-img-h" data-rise-head>Images</h2></div>
+        <p>The field, the data team and the network.</p>
+      </div>
+      <div class="pg-photos">
+        ${PROGRAM_PHOTOS.map(([src, alt], i) => `<button type="button" class="pg-photo" data-lb="photo" data-i="${i}" aria-label="View: ${esc(alt)}"><img src="${src}" alt="${esc(alt)}" loading="lazy" decoding="async"></button>`).join('')}
+      </div>
+    </section>
+  </div>
+  <div class="lb-wrap" id="lbWrap" hidden>
+    <div class="lb-scrim" data-lb-close></div>
+    <div class="lb" role="dialog" aria-modal="true" aria-label="Viewer" tabindex="-1">
+      <button type="button" class="lb-x" data-lb-close aria-label="Close">${icon('x')}</button>
+      <div class="lb-stage"></div>
+      <div class="lb-foot">
+        <button type="button" class="skip" data-lb-step="-1" aria-label="Previous">${icon('chevrons', 'icn ui-flip')}</button>
+        <p class="lb-cap"></p>
+        <button type="button" class="skip" data-lb-step="1" aria-label="Next">${icon('chevrons')}</button>
+      </div>
+    </div>
+  </div>
+  <script>window.__NICTD_PAGE__='programs';window.__PROGRAM_MEDIA__=${JSON.stringify({ film: PROGRAM_FILMS, photo: PROGRAM_PHOTOS.map(([src, alt]) => ({ src, alt })) })};</script>`,
   });
 };
 

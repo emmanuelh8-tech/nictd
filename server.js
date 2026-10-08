@@ -618,6 +618,10 @@ async function handler(req, res) {
         logEvent('page_view', p, user);
         return send(res, 200, views.reports(ctx, { indicators: listIndicators(user), domainLabels: DOMAIN_LABELS }));
       }
+      if (p === '/careers/programs') {
+        logEvent('page_view', p, user);
+        return send(res, 200, views.programs(ctx));
+      }
       if (p === '/careers') {
         logEvent('page_view', p, user);
         return send(res, 200, views.careers(ctx));

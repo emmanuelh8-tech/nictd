@@ -143,6 +143,7 @@ const COLLECTIONS = {
       { key: 'research', label: 'Research Papers', def: '/img/headers/header-4.jpeg' },
       { key: 'about', label: 'About', def: '/img/headers/header-1.jpeg' },
       { key: 'team', label: 'Our Team', def: '/img/about/colleagues.jpg' },
+      { key: 'programs', label: 'Programs', def: '/img/about/field.jpg' },
       { key: 'partners', label: 'Our Partners', def: '/img/headers/partners.jpg' },
       { key: 'login', label: 'Log In', def: '/img/headers/default.svg' },
     ],

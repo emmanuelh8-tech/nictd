@@ -945,8 +945,100 @@
   function initTeam() {
     var root = qs('.tm');
     if (!root) return;
-    initCounters(root);
-    initInView('.tm-inst-grid, .tm-chart, .tm-grid');
+    initInView('.tc-panel, .tm-grid');
+    var track = qs('#tcTrack');
+    if (!track) return;
+    // two rows of four, filled column by column: cards 1 and 2 share the first column
+    var cards = qsa('.tc-card', track), atEl = qs('[data-tc-at]'), bar = qs('.tc-progress i');
+    var prev = qs('[data-tc="-1"]'), next = qs('[data-tc="1"]');
+    var detail = qs('#tcDetail'), compact = matchMedia('(max-width: 760px)');
+    var ROWS = 2;
+    function stepW() {
+      var x0 = cards[0].offsetLeft;
+      for (var i = 1; i < cards.length; i++) if (cards[i].offsetLeft > x0 + 1) return cards[i].offsetLeft - x0;
+      return track.clientWidth;
+    }
+    function perView() { return Math.max(1, Math.round(track.clientWidth / stepW())); }
+    // the counter (how many members have come into view), the progress line and the arrows follow the scroll
+    function sync() {
+      var max = track.scrollWidth - track.clientWidth, x = track.scrollLeft, view = track.clientWidth / track.scrollWidth;
+      var col = Math.round(x / stepW());
+      atEl.textContent = String(Math.min(cards.length, (col + perView()) * ROWS)).padStart(2, '0');
+      bar.style.width = (view * 100) + '%';
+      bar.style.transform = 'translateX(' + (max > 0 ? (x / max) * (1 / view - 1) * 100 : 0) + '%)';
+      prev.disabled = x <= 2; next.disabled = x >= max - 2;
+    }
+    var queued = false;
+    track.addEventListener('scroll', function () {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () { queued = false; sync(); });
+    }, { passive: true });
+    addEventListener('resize', sync);
+    [prev, next].forEach(function (b) {
+      b.addEventListener('click', function () { track.scrollBy({ left: Number(b.dataset.tc) * stepW() * perView(), behavior: REDUCE ? 'auto' : 'smooth' }); });
+    });
+    // fingers get the browser's own momentum and snapping; a mouse can drag the row too
+    var drag = null, moved = false, unsnap = 0;
+    track.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button) return;
+      drag = { x: e.clientX, s: track.scrollLeft }; moved = false;
+    });
+    addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var dx = e.clientX - drag.x;
+      if (!moved && Math.abs(dx) < 5) return;
+      if (!moved) { moved = true; clearTimeout(unsnap); track.classList.add('is-drag'); }
+      track.scrollLeft = drag.s - dx;
+    });
+    addEventListener('pointerup', function () {
+      if (!drag) return;
+      drag = null;
+      if (!moved) return;
+      var w = stepW();
+      track.scrollTo({ left: Math.round(track.scrollLeft / w) * w, behavior: REDUCE ? 'auto' : 'smooth' });
+      unsnap = setTimeout(function () { track.classList.remove('is-drag'); }, 450);
+    });
+    // a card too small to hold its bio (phones) opens it in the panel under the rows instead
+    function showDetail(c) {
+      if (!c) { detail.hidden = true; return; }
+      qs('img', detail).src = qs('.tc-photo', c).src;
+      qs('.tc-name', detail).textContent = qs('.tc-name', c).textContent;
+      qs('.tc-role', detail).textContent = qs('.tc-role', c).textContent;
+      qs('p', detail).textContent = qs('.tc-bio p', c).textContent;
+      detail.hidden = false;
+      if (!REDUCE) { detail.classList.remove('is-in'); void detail.offsetWidth; detail.classList.add('is-in'); }
+    }
+    function toggle(c) {
+      var open = !c.classList.contains('is-open');
+      cards.forEach(function (o) { o.classList.remove('is-open'); });
+      c.classList.toggle('is-open', open);
+      if (compact.matches) showDetail(open ? c : null);
+    }
+    qs('.tc-detail-x', detail).addEventListener('click', function () {
+      cards.forEach(function (o) { o.classList.remove('is-open'); });
+      showDetail(null);
+    });
+    compact.addEventListener('change', function () { if (!compact.matches) showDetail(null); });
+    track.addEventListener('click', function (e) {
+      if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; return; }
+      if (e.target.closest('.tc-social a')) { e.preventDefault(); return; }
+      // on a touch screen, or a phone-sized window, a tap opens a card (a mouse gets it on hover)
+      var c = e.target.closest('.tc-card');
+      if (c && (compact.matches || !matchMedia('(hover: hover)').matches)) toggle(c);
+    }, true);
+    track.addEventListener('keydown', function (e) {
+      var c = e.target.closest('.tc-card');
+      if (!c) return;
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(c); return; }
+      var by = { ArrowRight: ROWS, ArrowLeft: -ROWS, ArrowDown: 1, ArrowUp: -1 }[e.key];
+      var nx = by && cards[cards.indexOf(c) + by];
+      if (!nx) return;
+      e.preventDefault();
+      nx.focus({ preventScroll: true });
+      nx.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: REDUCE ? 'auto' : 'smooth' });
+    });
+    sync();
   }
 
   // ============================================================
@@ -1430,4 +1522,15 @@
     });
   }, { threshold: 0.25, rootMargin: '0px 0px -6% 0px' });
   heads.concat(blocks).forEach(function (el) { io.observe(el); });
+})();
+
+// ---------- the close above the footer: the name rises into view, as it does on Careers and About ----------
+(function () {
+  var o = document.querySelector('.site-outro');
+  if (!o || !('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  o.classList.add('is-armed');
+  var io = new IntersectionObserver(function (es) {
+    if (es[0].isIntersecting) { o.classList.add('is-in'); io.disconnect(); }
+  }, { threshold: 0.35 });
+  io.observe(o);
 })();

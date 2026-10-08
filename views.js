@@ -255,7 +255,7 @@ function mainNav(active, q) {
         </li>`;
   };
   return `<nav class="gov-nav" aria-label="Main"><div class="nav-shell">
-    <a class="gov-wordmark nav-mapblock" href="/" aria-label="NIIS home">${liberiaFlag(46)}<span class="nav-brand" aria-hidden="true">NIIS</span></a>
+    <a class="gov-wordmark nav-mapblock" href="/" aria-label="NIIS home"><img class="nav-logo" src="/img/brand/niis-mark.png?v=${ASSET_V}" alt="" width="328" height="132" decoding="async"></a>
     <form class="nav-search" action="/indicators" method="get" role="search">
       <input type="search" name="q" aria-label="Search indicators" autocomplete="off" value="${esc(q || '')}">
       <button type="button" class="nav-search-x" aria-label="Clear the search"${q ? '' : ' hidden'}>${icon('x')}</button>
@@ -321,6 +321,9 @@ const ASSET_V = Date.now().toString(36);
 // the robot turaco, which decides for itself whether this page and this screen get it.
 const SITE_HEAD = `<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <script type="module" src="/assets/bird.js?v=${ASSET_V}"></script>`;
+// The close that Careers and About end on (their cs-outro), for every other public page: the name,
+// large, rising out of the page into the footer's navy. app.js lifts it in when it comes into view.
+const SITE_OUTRO = `<section class="site-outro" aria-hidden="true"><div class="site-word">NIIS</div></section>`;
 function publicLayout(ctx, { title, active = '', body, extraHead = '', q = '' }) {
   return `<!DOCTYPE html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#ffffff">
@@ -334,6 +337,7 @@ ${extraHead}
 </head><body>
 ${mainNav(active, q)}
 <main>${body}</main>
+${/cs-outro/.test(body) ? '' : SITE_OUTRO}
 ${footerDh()}
 <script src="/assets/app.js?v=${ASSET_V}" defer></script></body></html>`;
 }
@@ -1131,7 +1135,7 @@ const homeVideoScript = `
 })();
 `;
 
-// Liberia ICT News & Updates: a squeeze carousel. One update holds the open panel and the rest narrow
+// ICT News & Updates: a squeeze carousel. One update holds the open panel and the rest narrow
 // into slats down the right; opening one widens it and slides the strip along, while the copy
 // and button underneath cross-fade to match. Rendered complete on the server (first panel
 // open, its copy showing), then latestUpdatesScript below takes over the motion.
@@ -1199,7 +1203,7 @@ function latestUpdates(headlines) {
   const data = JSON.stringify(slides.map(({ title, img, cat, date, href }) => ({ title, img, cat, date, href }))).replace(/</g, '\\u003c');
   return `<section class="wrap section reveal" id="latestUpdates" style="padding-top:0">
     <div class="sec-head-dh">
-      <h2 id="sqTrendsTitle" data-perch>Liberia ICT News &amp; Updates</h2>
+      <h2 id="sqTrendsTitle" data-perch>ICT News &amp; Updates</h2>
       <div class="sq-nav">
         <a class="more" href="/updates">All updates ${icon('arrow')}</a>
         ${n > 1 ? `<button type="button" class="sq-arrow" data-sq-step="-1" aria-label="Previous update">${SQ_BACK}</button><button type="button" class="sq-arrow" data-sq-step="1" aria-label="Next update">${SQ_NEXT}</button>` : ''}
@@ -1278,23 +1282,28 @@ const latestUpdatesScript = `
       cards=keep; column=0; slid=0; paint();
     });
   }
-  function step(by,auto){
+  // the finger's offset while it drags the strip (px); released together with the step it commits
+  function setDrag(px){ strip.style.setProperty('--sq-drag',px+'px'); }
+  function release(){ root.classList.remove('is-dragging'); setDrag(0); }
+  // quick: a swipe plays out in about half the time the autoplay takes
+  function step(by,auto,quick){
     if(!by) return;
     settle();
     if(panel) panel.setAttribute('aria-live',auto?'off':'polite');
-    var ms=reduce.matches?0:1000, k;
+    root.classList.toggle('is-quick',!!quick);
+    var ms=reduce.matches?0:quick?560:1000, k;
     if(by>0){
       instant(function(){
         for(k=0;k<by;k++){ var s=wrap(cards[cards.length-1].slide+1), el=make(s); strip.appendChild(el); cards.push({el:el,slide:s}); }
         paint();
       });
-      column-=by; slid-=by; paint();
+      release(); column-=by; slid-=by; paint();
     }else{
       instant(function(){
         for(k=0;k<-by;k++){ var s=wrap(cards[0].slide-1), el=make(s); strip.insertBefore(el,strip.firstChild); cards.unshift({el:el,slide:s}); }
         column=by; slid=by; paint();
       });
-      column=0; slid=0; paint();
+      release(); column=0; slid=0; paint();
     }
     syncCopy();
     pending={ forward:by>0, t:setTimeout(settle, ms+40) };
@@ -1331,21 +1340,39 @@ const latestUpdatesScript = `
     if(reduce.matches||hovering||focused||!seen||document.hidden) return;
     timer=setTimeout(function(){ step(1,true); },2000);
   }
-  // a finger swipes it: left for the next update, right for the one before
-  var sx=null, sy=0, swiping=false, eatClick=false;
-  root.addEventListener('pointerdown',function(e){ if(e.pointerType==='mouse') return; sx=e.clientX; sy=e.clientY; swiping=false; });
+  // a finger swipes it: left for the next update, right for the one before. The strip follows the
+  // finger while it drags; a short drag or a flick is enough to send it on, and anything less
+  // springs back. A mostly vertical move is left to the page, so scrolling past still works.
+  var sx=null, sy=0, swiping=false, eatClick=false, trail=[];
+  root.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='mouse'||e.button) return;
+    sx=e.clientX; sy=e.clientY; swiping=false; trail=[[e.clientX,e.timeStamp]];
+  });
   root.addEventListener('pointermove',function(e){
     if(sx===null) return;
     var dx=e.clientX-sx, dy=e.clientY-sy;
-    if(!swiping && Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)){ swiping=true; clearTimeout(timer); }
+    if(!swiping){
+      if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){ sx=null; return; }
+      if(Math.abs(dx)<6||Math.abs(dx)<Math.abs(dy)) return;
+      swiping=true; clearTimeout(timer); settle(); root.classList.add('is-dragging');
+      try{ root.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    trail.push([e.clientX,e.timeStamp]); if(trail.length>6) trail.shift();
+    // close to the finger at first, then a little give the further it goes
+    var w=root.clientWidth*.5, a=Math.abs(dx), d=a<w?a:w+(a-w)*.35;
+    setDrag((dx<0?-1:1)*d*.92);
   });
-  root.addEventListener('pointerup',function(e){
+  function endSwipe(e,cancelled){
     if(sx===null) return;
     var dx=e.clientX-sx; sx=null;
-    if(swiping && Math.abs(dx)>36){ step(dx<0?1:-1); eatClick=true; }
-    else arm();
-  });
-  root.addEventListener('pointercancel',function(){ sx=null; arm(); });
+    if(!swiping){ arm(); return; }
+    eatClick=true;
+    var a=trail[0], b=trail[trail.length-1], v=b&&a&&b[1]>a[1]?(b[0]-a[0])/(b[1]-a[1]):0;
+    if(!cancelled&&(Math.abs(dx)>22||Math.abs(v)>.3)) step((Math.abs(v)>.3?v:dx)<0?1:-1,false,true);
+    else { release(); arm(); }
+  }
+  root.addEventListener('pointerup',function(e){ endSwipe(e,false); });
+  root.addEventListener('pointercancel',function(e){ endSwipe(e,true); });
   root.addEventListener('click',function(e){ if(eatClick){ e.preventDefault(); e.stopPropagation(); eatClick=false; } },true);
   root.addEventListener('mouseenter',function(){ hovering=true; arm(); });
   root.addEventListener('mouseleave',function(){ hovering=false; arm(); });
@@ -3498,119 +3525,93 @@ exports.reports = (ctx, { indicators = [], domainLabels = {} } = {}) => {
 };
 
 // ============ OUR TEAM ============
-// The institutions behind NIIS, then the team planned for the data mining phase. Every role and
-// headcount comes from deliverables/NICTD-Cost-Schedule.xlsx (Data Team, Field Team Cost and Cost
-// Summary sheets); pay grades and costs stay out of the public page. Names and photographs are
-// added as people are appointed; until then the page shows roles, never invented people.
-const TEAM_PLAN = {
-  director: { title: 'Survey / Project Director', resp: 'Central management of the data mining phase.' },
-  data: [
-    { title: 'Data Team Lead', resp: 'Owns the processing pipeline, the review queue and final sign-off.', n: 1 },
-    { title: 'Sampling Statistician', resp: 'Weighting, county estimates, precision and error checks.', n: 1 },
-    { title: 'Database / CAPI Engineer', resp: 'Builds the CAPI instrument, the sync server and the upload pipeline into NIIS.', n: 2, role: 'Data Engineer' },
-    { title: 'GIS / Mapping Analyst', resp: 'Enumeration-area frames, geocoding and county map preparation.', n: 1, role: 'GIS / Mapping Analyst' },
-    { title: 'Data Quality Analyst', resp: 'Validation rules, cleaning, outlier and consistency review.', n: 4 },
-    { title: 'Data Processing Clerk', resp: 'Coding open responses, data-entry backup and reconciliation.', n: 6 },
-  ],
-  field: [
-    { key: 'enum', title: 'Enumerators', resp: 'Collect household and facility ICT data on tablets across assigned enumeration areas.', role: 'Field Enumerator (CAPI)' },
-    { key: 'kii', title: 'Facility / KII collectors', resp: 'Run key-informant interviews and facility visits.' },
-    { key: 'sup', title: 'Field supervisors', resp: 'Lead an enumerator team, run spot checks and back-checks, and clear daily uploads.', role: 'Field Supervisor' },
-    { key: 'lead', title: 'County research leads', resp: 'Own sampling, stakeholder liaison and data quality for one county.', role: 'County Research Lead' },
-  ],
-  // county: [enumerators, KII collectors, supervisors, research leads]
-  counties: [
-    ['Montserrado', 13, 3, 3, 1], ['Nimba', 9, 3, 2, 1], ['Bong', 9, 3, 2, 1], ['Lofa', 8, 2, 2, 1],
-    ['Grand Bassa', 8, 2, 2, 1], ['Margibi', 8, 2, 2, 1], ['Maryland', 7, 2, 2, 1], ['Grand Cape Mount', 7, 2, 2, 1],
-    ['Grand Gedeh', 7, 2, 2, 1], ['Sinoe', 7, 2, 2, 1], ['Bomi', 7, 2, 2, 1], ['Gbarpolu', 7, 2, 2, 1],
-    ['River Cess', 7, 2, 2, 1], ['River Gee', 7, 2, 2, 1], ['Grand Kru', 7, 2, 2, 1],
-  ],
+// A carousel of team members, then the field teams county by county. The members are sample
+// profiles (the owner asked for twelve mock Liberian staff until real appointments, names and
+// photographs are supplied). Their photographs in public/img/team are AI-generated portraits of
+// people who do not exist, never photographs of real people, and the page says so. The county
+// headcounts come from deliverables/NICTD-Cost-Schedule.xlsx (Field Team Cost).
+const TEAM_COUNTIES = [
+  // county, enumerators, KII collectors, supervisors, research leads
+  ['Montserrado', 13, 3, 3, 1], ['Nimba', 9, 3, 2, 1], ['Bong', 9, 3, 2, 1], ['Lofa', 8, 2, 2, 1],
+  ['Grand Bassa', 8, 2, 2, 1], ['Margibi', 8, 2, 2, 1], ['Maryland', 7, 2, 2, 1], ['Grand Cape Mount', 7, 2, 2, 1],
+  ['Grand Gedeh', 7, 2, 2, 1], ['Sinoe', 7, 2, 2, 1], ['Bomi', 7, 2, 2, 1], ['Gbarpolu', 7, 2, 2, 1],
+  ['River Cess', 7, 2, 2, 1], ['River Gee', 7, 2, 2, 1], ['Grand Kru', 7, 2, 2, 1],
+];
+// sample members; img is the slug of their photograph in public/img/team
+const TEAM_MEMBERS = [
+  { name: 'Musu Kollie', img: 'musu-kollie', role: 'Survey / Project Director', bio: 'Leads the data mining phase from the first county wave to the national release, and answers for the whole programme.' },
+  { name: 'Emmanuel Kpadeh', img: 'emmanuel-kpadeh', role: 'Data Team Lead', bio: 'Runs the processing pipeline and signs off every dataset before it is published in NIIS.' },
+  { name: 'Comfort Wesseh', img: 'comfort-wesseh', role: 'Sampling Statistician', bio: 'Designs the samples and the weights that turn field interviews into county estimates.' },
+  { name: 'Prince Flomo', img: 'prince-flomo', role: 'Database / CAPI Engineer', bio: 'Builds the tablet questionnaires and the sync service that carries uploads in from the field.' },
+  { name: 'Siafa Kamara', img: 'siafa-kamara', role: 'Database / CAPI Engineer', bio: 'Keeps the upload pipeline quick and the database in order, wave after wave.' },
+  { name: 'Hawa Kromah', img: 'hawa-kromah', role: 'GIS / Mapping Analyst', bio: 'Draws the enumeration areas and turns county figures into the maps on this site.' },
+  { name: 'Jartu Dolo', img: 'jartu-dolo', role: 'Data Quality Analyst', bio: 'Writes the validation rules that catch an outlier before anyone else sees it.' },
+  { name: 'Saye Zuo', img: 'saye-zuo', role: 'Data Quality Analyst', bio: 'Reviews every flagged record with the field teams until the numbers hold.' },
+  { name: 'Korto Nyumah', img: 'korto-nyumah', role: 'Data Processing Clerk', bio: 'Codes the open answers and reconciles records, so nothing collected in the field is lost.' },
+  { name: 'Momo Konneh', img: 'momo-konneh', role: 'County Research Lead, Bong', bio: 'Owns sampling and data quality in Bong County, and leads its key-informant interviews.' },
+  { name: 'Decontee Tarpeh', img: 'decontee-tarpeh', role: 'Field Supervisor, Nimba', bio: 'Leads an enumerator team in Nimba, running spot checks and clearing the daily uploads.' },
+  { name: 'Varney Kanneh', img: 'varney-kanneh', role: 'Field Enumerator, Montserrado', bio: 'Collects household ICT data on a tablet across his enumeration areas in Montserrado.' },
+];
+const SOCIAL = {
+  in: '<path d="M6.94 5a2 2 0 1 1-4-.002 2 2 0 0 1 4 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91l.04-1.68z"/>',
+  x: '<path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78L17.75 3zm-1.08 16.2h1.7L7.4 4.72H5.58L16.67 19.2z"/>',
+  mail: '<path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4 7.3V17h16V7.3l-8 4.9z"/>',
 };
-exports.team = (ctx, { indicators = [] } = {}) => {
-  const P = TEAM_PLAN;
-  const FK = ['enum', 'kii', 'sup', 'lead'];
-  const fieldN = (k) => P.counties.reduce((s, c) => s + c[1 + FK.indexOf(k)], 0);
-  const fieldTotal = FK.reduce((s, k) => s + fieldN(k), 0);
-  const dataTotal = P.data.reduce((s, r) => s + r.n, 0);
-  const teamTotal = fieldTotal + dataTotal + 1; // the cost schedule's workforce recap counts the director
-  const maxCounty = Math.max(...P.counties.map((c) => c[1] + c[2] + c[3] + c[4]));
-  // how many catalogue indicators each institution supplies, counted from the live catalogue
-  const sourced = (re) => indicators.filter((i) => re.test(i.agency || '')).length;
-  const ltaN = sourced(/LTA|Telecommunications Authority/);
-  const moptN = sourced(/Posts|MoPT|ICT Statistics/);
-  const openRole = (title) => {
-    const r = title && CAREER_ROLES.find((x) => x.title === title);
-    return r ? `<a class="tm-open" href="/careers/apply/${careerSlug(r)}">Open role ${icon('arrow')}</a>` : '';
-  };
-  const dots = (n) => n <= 12 ? `<span class="tm-dots" aria-hidden="true">${'<i></i>'.repeat(n)}</span>` : '';
-  const logo = (key, mono) => imgs.exists('partnerLogos', key)
-    ? `<img src="${esc(imgs.url('partnerLogos', key))}" alt="" width="64" height="64" loading="lazy" decoding="async">`
-    : `<span class="tm-mono">${esc(mono)}</span>`;
-  const inst = [
-    { logo: logo('mopt', 'MoPT'), name: 'Ministry of Posts & Telecommunications', role: 'Policy lead', body: 'Home of the ICT Statistics & Policy Unit, which curates the data and handles recruitment.', fact: moptN ? `Source agency for ${moptN} catalogue indicators` : '' },
-    { logo: logo('lta', 'LTA'), name: 'Liberia Telecommunications Authority', role: 'Sector regulator', body: 'Supplies the network and market data: subscriptions, sites, coverage, speeds and quality of service.', fact: ltaN ? `Source agency for ${ltaN} catalogue indicators` : '' },
-    { logo: '<span class="tm-mono">H&amp;A</span>', name: 'Harris & Associates LLC', role: 'Platform developer', body: 'Developed the NIIS platform: the database, the Data Explorer, the API and this website.', fact: '' },
-  ];
+exports.team = (ctx) => {
+  const maxCounty = Math.max(...TEAM_COUNTIES.map((c) => c[1] + c[2] + c[3] + c[4]));
+  const fieldTotal = TEAM_COUNTIES.reduce((s, c) => s + c[1] + c[2] + c[3] + c[4], 0);
+  const n = TEAM_MEMBERS.length;
+  const first = TEAM_MEMBERS.slice(0, 8), top = first.slice(0, 4), low = first.slice(4);
+  const laid = top.flatMap((m, c) => (low[c] ? [m, low[c]] : [m])).concat(TEAM_MEMBERS.slice(8));
+  const card = (m) => { const i = TEAM_MEMBERS.indexOf(m); return `<article class="tc-card" style="--k:${Math.min(i, 7)}" tabindex="0" role="group" aria-roledescription="team member" aria-label="${esc(m.name)}, ${esc(m.role)}">
+          <div class="tc-media">
+            <img class="tc-photo" src="/img/team/${m.img}.jpg?v=${ASSET_V}" alt="" width="600" height="600" loading="lazy" decoding="async">
+            <div class="tc-bio">
+              <div class="tc-social">
+                <a href="#" aria-label="${esc(m.name)} on LinkedIn" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true">${SOCIAL.in}</svg></a>
+                <a href="#" aria-label="${esc(m.name)} on X" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true">${SOCIAL.x}</svg></a>
+                <a href="#" aria-label="Email ${esc(m.name)}" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true">${SOCIAL.mail}</svg></a>
+              </div>
+              <p>${esc(m.bio)}</p>
+            </div>
+          </div>
+          <div class="tc-info">
+            <span class="tc-name">${esc(m.name)}</span>
+            <span class="tc-role">${esc(m.role)}</span>
+          </div>
+        </article>`; };
   return shell(ctx, {
     title: 'Our Team', active: '/about/team', workspaceActive: 'about', body: `
-  ${pageHeader('team', 'Our Team', 'The institutions behind NIIS, and the team that collects, checks and publishes its data.')}
+  ${pageHeader('team', 'Our Team', 'The people who collect, check and publish Liberia’s ICT data.')}
   <div class="tm">
-    <section class="tm-inst wrap" aria-labelledby="tm-inst-h">
-      <div class="tm-head">
-        ${eyebrow('Who runs NIIS')}
-        <h2 id="tm-inst-h" data-rise-head>Three institutions, one national data system</h2>
-      </div>
-      <div class="tm-inst-grid">
-        ${inst.map((x, k) => `<article class="tm-inst-card" style="--k:${k}">
-          <div class="tm-inst-logo">${x.logo}</div>
-          <p class="tm-inst-role">${esc(x.role)}</p>
-          <h3>${esc(x.name)}</h3>
-          <p>${esc(x.body)}</p>
-          ${x.fact ? `<p class="tm-inst-fact">${icon('database')}<span>${esc(x.fact)}</span></p>` : ''}
-        </article>`).join('')}
-      </div>
-    </section>
-
-    <section class="tm-org wrap" aria-labelledby="tm-org-h">
-      <div class="tm-head tm-head-split">
-        <div>
-          ${eyebrow('The project team')}
-          <h2 id="tm-org-h" data-rise-head>The team planned for the data mining phase</h2>
-        </div>
-        <p>From the project cost schedule: ${teamTotal} people, with a Survey / Project Director, a central data team of ${dataTotal} and field teams of ${fieldTotal} across all ${P.counties.length} counties. Names and photographs appear here as people are appointed.</p>
-      </div>
-      <dl class="ui-stats">
-        <div><dt>Planned team</dt><dd data-count="${teamTotal}">${teamTotal}</dd></div>
-        <div><dt>Field teams</dt><dd data-count="${fieldTotal}">${fieldTotal}</dd></div>
-        <div><dt>Data team</dt><dd data-count="${dataTotal}">${dataTotal}</dd></div>
-        <div><dt>Counties</dt><dd data-count="${P.counties.length}">${P.counties.length}</dd></div>
-      </dl>
-      <div class="tm-chart">
-        <div class="tm-lead">
-          <span class="tm-avatar" aria-hidden="true">${icon('users')}</span>
-          <div><p class="tm-inst-role">Central management</p><h3>${esc(P.director.title)}</h3><p>${esc(P.director.resp)}</p></div>
-        </div>
-        <div class="tm-wires" aria-hidden="true"><i class="tm-wire-v"></i><i class="tm-wire-h"></i><i class="tm-wire-l"></i><i class="tm-wire-r"></i></div>
-        <div class="tm-branches">
-          <div class="tm-branch">
-            <header><h3>Data team</h3><b data-count="${dataTotal}">${dataTotal}</b></header>
-            <p class="tm-branch-sub">Cleans, validates, weights, codes, maps and uploads the field data into NIIS.</p>
-            <ul class="tm-roles">${P.data.map((r, k) => `<li style="--k:${k}">
-              <div class="tm-role-top"><h4>${esc(r.title)}</h4><span class="tm-n">${r.n}</span></div>
-              <p>${esc(r.resp)}</p>
-              <div class="tm-role-foot">${dots(r.n)}${openRole(r.role)}</div>
-            </li>`).join('')}</ul>
+    <section class="tc wrap" aria-labelledby="tc-h">
+      <div class="tc-panel">
+        <div class="tc-head">
+          <div>
+            <p class="tc-eyebrow">${icon('sparkle')}<b>Who</b><b>we</b><b>are</b></p>
+            <h2 id="tc-h" class="tc-title">The people<br>behind NIIS.</h2>
           </div>
-          <div class="tm-branch">
-            <header><h3>Field teams</h3><b data-count="${fieldTotal}">${fieldTotal}</b></header>
-            <p class="tm-branch-sub">Collect the survey and facility data in every county, wave by wave.</p>
-            <ul class="tm-roles">${P.field.map((r, k) => `<li style="--k:${k}">
-              <div class="tm-role-top"><h4>${esc(r.title)}</h4><span class="tm-n">${fieldN(r.key)}</span></div>
-              <p>${esc(r.resp)}</p>
-              <div class="tm-bar" aria-hidden="true"><i style="--w:${(fieldN(r.key) / fieldN('enum')).toFixed(3)}"></i></div>
-              <div class="tm-role-foot">${openRole(r.role)}</div>
-            </li>`).join('')}</ul>
+          <div class="tc-ctrl">
+            <span class="tc-count" aria-hidden="true"><b data-tc-at>${String(Math.min(8, n)).padStart(2, '0')}</b> / ${String(n).padStart(2, '0')}</span>
+            <button type="button" class="tc-arrow" data-tc="-1" aria-label="Previous team members">${icon('arrow', 'icn ui-flip')}</button>
+            <button type="button" class="tc-arrow" data-tc="1" aria-label="Next team members">${icon('arrow')}</button>
           </div>
+        </div>
+        <div class="tc-track" id="tcTrack" role="region" aria-label="Team members, ${n} in all" tabindex="-1">
+          ${laid.map(card).join('')}
+        </div>
+        <div class="tc-detail" id="tcDetail" hidden aria-live="polite">
+          <img alt="" width="600" height="600">
+          <div class="tc-detail-in">
+            <span class="tc-name"></span>
+            <span class="tc-role"></span>
+            <p></p>
+          </div>
+          <button type="button" class="tc-detail-x" aria-label="Close">${icon('x')}</button>
+        </div>
+        <div class="tc-foot">
+          <div class="tc-progress" aria-hidden="true"><i></i></div>
+          <p class="tc-note">Sample profiles with AI-generated placeholder photos, shown until appointments are confirmed.</p>
         </div>
       </div>
     </section>
@@ -3620,15 +3621,16 @@ exports.team = (ctx, { indicators = [] } = {}) => {
         <div>
           ${eyebrow('In every county')}
           <h2 id="tm-c-h" data-rise-head>Field teams, county by county</h2>
+          <p class="tm-c-lede">${fieldTotal} field staff planned across all ${TEAM_COUNTIES.length} counties, from the project cost schedule.</p>
         </div>
         <ul class="tm-legend" aria-label="Legend">
           <li><i class="k-enum"></i>Enumerators</li><li><i class="k-kii"></i>KII collectors</li><li><i class="k-sup"></i>Supervisors</li><li><i class="k-lead"></i>Research lead</li>
         </ul>
       </div>
       <ol class="tm-grid">
-        ${P.counties.map(([name, e, k, s, l], n) => {
+        ${TEAM_COUNTIES.map(([name, e, k, s, l], j) => {
           const t = e + k + s + l;
-          return `<li style="--k:${n}">
+          return `<li style="--k:${j}">
           <div class="tm-c-top"><h3>${esc(name)}</h3><b>${t}</b></div>
           <div class="tm-stack" style="--t:${(t / maxCounty).toFixed(3)}" role="img" aria-label="${esc(name)}: ${e} enumerators, ${k} KII collectors, ${s} supervisors, ${l} research lead">
             <i class="k-enum" style="flex:${e}"></i><i class="k-kii" style="flex:${k}"></i><i class="k-sup" style="flex:${s}"></i><i class="k-lead" style="flex:${l}"></i>
@@ -3637,13 +3639,6 @@ exports.team = (ctx, { indicators = [] } = {}) => {
         </li>`;
         }).join('')}
       </ol>
-    </section>
-
-    <section class="tm-cta wrap">
-      <div class="tm-cta-in" data-rise-block>
-        <div><h2>Join the team</h2><p>Field and data roles are recruited as each collection wave opens.</p></div>
-        <a class="ui-btn ui-btn-light" href="/careers">See open roles ${icon('arrow')}</a>
-      </div>
     </section>
   </div>
   <script>window.__NICTD_PAGE__='team';</script>`,
@@ -3796,7 +3791,7 @@ exports.careers = (ctx) => {
 // The end of the process: a drawn check, a burst of the page's blue squares, the headline, and
 // the reference the applicant keeps. The reference carries the date it was sent (NIIS-YYMMDD-XXXX).
 function careerSent(ctx, role, reference) {
-  const m = /^(?:NIIS|NIIS)-(\d{2})(\d{2})(\d{2})-/.exec(reference || '');
+  const m = /^(?:NIIS|NICTD)-(\d{2})(\d{2})(\d{2})-/.exec(reference || '');
   const sentOn = m ? `${+m[3]} ${UPD_MONTHS[+m[2] - 1]} 20${m[1]}` : '';
   const field = role.unit === 'Data Collection';
   const burst = Array.from({ length: 14 }, (_, i) => `<i style="--a:${Math.round(i * (360 / 14) + (i % 2) * 9)}deg;--d:${i % 3 === 0 ? 7.4 : i % 3 === 1 ? 5.6 : 6.4}rem;--s:${i % 2 ? 5 : 7}px;--t:${(i % 4) * 40}ms"></i>`).join('');

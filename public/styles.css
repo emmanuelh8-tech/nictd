@@ -5058,13 +5058,24 @@ button.skip:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px;
 /* the About menu's ICT Patrons and ICT Talent Pool land on their sections below the sticky bar */
 #patrons, #talent { scroll-margin-top: calc(var(--nav-h) + 30px); }
 
-/* home: a thin black edge on each news card and on the "Up next" box */
+/* home: a thin black edge on each featured paper, each news card and the "Up next" box */
+#fpTrack .fp-card { border: 1px solid #111; }
 #sqTrends .sq-card { border: 1px solid #111; }
 #homeVideo .vid-queue { border: 1px solid #111; box-shadow: none; }
 
-/* The About page alone wears a barely-there wallpaper of carved African masks (public/img/brand/
-   mask-pattern-light.webp, a seamless tile cut from the artwork, very pale grey on white) in place of
-   the binary canvas: on the page itself, its partner logo tiles and its light sections. */
+/* The About page alone wears the carved-mask wallpaper (a seamless tile cut from the artwork) in
+   place of the binary canvas. Its sections each have their own ground, so the masks are laid over
+   every one of them except the film hero: the line work (public/img/brand/mask-lines.webp, the masks
+   as transparency) is tinted pale grey on the light sections and faint white on the dark and blue
+   ones, behind the content. The partner logo tiles carry it too. */
 html:has(.ab-hero) { background-image: url("/img/brand/mask-pattern-light.webp"); background-size: 185px auto; }
-.ab-frame--white, .ab-bench, .cs .ab-faq { background-color: #fff; background-image: url("/img/brand/mask-pattern-light.webp"); background-size: 185px auto; background-repeat: repeat; }
-.ab-frame--white { --g: transparent; }
+.cs .ab-story, .cs .ab-quote, .cs .ab-team, .cs .ab-dark, .cs .ab-partners, .cs .ab-commit, .cs .ab-bench, .cs .ab-faq, .cs .ab-close { position: relative; isolation: isolate; }
+.cs .ab-story::after, .cs .ab-quote::after, .cs .ab-team::after, .cs .ab-dark::after, .cs .ab-partners::after, .cs .ab-commit::after,
+.cs .ab-bench::after, .cs .ab-faq::after, .cs .ab-close::after, .ab-frame--white::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--mask-ink, #5B6470); opacity: var(--mask-op, .16);
+  -webkit-mask: url("/img/brand/mask-lines.webp") 0 0 / 185px auto repeat; mask: url("/img/brand/mask-lines.webp") 0 0 / 185px auto repeat; }
+.cs .ab-team, .cs .ab-dark, .cs .ab-partners, .cs .ab-close { --mask-ink: #fff; --mask-op: .09; }
+/* the logo tiles: the masks take the place of the grid, under the logo */
+.ab-frame--white { background: #fff; }
+.ab-frame--white::after { z-index: 0; --mask-ink: #5B6470; --mask-op: .16; background-size: auto; }

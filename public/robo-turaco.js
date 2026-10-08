@@ -5,7 +5,7 @@
 //   scene.add(bird.object);           // origin = the point between the feet (the perch)
 //   bird.perch() | bird.takeOff() | bird.fly({ glide }) | bird.flare() | bird.touchDown()
 //   bird.lookAt(yaw, pitch, hold)     // turn the head (radians, + = toward the bird's left)
-//   bird.express('chirp' | 'stretch' | 'preen' | 'bob' | 'hop' | 'shake' | 'peck' | 'grab' | 'excited' | 'confused')
+//   bird.express('chirp' | 'stretch' | 'preen' | 'bob' | 'hop' | 'shake' | 'peck' | 'grab' | 'excited' | 'confused' | 'slip')
 //   bird.update(dt)                   // every frame
 //
 // Axes on the bird: +Z is forward (the beak), +Y up, +X the bird's left.
@@ -327,6 +327,12 @@ export function createRoboTuraco(THREE, options = {}) {
     if (kind === 'peck') { pulse('peck', 1, 0.34, 'hump'); pulse('jaw', 0.42, 0.3, 'hump', 0.05); pulse('crouch', 0.3, 0.34, 'hump'); }
     if (kind === 'grab') { pulse('grab', 1, 0.55, 'hump'); pulse('tailFan', 0.8, 0.6, 'hump'); }
     if (kind === 'excited') { pulse('crest', 0.35, 1.2, 'hump'); pulse('crouch', 0.32, 0.8, 'hump'); pulse('shuffle', 0.7, 0.6, 'hump', 0.2); }
+    // a footing that gives: crouch, wings half out for balance, tail fanned, crest up, then settle
+    if (kind === 'slip') {
+      pulse('crouch', 0.42, 1.5, 'hump'); pulse('stretch', 0.5, 1.5, 'hump', 0.05); pulse('tailFan', 0.9, 1.6, 'hump');
+      pulse('tailLift', 0.35, 1.4, 'hump'); pulse('crest', 0.45, 1.6, 'hump'); pulse('shuffle', 0.7, 0.7, 'hump', 0.1);
+      pulse('look', 0.3, 1.2, 'hump', 0.15);
+    }
     if (kind === 'confused') {
       pulse('crest', -0.35, 1.4, 'hump'); pulse('shake', 0.7, 0.5, 'hump', 0.1);
       lookAt(rnd(-1, 1), 0.45, 0.9, rnd(-0.4, 0.4));

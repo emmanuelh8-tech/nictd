@@ -325,7 +325,7 @@ function parseBulkCsv(text) {
 if (!REVIEW) setInterval(() => { setSetting('last_etl_sync', new Date().toISOString()).catch(() => {}); }, 5 * 60 * 1000).unref();
 
 // ---------- static files ----------
-const MIME = { '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
+const MIME = { '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2', '.woff': 'font/woff', '.otf': 'font/otf', '.ttf': 'font/ttf' };
 function serveStatic(res, relPath) {
   const full = path.join(__dirname, 'public', path.normalize(relPath).replace(/^([.][.][\\/])+/, ''));
   if (!full.startsWith(path.join(__dirname, 'public'))) return send(res, 403, 'Forbidden');

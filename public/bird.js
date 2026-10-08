@@ -254,6 +254,57 @@ async function start() {
   let ep = null, epWait = null, epName = '', epStart = 0, nextWorm = Infinity, wormHole = null, lastMiss = '', misses = 0;
   const mouse = { x: -1e4, y: -1e4, t: -99 };
   let qFlight = new THREE.Quaternion(), qPerch = new THREE.Quaternion(), qLaunch = new THREE.Quaternion();
+
+  // ---- a slip: soon after the bird lands on a heading, the letters under its feet give way. One
+  // shakes, the one it stands on drops a little (and the bird, standing on it, sinks with it and tips
+  // as if about to fall), then the letter springs back. Three seconds, then the heading's text is put
+  // back exactly as it was. styles.css draws the letters' movement (.slip-shake, .slip-drop).
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ZAXIS = new THREE.Vector3(0, 0, 1);
+  let slip = null, slipAt = Infinity, lastSlip = -99;
+  // wrap one character of a text node in a span; the node keeps the text before it
+  function wrapChar(node, i, cls) {
+    const mid = node.splitText(i);
+    mid.splitText(1);
+    const span = document.createElement('span');
+    span.className = 'slip-l ' + cls;
+    mid.parentNode.insertBefore(span, mid);
+    span.appendChild(mid);
+    return span;
+  }
+  function startSlip(p) {
+    const L = p.letter;
+    if (!L || !L.node.parentNode || L.node.parentNode.closest('svg')) return;
+    const text = L.node.data;
+    // the neighbour under the other foot: the next letter if there is one, else the one before
+    let j = L.i + 1 < text.length && text[L.i + 1].trim() ? L.i + 1 : (L.i > 0 && text[L.i - 1].trim() ? L.i - 1 : -1);
+    let drop, shake = null;
+    if (j > L.i) { shake = wrapChar(L.node, j, 'slip-shake'); drop = wrapChar(L.node, L.i, 'slip-drop'); }
+    else if (j >= 0) { drop = wrapChar(L.node, L.i, 'slip-drop'); shake = wrapChar(L.node, j, 'slip-shake'); }
+    else drop = wrapChar(L.node, L.i, 'slip-drop');
+    // the bird keeps standing on the same letter, now inside its span, so it follows the drop
+    p.letter = { node: drop.firstChild, i: 0, ascent: L.ascent, cap: L.cap };
+    slip = { p, t: 0, t0: performance.now(), spans: shake ? [drop, shake] : [drop], dir: j > L.i || j < 0 ? 1 : -1, cried: false };
+    lastSlip = now;
+  }
+  function endSlip() {
+    if (!slip) return;
+    const parents = new Set();
+    slip.spans.forEach((sp) => {
+      const par = sp.parentNode; if (!par) return;
+      while (sp.firstChild) par.insertBefore(sp.firstChild, sp);
+      par.removeChild(sp); parents.add(par);
+    });
+    parents.forEach((par) => par.normalize());
+    slip.p.letter = null;                                   // found again on the next frame
+    slip = null;
+  }
+  // how far the body tips: in as the letter drops, a small wobble while it hangs, back as it returns
+  function slipTilt(t) {
+    if (t < 0.62) return 0;
+    const env = t < 1.0 ? smooth((t - 0.62) / 0.38) : t < 2.1 ? 1 : 1 - smooth(clamp((t - 2.1) / 0.5, 0, 1));
+    return env * (0.2 + 0.06 * Math.sin((t - 0.62) * 15) * Math.exp(-(t - 0.62) * 1.6));
+  }
   // perched on a heading it turns three-quarters to the reader, so the long tail goes back behind it;
   // on the ground it faces the hole, side-on, so a peck reads clearly
   function faceYaw(x, p) {
@@ -520,10 +571,25 @@ async function start() {
       else if (state === S.PERCHED && perch.role === 'ground') takeOff({});
     }
 
+    // timed on the real clock, so the bird keeps step with the letters' CSS animation
+    if (slip) { slip.t = (performance.now() - slip.t0) / 1000; if (slip.t >= 3) endSlip(); }
+    if (state === S.PERCHED && !slip && now >= slipAt) {
+      slipAt = Infinity;
+      if (!ep && perch.role !== 'item' && perch.role !== 'ground') { if (!perch.letter) chooseLetter(perch); startSlip(perch); }
+    }
+    if (state !== S.PERCHED) slipAt = Infinity;
     if (state === S.PERCHED) {
       const pt = perchPoint(perch);
       const vis = onScreen(pt);
-      if (pt) { root.position.copy(toWorld(pt.x, pt.y)); qPerch = facing(pt.x, perch); root.quaternion.slerp(qPerch, 1 - Math.exp(-6 * dt)); }
+      if (pt) {
+        root.position.copy(toWorld(pt.x, pt.y)); qPerch = facing(pt.x, perch);
+        if (slip && slip.p === perch) {
+          // the letter gives: the body tips toward the drop and the wings flare to catch the balance
+          if (!slip.cried && slip.t > 0.6) { slip.cried = true; bird.express('slip'); lastAct = now; busyT = 2.6; }
+          qPerch = new THREE.Quaternion().setFromAxisAngle(ZAXIS, -slipTilt(slip.t) * slip.dir).multiply(qPerch);
+          root.quaternion.slerp(qPerch, 1 - Math.exp(-14 * dt));
+        } else root.quaternion.slerp(qPerch, 1 - Math.exp(-6 * dt));
+      }
       seenFor = vis ? seenFor + dt : 0;
       if (vis && !everSeen) { everSeen = true; nextWorm = now + rnd(7, 11); }
       if (!pt && everSeen) { state = S.AWAY; root.visible = false; awayT = 0; awayWait = rnd(0.5, 1); flight = null; }
@@ -595,7 +661,10 @@ async function start() {
       else if (F.landing) { qPerch = facing(live ? live.x : bx, F.target); root.quaternion.slerpQuaternions(qFlight, qPerch, smooth(1 - clamp(left / landSpan, 0, 1))); }
       else root.quaternion.copy(qFlight);
       if (F.dist >= F.spl.len - 0.5) {
-        if (F.target) { perch = F.target; state = S.PERCHED; seenFor = 0; bird.touchDown(); lastAct = now; }
+        if (F.target) {
+          perch = F.target; state = S.PERCHED; seenFor = 0; bird.touchDown(); lastAct = now;
+          if (!REDUCED && !slip && perch.role !== 'item' && perch.role !== 'ground' && now - lastSlip > 9) slipAt = now + 0.55;
+        }
         else { state = S.AWAY; root.visible = false; awayT = 0; awayWait = rnd(0.6, 1.4); }
       }
     } else if (state === S.AWAY) {
@@ -638,6 +707,6 @@ async function start() {
     get state() { return state; }, get perch() { return perch && (perch.el ? perch.role + ': ' + perch.el.textContent.trim().replace(/\s+/g, ' ').slice(0, 40) : perch.role); }, get route() { return flight && flight.name; },
     get perches() { return perches.length; },
     get behaviour() { return lastBehaviour; }, get behaviours() { return behaviours; }, get hunt() { return ep ? epName || 'spotting' : ''; },
-    get misses() { return misses; }, get wormOut() { return worm.out; }, startWorm, root,
+    get misses() { return misses; }, get wormOut() { return worm.out; }, startWorm, root, get slipping() { return slip ? +slip.t.toFixed(2) : 0; },
   };
 }

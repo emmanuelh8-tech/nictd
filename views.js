@@ -169,9 +169,20 @@ function sealLogo(size = 40, cls = '') {
   </svg>`;
 }
 
+// Category labels are set in Marvin Visions and bylines in Kazimir, both licensed faces: drop the
+// licensed files into public/fonts as marvin-visions.(woff2|woff|otf|ttf) and kazimir.(woff2|woff|otf|ttf)
+// and they are used at once. Until then the free stand-ins in the font stacks (Righteous, Spectral) show.
+const LOCAL_FONTS = (() => {
+  const fs = require('node:fs'), path = require('node:path');
+  const css = [['Marvin Visions', 'marvin-visions'], ['Kazimir', 'kazimir']].map(([family, base]) => {
+    const file = ['woff2', 'woff', 'otf', 'ttf'].map((e) => `${base}.${e}`).find((f) => fs.existsSync(path.join(__dirname, 'public', 'fonts', f)));
+    return file ? `@font-face{font-family:'${family}';src:url('/assets/fonts/${file}');font-display:swap}` : '';
+  }).join('');
+  return css ? `<style>${css}</style>` : '';
+})();
 const FONT_HEAD = `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,400..900;1,400..700&family=Public+Sans:ital,wght@0,300..900;1,400..700&display=swap" rel="stylesheet">`;
+<link href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,400..900;1,400..700&family=Public+Sans:ital,wght@0,300..900;1,400..700&family=Righteous&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">${LOCAL_FONTS}`;
 const FAVICON = `<link rel="icon" href="data:image/svg+xml,${encodeURIComponent(sealLogo(32))}">`;
 
 // ---------- shared shell pieces ----------

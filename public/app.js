@@ -1570,6 +1570,40 @@
     var head = h.closest('.sec-head-dh');
     if (head) head.classList.add('hx-head');
   });
+  // the red rule under each section heading: five segments that read as one line; when the heading
+  // first comes into view, and every quarter minute or so after while it stays in view (or on hover),
+  // they round into dots and run a loading wave for three seconds (styles.css .hx-rule)
+  var rules = [];
+  heads.forEach(function (h) {
+    if (!h.closest('.sec-head-dh')) return;
+    var r = document.createElement('span'); r.className = 'hx-rule'; r.setAttribute('aria-hidden', 'true');
+    for (var k = 0; k < 5; k++) { var d = document.createElement('i'); d.style.setProperty('--d', k); r.appendChild(d); }
+    h.appendChild(r);
+    var o = { h: h, r: r, seen: false, next: 0, on: false };
+    rules.push(o);
+    h.addEventListener('mouseenter', function () { dots(o); });
+  });
+  function dots(o) {
+    if (o.r.classList.contains('is-dots')) return;
+    o.r.classList.add('is-dots');
+    o.next = Date.now() + 15000 + Math.random() * 6000;
+    setTimeout(function () { o.r.classList.remove('is-dots'); }, 3100);
+  }
+  if (rules.length) {
+    var seenIO = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var o = rules.filter(function (x) { return x.h === e.target; })[0];
+        o.on = e.isIntersecting;
+        if (o.on && !o.seen) { o.seen = true; setTimeout(function () { dots(o); }, 1500); }
+      });
+    }, { threshold: 0.6 });
+    rules.forEach(function (o) { seenIO.observe(o.h); });
+    setInterval(function () {
+      if (document.hidden) return;
+      var t = Date.now();
+      rules.forEach(function (o) { if (o.on && o.seen && t > o.next) dots(o); });
+    }, 1000);
+  }
   var blocks = [].slice.call(document.querySelectorAll('#fpTrack, #rcStage, #homeVideo .vid-layout, #sqTrends, [data-rise-block]'));
   blocks.forEach(function (b) { b.classList.add('hx-block'); });
   var io = new IntersectionObserver(function (es) {

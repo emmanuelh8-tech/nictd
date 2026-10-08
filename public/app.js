@@ -942,31 +942,27 @@
   // ============================================================
   // PAGE: Our Team
   // ============================================================
-  function initTeam() {
-    var root = qs('.tm');
-    if (!root) return;
-    initInView('.tc-panel, .tm-grid');
-    var track = qs('#tcTrack');
-    if (!track) return;
-    // two rows of four, filled column by column: cards 1 and 2 share the first column
-    var cards = qsa('.tc-card', track), atEl = qs('[data-tc-at]'), bar = qs('.tc-progress i');
-    var prev = qs('[data-tc="-1"]'), next = qs('[data-tc="1"]');
-    var detail = qs('#tcDetail'), compact = matchMedia('(max-width: 760px)');
-    var ROWS = 2;
+  // A scroll-snapping row of cards with arrows, a counter, a progress line and mouse drag; fingers
+  // get the browser's own momentum and snapping. o: { item, rows, at, total, bar, prev, next, onTap }
+  function rowCarousel(track, o) {
+    function cards() { return qsa(o.item, track).filter(function (c) { return !c.hidden; }); }
+    function pad(n) { return String(n).padStart(2, '0'); }
     function stepW() {
-      var x0 = cards[0].offsetLeft;
-      for (var i = 1; i < cards.length; i++) if (cards[i].offsetLeft > x0 + 1) return cards[i].offsetLeft - x0;
+      var cs = cards();
+      if (!cs.length) return track.clientWidth;
+      for (var i = 1; i < cs.length; i++) if (cs[i].offsetLeft > cs[0].offsetLeft + 1) return cs[i].offsetLeft - cs[0].offsetLeft;
       return track.clientWidth;
     }
     function perView() { return Math.max(1, Math.round(track.clientWidth / stepW())); }
-    // the counter (how many members have come into view), the progress line and the arrows follow the scroll
+    // the counter shows how many have come into view
     function sync() {
-      var max = track.scrollWidth - track.clientWidth, x = track.scrollLeft, view = track.clientWidth / track.scrollWidth;
-      var col = Math.round(x / stepW());
-      atEl.textContent = String(Math.min(cards.length, (col + perView()) * ROWS)).padStart(2, '0');
-      bar.style.width = (view * 100) + '%';
-      bar.style.transform = 'translateX(' + (max > 0 ? (x / max) * (1 / view - 1) * 100 : 0) + '%)';
-      prev.disabled = x <= 2; next.disabled = x >= max - 2;
+      var max = track.scrollWidth - track.clientWidth, x = track.scrollLeft, view = Math.min(1, track.clientWidth / track.scrollWidth);
+      var n = cards().length;
+      o.at.textContent = pad(Math.min(n, (Math.round(x / stepW()) + perView()) * o.rows));
+      if (o.total) o.total.textContent = pad(n);
+      o.bar.style.width = (view * 100) + '%';
+      o.bar.style.transform = 'translateX(' + (max > 0 ? (x / max) * (1 / view - 1) * 100 : 0) + '%)';
+      o.prev.disabled = x <= 2; o.next.disabled = x >= max - 2;
     }
     var queued = false;
     track.addEventListener('scroll', function () {
@@ -975,10 +971,9 @@
       requestAnimationFrame(function () { queued = false; sync(); });
     }, { passive: true });
     addEventListener('resize', sync);
-    [prev, next].forEach(function (b) {
-      b.addEventListener('click', function () { track.scrollBy({ left: Number(b.dataset.tc) * stepW() * perView(), behavior: REDUCE ? 'auto' : 'smooth' }); });
+    [o.prev, o.next].forEach(function (b, k) {
+      b.addEventListener('click', function () { track.scrollBy({ left: (k ? 1 : -1) * stepW() * perView(), behavior: REDUCE ? 'auto' : 'smooth' }); });
     });
-    // fingers get the browser's own momentum and snapping; a mouse can drag the row too
     var drag = null, moved = false, unsnap = 0;
     track.addEventListener('pointerdown', function (e) {
       if (e.pointerType !== 'mouse' || e.button) return;
@@ -999,46 +994,93 @@
       track.scrollTo({ left: Math.round(track.scrollLeft / w) * w, behavior: REDUCE ? 'auto' : 'smooth' });
       unsnap = setTimeout(function () { track.classList.remove('is-drag'); }, 450);
     });
-    // a card too small to hold its bio (phones) opens it in the panel under the rows instead
-    function showDetail(c) {
-      if (!c) { detail.hidden = true; return; }
-      qs('img', detail).src = qs('.tc-photo', c).src;
-      qs('.tc-name', detail).textContent = qs('.tc-name', c).textContent;
-      qs('.tc-role', detail).textContent = qs('.tc-role', c).textContent;
-      qs('p', detail).textContent = qs('.tc-bio p', c).textContent;
-      detail.hidden = false;
-      if (!REDUCE) { detail.classList.remove('is-in'); void detail.offsetWidth; detail.classList.add('is-in'); }
-    }
-    function toggle(c) {
-      var open = !c.classList.contains('is-open');
-      cards.forEach(function (o) { o.classList.remove('is-open'); });
-      c.classList.toggle('is-open', open);
-      if (compact.matches) showDetail(open ? c : null);
-    }
-    qs('.tc-detail-x', detail).addEventListener('click', function () {
-      cards.forEach(function (o) { o.classList.remove('is-open'); });
-      showDetail(null);
-    });
-    compact.addEventListener('change', function () { if (!compact.matches) showDetail(null); });
     track.addEventListener('click', function (e) {
       if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; return; }
-      if (e.target.closest('.tc-social a')) { e.preventDefault(); return; }
-      // on a touch screen, or a phone-sized window, a tap opens a card (a mouse gets it on hover)
-      var c = e.target.closest('.tc-card');
-      if (c && (compact.matches || !matchMedia('(hover: hover)').matches)) toggle(c);
+      if (e.target.closest('a[href="#"]')) { e.preventDefault(); return; }
+      var c = e.target.closest(o.item);
+      if (c) o.onTap(c, false);
     }, true);
     track.addEventListener('keydown', function (e) {
-      var c = e.target.closest('.tc-card');
+      var c = e.target.closest(o.item);
       if (!c) return;
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(c); return; }
-      var by = { ArrowRight: ROWS, ArrowLeft: -ROWS, ArrowDown: 1, ArrowUp: -1 }[e.key];
-      var nx = by && cards[cards.indexOf(c) + by];
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); o.onTap(c, true); return; }
+      var cs = cards(), by = { ArrowRight: o.rows, ArrowLeft: -o.rows, ArrowDown: 1, ArrowUp: -1 }[e.key];
+      var nx = by && cs[cs.indexOf(c) + by];
       if (!nx) return;
       e.preventDefault();
       nx.focus({ preventScroll: true });
       nx.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: REDUCE ? 'auto' : 'smooth' });
     });
     sync();
+    return { sync: sync, cards: cards, reset: function () { track.scrollTo({ left: 0 }); sync(); } };
+  }
+  // one card open at a time
+  function openOnly(list, c) {
+    var open = !c.classList.contains('is-open');
+    list.forEach(function (x) { x.classList.remove('is-open'); });
+    c.classList.toggle('is-open', open);
+    return open;
+  }
+
+  function initTeam() {
+    var root = qs('.tm');
+    if (!root) return;
+    initInView('.tc-panel, .tp-panel, .tm-grid');
+    var hover = matchMedia('(hover: hover)'), compact = matchMedia('(max-width: 760px)');
+
+    // ---- the team: two rows of four, filled column by column
+    var track = qs('#tcTrack');
+    if (track) {
+      var cards = qsa('.tc-card', track), detail = qs('#tcDetail');
+      // a card too small to hold its bio (phones) opens it in the panel under the rows instead
+      var showDetail = function (c) {
+        if (!c) { detail.hidden = true; return; }
+        qs('img', detail).src = qs('.tc-photo', c).src;
+        qs('.tc-name', detail).textContent = qs('.tc-name', c).textContent;
+        qs('.tc-role', detail).textContent = qs('.tc-role', c).textContent;
+        qs('p', detail).textContent = qs('.tc-bio p', c).textContent;
+        detail.hidden = false;
+        if (!REDUCE) { detail.classList.remove('is-in'); void detail.offsetWidth; detail.classList.add('is-in'); }
+      };
+      rowCarousel(track, {
+        item: '.tc-card', rows: 2, at: qs('[data-tc-at]'), bar: qs('.tc-progress i'),
+        prev: qs('[data-tc="-1"]'), next: qs('[data-tc="1"]'),
+        onTap: function (c, key) {
+          if (!key && !compact.matches && hover.matches) return;   // a mouse gets the card on hover
+          var open = openOnly(cards, c);
+          if (compact.matches) showDetail(open ? c : null);
+        },
+      });
+      qs('.tc-detail-x', detail).addEventListener('click', function () {
+        cards.forEach(function (o) { o.classList.remove('is-open'); });
+        showDetail(null);
+      });
+      compact.addEventListener('change', function () { if (!compact.matches) showDetail(null); });
+    }
+
+    // ---- the talent pool: one row, filtered by field
+    var tTrack = qs('#tpTrack');
+    if (tTrack) {
+      var tCards = qsa('.tp-card', tTrack), chips = qsa('[data-tp-field]');
+      var row = rowCarousel(tTrack, {
+        item: '.tp-card', rows: 1, at: qs('[data-tp-at]'), total: qs('[data-tp-total]'), bar: qs('.tp-progress i'),
+        prev: qs('[data-tp="-1"]'), next: qs('[data-tp="1"]'),
+        onTap: function (c, key) { if (key || !hover.matches) openOnly(tCards, c); },
+      });
+      chips.forEach(function (b) {
+        b.addEventListener('click', function () {
+          var f = b.dataset.tpField;
+          pressOnly(chips, 'data-tp-field', f);
+          tCards.forEach(function (c, i) {
+            var show = !f || c.dataset.field === f;
+            c.classList.remove('is-open');
+            c.hidden = !show;
+            if (show && !REDUCE) c.animate([{ opacity: 0, transform: 'translateY(12px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: Math.min(i, 5) * 40, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+          });
+          row.reset();
+        });
+      });
+    }
   }
 
   // ============================================================

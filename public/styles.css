@@ -4750,6 +4750,105 @@ html.ui-locked { overflow: hidden; }
 .tc-progress { flex: 1 1 200px; max-width: 360px; height: 3px; overflow: hidden; border-radius: 999px; background: rgba(14,20,32,.12); }
 .tc-progress i { display: block; width: 33%; height: 100%; border-radius: inherit; background: #0E1420; }
 .tc-note { font-size: .76rem; color: #5A6575; }
+/* a turned team card keeps its person in view: a round photo over the name */
+.tc-info { position: relative; }
+.tc-avatar { position: absolute; left: 4px; bottom: calc(100% + .75rem); width: 50px; height: 50px; border: 2px solid #fff; border-radius: 999px; object-fit: cover; object-position: 50% 28%; background: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,.28); opacity: 0; transform: translateY(10px) scale(.6); pointer-events: none; transition: opacity .25s, transform .5s var(--ui-spring); }
+.tc-card.is-open .tc-avatar, .tc-card:focus-visible .tc-avatar { opacity: 1; transform: none; transition-delay: .12s; }
+@media (hover: hover) and (min-width: 761px) { .tc-card:hover .tc-avatar { opacity: 1; transform: none; transition-delay: .12s; } }
+@media (max-width: 760px) { .tc-avatar { display: none; } }
+
+/* ============ NATIONAL ICT TALENT POOL ============
+   The team's structure in a different key: deep navy instead of light grey, a serif title, full-bleed
+   candid photos instead of studio cut-outs, field and county instead of a name pill, Liberia red
+   for the accent. On hover (a tap on touch screens) a red line runs across the top, the photo
+   dims, and the person's work and skills slide up. */
+.tp { margin-top: 1.4rem; }
+.tp-panel { position: relative; overflow: hidden; padding: clamp(1.3rem, 3vw, 2.6rem); border-radius: var(--ui-r); color: #fff;
+  background: radial-gradient(110% 80% at 100% 0%, #1C4C9E 0%, #0B2C63 38%, #071A3E 78%); }
+.tp-panel::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 32px 32px;
+  -webkit-mask-image: radial-gradient(70% 60% at 85% 10%, #000, transparent 75%); mask-image: radial-gradient(70% 60% at 85% 10%, #000, transparent 75%); }
+.tp-panel > * { position: relative; }
+.tp-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1.2rem 2rem; }
+.tp-eyebrow { display: inline-flex; align-items: center; gap: .55rem; margin: 0; font: 700 .7rem/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: #B9C9E6; }
+.tp-eyebrow i { width: 7px; height: 7px; border-radius: 2px; background: var(--gold); box-shadow: 0 0 0 4px rgba(200,16,46,.22); }
+.tp-title { margin: .9rem 0 0; font-family: var(--serif); font-size: clamp(2rem, 1.3rem + 2.8vw, 3.4rem); font-weight: 600; line-height: 1.02; letter-spacing: -.015em; color: #fff; }
+.tp-title em { font-style: italic; color: #F5AEB9; }
+.tp-lede { max-width: 46ch; margin-top: .8rem; color: #C2D0EA; }
+.tp-ctrl { display: flex; align-items: center; gap: .5rem; }
+.tp-count { margin-right: .6rem; font: 600 .82rem var(--sans); color: #93A8CC; font-variant-numeric: tabular-nums; }
+.tp-count b { color: #fff; }
+.tp-arrow { width: 46px; height: 46px; display: grid; place-items: center; border: 1.5px solid rgba(255,255,255,.55); border-radius: 999px; background: transparent; color: #fff; font-size: 1.05rem; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s, transform .15s, opacity .2s; }
+.tp-arrow:hover:not(:disabled) { background: #fff; border-color: #fff; color: var(--navy); }
+.tp-arrow:active:not(:disabled) { transform: scale(.94); }
+.tp-arrow:disabled { opacity: .28; cursor: default; }
+.tp-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1.5rem; }
+.tp-chips button { height: 32px; padding: 0 .85rem; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: transparent; font: 600 .78rem var(--sans); color: #DCE6F5; cursor: pointer; white-space: nowrap; transition: background-color .2s, border-color .2s, color .2s; }
+.tp-chips button b { font-weight: 600; opacity: .55; }
+.tp-chips button:hover { border-color: rgba(255,255,255,.55); }
+.tp-chips button.is-on { background: var(--gold); border-color: var(--gold); color: #fff; }
+.tp-chips button.is-on b { opacity: .8; }
+.tp-track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 3 * 14px) / 4); gap: 14px; margin: 1.4rem -4px 0; padding: 4px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 4px; scrollbar-width: none; cursor: grab; outline: none; }
+.tp-track::-webkit-scrollbar { display: none; }
+.tp-track.is-drag { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+.tp-card { position: relative; isolation: isolate; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 14px; background: #0E1A33; color: #fff; scroll-snap-align: start; outline: none; opacity: 0; transform: translateY(16px);
+  transition: opacity .6s calc(var(--k, 0) * 70ms), transform .6s var(--ui-ease) calc(var(--k, 0) * 70ms), box-shadow .3s; }
+.tp-card[hidden] { display: none; }
+.tp-panel.is-in .tp-card { opacity: 1; transform: none; }
+.tp-card:focus-visible { box-shadow: 0 0 0 3px #071A3E, 0 0 0 5px #fff; }
+.tp-photo { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; user-select: none; -webkit-user-drag: none; transition: transform .9s var(--ui-ease), filter .5s; }
+.tp-card::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(5,12,30,0) 38%, rgba(5,12,30,.55) 62%, rgba(5,12,30,.94) 100%); transition: background .5s; }
+.tp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; z-index: 2; height: 3px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .55s var(--ui-ease); }
+.tp-field { position: absolute; top: .75rem; left: .75rem; padding: .28rem .6rem; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; background: rgba(5,12,30,.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); font: 700 .6rem/1.2 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: #fff; }
+.tp-body { position: absolute; left: 0; right: 0; bottom: 0; display: grid; gap: .2rem; padding: 1rem .95rem 1.05rem; }
+.tp-name { margin: 0; font-family: var(--serif); font-size: 1.22rem; line-height: 1.15; color: #fff; }
+.tp-role { font-size: .82rem; font-weight: 600; color: #DCE6F5; }
+.tp-place { display: flex; align-items: center; gap: .3rem; font-size: .74rem; color: #A9BEE0; }
+.tp-place .icn { flex: none; font-size: .85rem; }
+.tp-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .55s var(--ui-ease); }
+.tp-more > div { min-height: 0; overflow: hidden; }
+.tp-note { margin-top: .65rem; font-size: .84rem; line-height: 1.45; color: #fff; opacity: 0; transition: opacity .3s; }
+.tp-skills { display: flex; flex-wrap: wrap; gap: .3rem; margin: .6rem 0 0; padding: 0; list-style: none; opacity: 0; transition: opacity .3s; }
+.tp-skills li { padding: .18rem .5rem; border: 1px solid rgba(255,255,255,.22); border-radius: 999px; background: rgba(255,255,255,.12); font-size: .68rem; font-weight: 600; color: #fff; }
+.tp-card.is-open::before, .tp-card:focus-visible::before { transform: scaleX(1); }
+.tp-card.is-open .tp-photo, .tp-card:focus-visible .tp-photo { transform: scale(1.07); filter: brightness(.7); }
+.tp-card.is-open::after, .tp-card:focus-visible::after { background: linear-gradient(180deg, rgba(5,12,30,.1) 10%, rgba(5,12,30,.7) 45%, rgba(5,12,30,.96) 100%); }
+.tp-card.is-open .tp-more, .tp-card:focus-visible .tp-more { grid-template-rows: 1fr; }
+.tp-card.is-open .tp-note, .tp-card.is-open .tp-skills, .tp-card:focus-visible .tp-note, .tp-card:focus-visible .tp-skills { opacity: 1; transition-delay: .15s; }
+@media (hover: hover) {
+  .tp-card:hover::before { transform: scaleX(1); }
+  .tp-card:hover .tp-photo { transform: scale(1.07); filter: brightness(.7); }
+  .tp-card:hover::after { background: linear-gradient(180deg, rgba(5,12,30,.1) 10%, rgba(5,12,30,.7) 45%, rgba(5,12,30,.96) 100%); }
+  .tp-card:hover .tp-more { grid-template-rows: 1fr; }
+  .tp-card:hover .tp-note, .tp-card:hover .tp-skills { opacity: 1; transition-delay: .15s; }
+}
+.tp-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem 1.5rem; margin-top: 1.4rem; }
+.tp-progress { flex: 1 1 200px; max-width: 360px; height: 3px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.16); }
+.tp-progress i { display: block; width: 50%; height: 100%; border-radius: inherit; background: #fff; }
+.tp-note-s { font-size: .76rem; color: #93A8CC; }
+@media (max-width: 1100px) { .tp-track { grid-auto-columns: calc((100% - 2 * 14px) / 3); } }
+@media (max-width: 760px) {
+  .tp.wrap { padding-inline: .7rem; }
+  .tp-panel { padding: 1.4rem 1rem 1.2rem; }
+  .tp-arrow { width: 38px; height: 38px; }
+  .tp-chips { flex-wrap: nowrap; margin-inline: -1rem; padding-inline: 1rem; overflow-x: auto; scrollbar-width: none; }
+  .tp-chips::-webkit-scrollbar { display: none; }
+  .tp-track { grid-auto-columns: calc((100% - 10px) / 2); gap: 10px; margin: 1.2rem -1rem 0; padding: 3px 1rem; scroll-padding-inline: 1rem; }
+  .tp-body { padding: .75rem .7rem .8rem; }
+  .tp-name { font-size: 1rem; }
+  .tp-role { font-size: .74rem; }
+  .tp-field { top: .55rem; left: .55rem; font-size: .52rem; }
+  .tp-card { aspect-ratio: 3 / 4.4; }
+  .tp-note { font-size: .74rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .tp-skills li:nth-child(n+3) { display: none; }
+  /* an opened card on a phone keeps the name, the role, the work and two skills */
+  .tp-card.is-open .tp-place, .tp-card.is-open .tp-field { display: none; }
+  .tp-card.is-open .tp-note { margin-top: .45rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-card, .tp-photo, .tp-more, .tp-note, .tp-skills, .tp-card::before, .tp-card::after, .tc-avatar { transition: none !important; }
+}
 .tm-c-lede { margin-top: .7rem; color: var(--muted); }
 /* phones: still two rows of four, so each card is just the photo and the name, and a tap opens
    the bio under the rows */

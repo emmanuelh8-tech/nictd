@@ -3552,6 +3552,62 @@ const TEAM_MEMBERS = [
   { name: 'Decontee Tarpeh', img: 'decontee-tarpeh', role: 'Field Supervisor, Nimba', bio: 'Leads an enumerator team in Nimba, running spot checks and clearing the daily uploads.' },
   { name: 'Varney Kanneh', img: 'varney-kanneh', role: 'Field Enumerator, Montserrado', bio: 'Collects household ICT data on a tablet across his enumeration areas in Montserrado.' },
 ];
+// The National ICT Talent Pool: young Liberians the programme has found building, designing and
+// securing the country's digital future. Sample profiles (the owner asked for mock talents until
+// real ones are announced); the photographs in public/img/talent are AI-generated portraits of
+// people who do not exist, and the page says so.
+const TALENTS = [
+  { name: 'Blessing Gbessay', img: 'blessing-gbessay', role: 'Software developer', field: 'Software', county: 'Montserrado',
+    note: 'Built a voice assistant in Liberian English that reads market prices aloud to farmers.', skills: ['Flutter', 'Firebase', 'Python'] },
+  { name: 'Abraham Tamba', img: 'abraham-tamba', role: 'Data analyst', field: 'Data & AI', county: 'Margibi',
+    note: 'Mapped the gaps in mobile-money agent coverage across 120 communities from open data.', skills: ['Python', 'QGIS', 'SQL'] },
+  { name: 'Patience Sumo', img: 'patience-sumo', role: 'UX designer', field: 'Design', county: 'Bong',
+    note: 'Designed a sign-language learning app together with deaf students in Gbarnga.', skills: ['Figma', 'User research', 'Prototyping'] },
+  { name: 'Joseph Wolobah', img: 'joseph-wolobah', role: 'Cybersecurity specialist', field: 'Cybersecurity', county: 'Nimba',
+    note: 'Runs free phishing-awareness clinics for small businesses in Ganta.', skills: ['Network security', 'Linux', 'Incident response'] },
+  { name: 'Mercy Toe', img: 'mercy-toe', role: 'Hardware & IoT maker', field: 'Hardware', county: 'Grand Bassa',
+    note: 'Built a solar-powered rain-gauge network that reports its readings by SMS.', skills: ['Arduino', 'Solar power', 'C'] },
+  { name: 'Augustine Karmo', img: 'augustine-karmo', role: 'Mobile developer', field: 'Software', county: 'Lofa',
+    note: 'Built an offline-first school attendance app that syncs when the signal returns.', skills: ['Kotlin', 'Android', 'SQLite'] },
+  { name: 'Esther Gonleh', img: 'esther-gonleh', role: 'AI student', field: 'Data & AI', county: 'Montserrado',
+    note: 'Gathers and cleans Kpelle and Bassa text to train small language models.', skills: ['PyTorch', 'NLP', 'Data labelling'] },
+  { name: 'Mohammed Fofana', img: 'mohammed-fofana', role: 'Network engineer', field: 'Networks', county: 'Grand Cape Mount',
+    note: 'Keeps a community Wi-Fi mesh online across Robertsport.', skills: ['Linux', 'Wireless networks', 'Docker'] },
+  { name: 'Princess Teah', img: 'princess-teah', role: 'Web developer', field: 'Software', county: 'Maryland',
+    note: 'Built a booking site for guesthouses in Harper that takes mobile-money payments.', skills: ['JavaScript', 'React', 'Node.js'] },
+  { name: 'Isaac Saygbe', img: 'isaac-saygbe', role: 'Robotics maker', field: 'Hardware', county: 'Bomi',
+    note: 'Designed a low-cost robot kit that teaches coding in rural schools.', skills: ['Raspberry Pi', 'Python', '3D printing'] },
+  { name: 'Victoria Wreh', img: 'victoria-wreh', role: 'Fintech builder', field: 'Fintech', county: 'Grand Gedeh',
+    note: 'Built a ledger app that keeps the books for susu savings groups in Zwedru.', skills: ['Kotlin', 'USSD', 'Product design'] },
+  { name: 'Samuel Kpaan', img: 'samuel-kpaan', role: 'Data scientist', field: 'Data & AI', county: 'Nimba',
+    note: 'Uses satellite images to estimate cocoa farm sizes for local cooperatives.', skills: ['Python', 'Remote sensing', 'TensorFlow'] },
+  { name: 'Cecilia Jallah', img: 'cecilia-jallah', role: 'Cybersecurity student', field: 'Cybersecurity', county: 'Montserrado',
+    note: 'Leads a women-in-cybersecurity study group at a Monrovia university.', skills: ['Ethical hacking', 'Python', 'Wireshark'] },
+  { name: 'Moses Gaye', img: 'moses-gaye', role: 'Network technician', field: 'Networks', county: 'River Gee',
+    note: 'Installed solar-powered Wi-Fi points at three clinics around Fish Town.', skills: ['Networking', 'Solar power', 'Wireless links'] },
+  { name: 'Grace Sackie', img: 'grace-sackie', role: 'Digital media producer', field: 'Digital media', county: 'Grand Kru',
+    note: 'Runs a radio and WhatsApp channel that explains digital services in Kru.', skills: ['Audio production', 'Storytelling', 'Social media'] },
+  { name: 'Daniel Saah', img: 'daniel-saah', role: 'App developer', field: 'Software', county: 'Sinoe',
+    note: 'Built a catch-logging app for fishing crews in Greenville.', skills: ['React Native', 'Firebase', 'GPS'] },
+  { name: 'Rebecca Kpoto', img: 'rebecca-kpoto', role: 'Interface designer', field: 'Design', county: 'Margibi',
+    note: 'Designs clear, low-data screens for government e-services.', skills: ['Figma', 'Accessibility', 'Design systems'] },
+  { name: 'Alfred Zinnah', img: 'alfred-zinnah', role: 'Electronics technician', field: 'Hardware', county: 'Lofa',
+    note: 'Repairs and refurbishes donated laptops for schools in Voinjama.', skills: ['Electronics repair', 'Linux', 'Soldering'] },
+  { name: 'Mariama Sesay', img: 'mariama-sesay', role: 'Fintech analyst', field: 'Fintech', county: 'Grand Cape Mount',
+    note: 'Built a tracker that compares the fees on money transfers into Liberia.', skills: ['Python', 'Web scraping', 'Data visualisation'] },
+  { name: 'Peter Nagbe', img: 'peter-nagbe', role: 'Data engineer', field: 'Data & AI', county: 'Bong',
+    note: 'Turns handwritten clinic registers into a searchable database.', skills: ['Python', 'OCR', 'PostgreSQL'] },
+  { name: 'Hannah Weefur', img: 'hannah-weefur', role: 'Mobile service developer', field: 'Software', county: 'River Cess',
+    note: 'Built a USSD service that gives farmers the weather forecast in Bassa.', skills: ['USSD', 'PHP', 'MySQL'] },
+  { name: 'Joshua Tokpah', img: 'joshua-tokpah', role: 'IT security officer', field: 'Cybersecurity', county: 'Gbarpolu',
+    note: 'Secured a county hospital’s records system after a ransomware scare.', skills: ['Backups', 'Windows Server', 'Security audits'] },
+  { name: 'Ruth Kerkula', img: 'ruth-kerkula', role: 'Video creator', field: 'Digital media', county: 'Montserrado',
+    note: 'Makes short videos that teach digital safety to first-time phone users.', skills: ['Video editing', 'Animation', 'Scriptwriting'] },
+  { name: 'Kpana Fallah', img: 'kpana-fallah', role: 'Network engineer', field: 'Networks', county: 'Grand Bassa',
+    note: 'Keeps the network and backup power running at a co-working space in Buchanan.', skills: ['Fibre splicing', 'MikroTik', 'Power backup'] },
+  { name: 'Yassah Morris', img: 'yassah-morris', role: 'Data analyst', field: 'Data & AI', county: 'Bomi',
+    note: 'Built a dashboard that tracks school enrolment across Bomi County.', skills: ['Power BI', 'Excel', 'SQL'] },
+];
 const SOCIAL = {
   in: '<path d="M6.94 5a2 2 0 1 1-4-.002 2 2 0 0 1 4 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91l.04-1.68z"/>',
   x: '<path d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78L17.75 3zm-1.08 16.2h1.7L7.4 4.72H5.58L16.67 19.2z"/>',
@@ -3576,6 +3632,7 @@ exports.team = (ctx) => {
             </div>
           </div>
           <div class="tc-info">
+            <img class="tc-avatar" src="/img/team/${m.img}.jpg?v=${ASSET_V}" alt="" width="600" height="600" loading="lazy" decoding="async">
             <span class="tc-name">${esc(m.name)}</span>
             <span class="tc-role">${esc(m.role)}</span>
           </div>
@@ -3612,6 +3669,46 @@ exports.team = (ctx) => {
         <div class="tc-foot">
           <div class="tc-progress" aria-hidden="true"><i></i></div>
           <p class="tc-note">Sample profiles with AI-generated placeholder photos, shown until appointments are confirmed.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tp wrap" aria-labelledby="tp-h">
+      <div class="tp-panel">
+        <div class="tp-head">
+          <div>
+            <p class="tp-eyebrow"><i aria-hidden="true"></i>Discovered across Liberia</p>
+            <h2 id="tp-h" class="tp-title">National ICT <em>Talent Pool</em></h2>
+            <p class="tp-lede">Young Liberians we have found building, designing and securing the country’s digital future.</p>
+          </div>
+          <div class="tp-ctrl">
+            <span class="tp-count" aria-hidden="true"><b data-tp-at>04</b> / <span data-tp-total>${String(TALENTS.length).padStart(2, '0')}</span></span>
+            <button type="button" class="tp-arrow" data-tp="-1" aria-label="Previous talents">${icon('arrow', 'icn ui-flip')}</button>
+            <button type="button" class="tp-arrow" data-tp="1" aria-label="Next talents">${icon('arrow')}</button>
+          </div>
+        </div>
+        <div class="tp-chips" role="group" aria-label="Filter by field">
+          <button type="button" class="is-on" data-tp-field="" aria-pressed="true">All <b>${TALENTS.length}</b></button>
+          ${[...new Set(TALENTS.map((t) => t.field))].map((f) => `<button type="button" data-tp-field="${esc(f)}" aria-pressed="false">${esc(f)} <b>${TALENTS.filter((t) => t.field === f).length}</b></button>`).join('')}
+        </div>
+        <div class="tp-track" id="tpTrack" role="region" aria-label="ICT talents" tabindex="-1">
+          ${TALENTS.map((t, i) => `<article class="tp-card" data-field="${esc(t.field)}" style="--k:${Math.min(i, 5)}" tabindex="0" role="group" aria-roledescription="talent" aria-label="${esc(t.name)}, ${esc(t.role)}, ${esc(t.county)}">
+            <img class="tp-photo" src="/img/talent/${t.img}.jpg?v=${ASSET_V}" alt="" width="600" height="800" loading="lazy" decoding="async">
+            <span class="tp-field">${esc(t.field)}</span>
+            <div class="tp-body">
+              <h3 class="tp-name">${esc(t.name)}</h3>
+              <p class="tp-role">${esc(t.role)}</p>
+              <p class="tp-place">${icon('pin')}<span>${esc(t.county)}</span></p>
+              <div class="tp-more"><div>
+                <p class="tp-note">${esc(t.note)}</p>
+                <ul class="tp-skills">${t.skills.map((k) => `<li>${esc(k)}</li>`).join('')}</ul>
+              </div></div>
+            </div>
+          </article>`).join('')}
+        </div>
+        <div class="tp-foot">
+          <div class="tp-progress" aria-hidden="true"><i></i></div>
+          <p class="tp-note-s">Sample profiles with AI-generated placeholder photos.</p>
         </div>
       </div>
     </section>

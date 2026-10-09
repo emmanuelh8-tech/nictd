@@ -2185,22 +2185,6 @@ exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => 
     ['The answer', 'The law is already in place: a Data Protection Act in 2026, and data sovereignty among the eight priorities of the National Digital Strategy. What has not moved is the infrastructure. NIIS is that missing layer: the database, the collection pipeline and the platform that turn a commitment on paper into a working national asset.'],
   ];
 
-  // [title, label, body, photo, alt]
-  const doing = [
-    ['Collect at source', 'Primary collection', 'CAPI field survey across all 15 counties, operator feeds and agency uploads, not re-publication.',
-      '/img/about/field-tall.jpg', 'A field enumerator recording survey answers on a tablet in a village.'],
-    ['Own the stack at home', 'Built in Liberia', 'Databases, pipelines and the publication platform, built and run by Liberian engineers.',
-      '/img/about/analysts.jpg', 'Analysts working at computers in an office.'],
-    ['Close the indicator gaps', 'What partners miss', 'We collect what international datasets leave missing, dated, or reported only at national level.',
-      '/img/about/field.jpg', 'Two survey workers walking a dirt road toward a village.'],
-    ['Assure before publishing', 'Quality control', 'Automated validation, field back-checks and human review stand before publication.',
-      '/img/about/analyst-sq.jpg', 'An analyst reviewing charts at her desk.'],
-    ['Publish openly', 'Free at the point of use', 'Explorer, catalogue, query builder, dashboards and a documented API, openly licensed.',
-      '/img/about/phone-sq.jpg', 'A woman reading her phone at a market stall.'],
-    ['Build the workforce', '174 positions', 'Enumerators, engineers, analysts and statisticians: capacity that stays in Liberia.',
-      '/img/about/colleagues.jpg', 'Two young colleagues talking on the steps outside an office.'],
-  ];
-
   const agencies = [
     ['mopt', 'Ministry of Posts & Telecommunications', 'Policy lead'],
     ['lta', 'Liberia Telecommunications Authority', 'Sector regulator'],
@@ -2298,24 +2282,10 @@ exports.about = (ctx, { mission, indicatorCount = 0, domainCount = 0 } = {}) => 
       </div>
     </section>
 
-    <section class="ab-team" data-star="quiet" aria-labelledby="abDoTitle">
+    <section class="ab-team" data-star="quiet">
       <div class="cs-wrap">
         <span class="cs-mark" aria-hidden="true"></span>
         <h2 class="ab-lead" aria-label="Providing Liberia ICT data in real time. We collect, validate and publish Liberia’s ICT statistics for all 15 counties, and we build the infrastructure that keeps them at home.">${csDecode('Providing Liberia ICT data in real time.')}${csDecode('We collect, validate and publish Liberia’s ICT statistics for all 15 counties, and we build the infrastructure that keeps them at home.', 'cs-dim')}</h2>
-        <div class="ab-grid">
-          <header class="ab-grid-head">
-            <h3 id="abDoTitle">What we do</h3>
-            <p class="cs-count">${doing.length}</p>
-          </header>
-          <ul class="ab-cards">${doing.map(([t, l, b, src, alt], i) => `
-            <li class="ab-card"${rise(i % 3)}>
-              <div class="ab-frame ab-frame--blue"><img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" decoding="async"></div>
-              <h4>${esc(t)}</h4>
-              <p class="ab-card-l">${esc(l)}</p>
-              <p class="ab-card-b">${esc(b)}</p>
-            </li>`).join('')}
-          </ul>
-        </div>
       </div>
     </section>
 

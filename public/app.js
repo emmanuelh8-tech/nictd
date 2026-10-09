@@ -25,7 +25,7 @@
   function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
   function scaleColor(t) {
     t = Math.max(0, Math.min(1, t));
-    var c1 = hexToRgb('#DDE7F7'), c2 = hexToRgb('#4A82C8'), c3 = hexToRgb('#0B2C63');
+    var c1 = hexToRgb('#E1F1E4'), c2 = hexToRgb('#5DB377'), c3 = hexToRgb('#1A5C38');
     var a, b, tt;
     if (t < 0.5) { a = c1; b = c2; tt = t / 0.5; } else { a = c2; b = c3; tt = (t - 0.5) / 0.5; }
     return 'rgb(' + lerp(a[0], b[0], tt) + ',' + lerp(a[1], b[1], tt) + ',' + lerp(a[2], b[2], tt) + ')';
@@ -1677,4 +1677,23 @@
     if (es[0].isIntersecting) { o.classList.add('is-in'); io.disconnect(); }
   }, { threshold: 0.35 });
   io.observe(o);
+})();
+
+// ---------- range sliders: the filled share of the track follows the value ----------
+// styles.css draws the track from --p (the filled share) and, for a slider with a dozen or fewer
+// steps (the years), --seg cuts it into one segment per step. Values set by script (the year
+// animation) are picked up too.
+(function () {
+  function sync(r) {
+    var min = Number(r.min) || 0, max = r.max === '' ? 100 : Number(r.max), v = Number(r.value);
+    var p = max > min ? ((v - min) / (max - min)) * 100 : 0;
+    r.style.setProperty('--p', p + '%');
+    var steps = (max - min) / (Number(r.step) || 1);
+    if (steps >= 2 && steps <= 12) { r.classList.add('has-steps'); r.style.setProperty('--seg', (100 / steps) + '%'); }
+  }
+  function all() { [].forEach.call(document.querySelectorAll('input[type=range]'), sync); }
+  document.addEventListener('input', function (e) { if (e.target.type === 'range') sync(e.target); });
+  document.addEventListener('change', function (e) { if (e.target.type === 'range') sync(e.target); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', all); else all();
+  setInterval(function () { if (!document.hidden) all(); }, 300);
 })();

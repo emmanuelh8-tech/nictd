@@ -1,4 +1,4 @@
-// supadb.js — minimal PostgREST client for the NICTD server (zero npm dependencies, Node >= 18 fetch).
+// supadb.js — minimal PostgREST client for the NIIS server (zero npm dependencies, Node >= 18 fetch).
 // The key stays server-side: supabase-config.json is at the project root, outside the /public static dir.
 'use strict';
 const fs = require('node:fs');

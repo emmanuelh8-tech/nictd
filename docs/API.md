@@ -1,4 +1,4 @@
-# NICTD — Public API v1
+# NIIS — Public API v1
 
 Base URL: `http://<host>/api/v1` · Format: JSON · CORS: open (`Access-Control-Allow-Origin: *`)
 

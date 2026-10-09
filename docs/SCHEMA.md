@@ -1,4 +1,4 @@
-# NICTD — Data Schema
+# NIIS — Data Schema
 
 Relational schema (SQLite in this build; standard SQL, ports directly to PostgreSQL for cloud hosting).
 

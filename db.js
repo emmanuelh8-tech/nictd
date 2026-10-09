@@ -1,4 +1,4 @@
-// db.js — NICTD (National ICT Database of Liberia): schema + seed (SQLite via node:sqlite, zero dependencies)
+// db.js — NIIS (National ICT Intelligence System, formerly NICTD): schema + seed (SQLite via node:sqlite, zero dependencies)
 'use strict';
 const { DatabaseSync } = require('node:sqlite');
 const crypto = require('node:crypto');

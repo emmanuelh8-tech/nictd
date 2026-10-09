@@ -460,11 +460,11 @@ async function handler(req, res) {
         const rows = await sdb.sel(q);
         if (isPreview) return json(res, 200, { count: rows.length, rows: rows.slice(0, 500) });
         const format = url.searchParams.get('format') || 'csv';
-        if (format === 'json') return json(res, 200, { dataset: 'nictd-query', count: rows.length, data: rows });
+        if (format === 'json') return json(res, 200, { dataset: 'niis-query', count: rows.length, data: rows });
         const csv = toCSV(rows, ['indicator_code', 'indicator', 'unit', 'county', 'year', 'value', 'source']);
         const ext = format === 'xlsx' ? 'xls' : 'csv';
         const ctype = format === 'xlsx' ? 'application/vnd.ms-excel' : 'text/csv; charset=utf-8';
-        return send(res, 200, csv, { 'Content-Type': ctype, 'Content-Disposition': `attachment; filename="nictd-query.${ext}"` });
+        return send(res, 200, csv, { 'Content-Type': ctype, 'Content-Disposition': `attachment; filename="niis-query.${ext}"` });
       }
       if (req.method === 'POST' && p === '/api/v1/query/save') {
         if (!user) return json(res, 401, { error: 'login required' });
@@ -479,9 +479,9 @@ async function handler(req, res) {
       }
       if (p === '/api/v1/download/data.csv' || p === '/api/v1/download/data.json') {
         const rows = await openDataRows(user, url.searchParams.get('indicator'), url.searchParams.get('county'), url.searchParams.get('year'));
-        if (p.endsWith('.json')) return json(res, 200, { dataset: 'nictd-open-data', license: 'Open license (demonstration)', count: rows.length, data: rows });
+        if (p.endsWith('.json')) return json(res, 200, { dataset: 'niis-open-data', license: 'Open license (demonstration)', count: rows.length, data: rows });
         const csv = toCSV(rows, ['indicator_code', 'indicator', 'domain', 'unit', 'county', 'year', 'value', 'source']);
-        return send(res, 200, csv, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="nictd-open-data.csv"' });
+        return send(res, 200, csv, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="niis-open-data.csv"' });
       }
       return json(res, 404, { error: 'not_found', docs: '/api/docs' });
     }

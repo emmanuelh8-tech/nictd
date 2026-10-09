@@ -1,4 +1,4 @@
-# NICTD — Data Mining Phase (Field Data Gathering Design)
+# NIIS — Data Mining Phase (Field Data Gathering Design)
 
 **National ICT Database of Liberia · ICT Statistics & Policy Unit, Ministry of Posts & Telecommunications**
 
@@ -138,7 +138,7 @@ Counties run **in parallel** (each has its own team), so the 15-county scope doe
 | 4 | Pilot / pre-test (2 counties) | 3 days |
 | 5 | **Main fieldwork — all 15 counties in parallel** | **3 weeks** |
 | 6 | Data cleaning, validation & weighting | 2 weeks |
-| 7 | Analysis, county estimates & upload to NICTD | 1 week |
+| 7 | Analysis, county estimates & upload to NIIS | 1 week |
 | | **Total** | **≈ 11 weeks** |
 
 ---
@@ -183,7 +183,7 @@ In each county capital, record the cheapest entry-level mobile data-and-voice bu
 
 ---
 
-## Layer 6 — From field to platform (how it lands in NICTD)
+## Layer 6 — From field to platform (how it lands in NIIS)
 
 1. **Capture** — CAPI tablets, offline, GPS-stamped, one record per household/adult.
 2. **Sync & clean** — nightly upload to the survey server; range/skip/consistency checks; supervisor re-interview reconciliation.

@@ -1,4 +1,4 @@
-// app.js · NICTD client: choropleth map, searchable dropdowns, charts, tables, query builder.
+// app.js · NIIS client: choropleth map, searchable dropdowns, charts, tables, query builder.
 // Zero dependencies. Relies on window.LIBERIA_COUNTIES / window.LIBERIA_VIEWBOX (public/liberia-counties.js).
 (function () {
   'use strict';
@@ -313,7 +313,7 @@
       URL.revokeObjectURL(url);
       canvas.toBlob(function (blob) {
         var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = filename || 'nictd-export.png';
+        a.href = URL.createObjectURL(blob); a.download = filename || 'niis-export.png';
         document.body.appendChild(a); a.click(); a.remove();
       });
     };

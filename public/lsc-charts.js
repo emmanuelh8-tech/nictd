@@ -1,4 +1,4 @@
-// lsc-charts.js · NICTD Data Landscape, analysis charts.
+// lsc-charts.js · NIIS Data Landscape, analysis charts.
 //
 // Five renderers drawn in the same tilted world as the landscape above them.
 //

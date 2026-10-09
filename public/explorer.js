@@ -1,4 +1,4 @@
-// explorer.js · NICTD Data Explorer.
+// explorer.js · NIIS Data Explorer.
 // A visualization engine plus the controller that drives the exploration journey:
 // intro -> snapshot -> geography -> ranking -> trend -> change -> comparison -> matrix -> data.
 //

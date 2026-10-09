@@ -1,4 +1,4 @@
--- NICTD / NIIS database lockdown
+-- NIIS database lockdown (formerly NICTD)
 -- ---------------------------------------------------------------------------
 -- The browser never talks to Supabase: only server.js does, through supadb.js.
 -- So the public roles (anon, authenticated) need NO access at all. This script:

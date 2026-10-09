@@ -1,4 +1,4 @@
-// landscape.js · NICTD Data Landscape.
+// landscape.js · NIIS Data Landscape.
 // Liberia's 15 counties laid out as a floor, each county carrying a tower as tall as the
 // selected indicator's value there. The geometry is the same county file the Data Explorer
 // map uses (public/liberia-counties.js); the values come from /api/v1/data. Nothing here is

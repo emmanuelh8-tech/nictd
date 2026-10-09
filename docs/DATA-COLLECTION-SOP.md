@@ -1,4 +1,4 @@
-# NICTD — Data Collection Standard Operating Procedure (SOP)
+# NIIS — Data Collection Standard Operating Procedure (SOP)
 
 **National ICT Database of Liberia · ICT Statistics & Policy Unit, Ministry of Posts & Telecommunications**
 

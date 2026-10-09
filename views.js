@@ -2163,7 +2163,7 @@ function policyEmblem(kind) {
 
 // ============ ABOUT (/about) ============
 // Built on the Careers page's system (reference: Sharplink's about page, pinned by the user): the
-// hero is a film of enumerators in the field (public/media/about-hero*.mp4), and the chrome seal
+// hero is a film of telecom towers and field work (public/media/about-hero*.mp4), and the chrome seal
 // (careers.js) stands beside the commitments, as a wireframe in the black capacity band, and alone
 // above the closing line. Every figure is live from the catalogue or the
 // programme; every photo is one of the site's own.
@@ -3875,7 +3875,7 @@ const PROGRAM_TRAININGS = [
     body: 'Web basics, data and a first app, in three weeks of evenings and Saturdays.' },
 ];
 const PROGRAM_FILMS = [
-  { src: '/media/about-hero-720.mp4', poster: '/media/about-hero-poster.jpg', title: 'Into the counties', body: 'Field teams on the road to the households they survey.' },
+  { src: '/media/about-hero-720.mp4', poster: '/media/about-hero-poster.jpg', title: 'Towers and the field', body: 'The masts that carry the network, from the hills to the coast, and the teams who survey the counties.' },
   { src: '/media/careers-hero-720.mp4', poster: '/media/careers-hero-poster.jpg', title: 'The network at dusk', body: 'The masts that carry Liberia’s connections, as the city lights up.' },
   { src: '/media/mission.mp4', poster: '/media/mission-poster.jpg', title: 'Monrovia from above', body: 'The capital’s streets, where the first data waves begin.' },
   { src: '/media/research-hero.mp4', poster: '/media/research-hero-poster.jpg', title: 'Where research happens', body: 'A university campus from the air.' },

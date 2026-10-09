@@ -52,7 +52,7 @@
    — an opaque fill there would paint over the watermark across the entire document. */
 html {
   background-color: var(--canvas);
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%27192%27%20viewBox%3D%270%200%20300%20192%27%3E%3Cg%20fill%3D%27%231A1A1A%27%20font-family%3D%27ui-monospace%2CSFMono-Regular%2CMenlo%2CConsolas%2Cmonospace%27%20font-size%3D%2711%27%20text-anchor%3D%27middle%27%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2712%27%20opacity%3D%270.0295%27%3E0000010000101101010000001%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2728%27%20opacity%3D%270.0388%27%3E1100110011101000000100001%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2744%27%20opacity%3D%270.0382%27%3E1010001111011010001010000%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2760%27%20opacity%3D%270.0398%27%3E0000000101001111100011010%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2776%27%20opacity%3D%270.0377%27%3E0010011000000100000010111%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2792%27%20opacity%3D%270.0316%27%3E0111011100001001010001100%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27108%27%20opacity%3D%270.0334%27%3E0110110010010100100101010%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27124%27%20opacity%3D%270.0302%27%3E1011100110000110000001110%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27140%27%20opacity%3D%270.0366%27%3E1000110110001101101010110%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27156%27%20opacity%3D%270.0341%27%3E0011000011001000111011000%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27172%27%20opacity%3D%270.0313%27%3E0000110110100101001101101%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27188%27%20opacity%3D%270.0396%27%3E1001010010001100001010101%3C%2Ftext%3E%3Ctext%20x%3D%27138%27%20y%3D%2712%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27234%27%20y%3D%2712%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27258%27%20y%3D%2760%27%20opacity%3D%270.042%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27246%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%2730%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27102%27%20y%3D%2776%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27282%27%20y%3D%2792%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27162%27%20y%3D%2728%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27114%27%20y%3D%2792%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%2776%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27114%27%20y%3D%27108%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27234%27%20y%3D%27172%27%20opacity%3D%270.042%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27294%27%20y%3D%2712%27%20opacity%3D%270.042%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27162%27%20y%3D%2744%27%20opacity%3D%270.042%27%3E0%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%27192%27%20viewBox%3D%270%200%20300%20192%27%3E%3Cg%20fill%3D%27%231A1A1A%27%20font-family%3D%27ui-monospace%2CSFMono-Regular%2CMenlo%2CConsolas%2Cmonospace%27%20font-size%3D%2711%27%20text-anchor%3D%27middle%27%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2712%27%20opacity%3D%270.0162%27%3E0000010000101101010000001%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2728%27%20opacity%3D%270.0213%27%3E1100110011101000000100001%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2744%27%20opacity%3D%270.021%27%3E1010001111011010001010000%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2760%27%20opacity%3D%270.0219%27%3E0000000101001111100011010%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2776%27%20opacity%3D%270.0207%27%3E0010011000000100000010111%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%2792%27%20opacity%3D%270.0174%27%3E0111011100001001010001100%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27108%27%20opacity%3D%270.0184%27%3E0110110010010100100101010%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27124%27%20opacity%3D%270.0166%27%3E1011100110000110000001110%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27140%27%20opacity%3D%270.0201%27%3E1000110110001101101010110%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27156%27%20opacity%3D%270.0188%27%3E0011000011001000111011000%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27172%27%20opacity%3D%270.0172%27%3E0000110110100101001101101%3C%2Ftext%3E%3Ctext%20x%3D%276%2018%2030%2042%2054%2066%2078%2090%20102%20114%20126%20138%20150%20162%20174%20186%20198%20210%20222%20234%20246%20258%20270%20282%20294%27%20y%3D%27188%27%20opacity%3D%270.0218%27%3E1001010010001100001010101%3C%2Ftext%3E%3Ctext%20x%3D%27138%27%20y%3D%2712%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27234%27%20y%3D%2712%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27258%27%20y%3D%2760%27%20opacity%3D%270.0231%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27246%27%20y%3D%27172%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%2730%27%20y%3D%27172%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27102%27%20y%3D%2776%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27282%27%20y%3D%2792%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27162%27%20y%3D%2728%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27114%27%20y%3D%2792%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%2776%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27150%27%20y%3D%27172%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27114%27%20y%3D%27108%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3Ctext%20x%3D%27234%27%20y%3D%27172%27%20opacity%3D%270.0231%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27294%27%20y%3D%2712%27%20opacity%3D%270.0231%27%3E1%3C%2Ftext%3E%3Ctext%20x%3D%27162%27%20y%3D%2744%27%20opacity%3D%270.0231%27%3E0%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-repeat: repeat;
 }
 body { background: transparent; }
@@ -1912,11 +1912,11 @@ tr.unread td { background: var(--gold-soft); }
 .ab-dark-p { max-width: 34rem; font-size: 1rem; line-height: 1.65; color: rgb(255 255 255 / .74); }
 
 /* ---- partners: navy rising to blue, like the reference's board */
-.ab-partners { padding: clamp(3rem, 7vh, 4.5rem) 0 clamp(7rem, 16vh, 10rem);
+.ab-partners { padding: clamp(3rem, 7vh, 4.5rem) 0 clamp(3.5rem, 8vh, 5rem);
   background: linear-gradient(180deg, var(--cs-navy) 0%, #0A1A3E 34%, #143472 72%, #2A55A4 100%); }
 
 /* ---- commitments: the left half, the seal standing in the right */
-.ab-commit { padding: clamp(7rem, 16vh, 10rem) 0 clamp(4rem, 10vh, 6rem); color: var(--cs-ink);
+.ab-commit { padding: clamp(3.5rem, 8vh, 5rem) 0 clamp(2rem, 5vh, 3rem); color: var(--cs-ink);
   background: linear-gradient(180deg, #2A55A4 0%, #8FADDC 6%, #D3DFEF 13%, #EDF2F7 40%, var(--cs-paper) 100%); }
 .ab-commit-in { max-width: 44rem; }
 .ab-sub { max-width: 34rem; margin: -1rem 0 2.8rem !important; font-size: 1.02rem; line-height: 1.6; color: var(--cs-ink2); }
@@ -1930,7 +1930,7 @@ tr.unread td { background: var(--gold-soft); }
 .ab-pol-b { max-width: 34rem; font-size: .97rem; line-height: 1.62; color: var(--cs-ink2); }
 
 /* ---- the region: rows in the FAQ's grammar; Liberia's row inverts, with the one red mark */
-.ab-bench { padding: clamp(3rem, 8vh, 5rem) 0 clamp(4rem, 10vh, 6rem); color: var(--cs-ink); background: var(--cs-paper); }
+.ab-bench { padding: clamp(1.5rem, 4vh, 2.5rem) 0 clamp(4rem, 10vh, 6rem); color: var(--cs-ink); background: var(--cs-paper); }
 .ab-brows { display: grid; gap: 3px; }
 .ab-brow { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr) 6.5rem; align-items: center; gap: 1.5rem; min-height: 3.7rem;
   padding: .8rem .95rem; background: rgb(11 30 69 / .05); }
@@ -4062,7 +4062,8 @@ html { -webkit-text-size-adjust: 100%; }
   .vhero-progress { display: none; }
   /* careers and about: the desktop-sized gaps where one section's colour runs into the next */
   .cs .cs-mission { padding-top: 3.2rem; padding-bottom: 3rem; }
-  .cs .cs-roles, .cs .cs-join, .cs .ab-commit { padding-top: 4rem; }
+  .cs .cs-roles, .cs .cs-join { padding-top: 4rem; }
+  .cs .ab-commit { padding-top: 2.5rem; }
   .cs .ab-quote { padding-top: 5rem; padding-bottom: 3rem; }
   .cs .ab-team { padding-top: 3rem; padding-bottom: 1.5rem; }
   .cs .ab-partners { padding-top: 3rem; padding-bottom: 3.5rem; }
@@ -5079,7 +5080,8 @@ html:has(.ab-hero) { background-image: url("/img/brand/mask-pattern-light.webp")
 .cs .ab-bench::after, .cs .ab-faq::after, .cs .ab-close::after, .ab-frame--white::after {
   content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: var(--mask-ink, #5B6470); opacity: var(--mask-op, .16);
-  -webkit-mask: url("/img/brand/mask-lines.webp") 0 0 / 185px auto repeat; mask: url("/img/brand/mask-lines.webp") 0 0 / 185px auto repeat; }
+  -webkit-mask: url("/img/brand/mask-lines.webp") 0 0 / 185px auto repeat; mask: url("/img/brand/mask-lines.webp") 0 0 / 185px auto repeat;
+  filter: blur(1.6px); }
 .cs .ab-team, .cs .ab-dark, .cs .ab-partners, .cs .ab-close { --mask-ink: #fff; --mask-op: .09; }
 /* the logo tiles: the masks take the place of the grid, under the logo */
 .ab-frame--white { background: #fff; }
@@ -5234,3 +5236,30 @@ html:has(.ab-hero) { background-image: url("/img/brand/mask-pattern-light.webp")
 @media (prefers-reduced-motion: reduce) {
   .pg-stages li, .pg-stage-bar i, .pg-event, .pg-course { transition: none !important; opacity: 1; transform: none; }
 }
+
+/* ============ CAREERS IN BLUE ============
+   The careers pages (not About, which shares their styles) trade the near-black for the flag's
+   blues, so every section reads clearly. */
+.cs:not(.ab) { --cs-black: #123B80; --cs-navy: #1A438F; }
+.cs:not(.ab) .cs-hero, .cs:not(.ab) .cs-hero--film { background: #123B80; }
+.cs:not(.ab) .cs-film-scrim { background:
+    linear-gradient(90deg, rgb(11 44 99 / .72) 0%, rgb(11 44 99 / .42) 36%, rgb(11 44 99 / .1) 66%, rgb(11 44 99 / 0) 100%),
+    linear-gradient(180deg, rgb(11 44 99 / .35) 0%, rgb(11 44 99 / 0) 24%, rgb(11 44 99 / 0) 58%, rgb(26 67 143 / .7) 88%, #1A438F 100%); }
+.cs:not(.ab) .cs-hero--film .cs-hero-sub { text-shadow: 0 1px 14px rgb(11 44 99 / .55); }
+.cs:not(.ab) .cs-roles { background: linear-gradient(180deg, var(--cs-paper) 0%, #9DB6DE 3%, #3563B3 8%, #22519F 40%, #1A458F 70%, #123B80 100%); }
+.cs:not(.ab) .cs-dark { background: linear-gradient(180deg, #123B80 0%, #16408A 70%, #1A438F 100%); }
+.cs:not(.ab) .cs-ap-hero, .cs:not(.ab) .cs-ok { background: linear-gradient(180deg, #0F3577 0%, #1A438F 55%, #2A5BB0 100%); }
+@media (max-width: 860px) {
+  .cs:not(.ab) .cs-film-scrim { background: linear-gradient(180deg, rgb(11 44 99 / .62) 0%, rgb(11 44 99 / .38) 45%, rgb(26 67 143 / .7) 82%, #1A438F 100%); }
+}
+
+/* ============ JUSTIFIED TEXT ============
+   Paragraphs and list items are set flush on both edges, with hyphenation so narrow columns do
+   not open up gaps. Display-sized quotes and anything inside a deliberately centred block keep
+   their own alignment. */
+p, li { text-align: justify; -webkit-hyphens: auto; hyphens: auto; hyphenate-limit-chars: 8 3 3; }
+:is(.page-header, .stat-big-cell, .video-placeholder, .lib-empty, .rp-empty, .dx-empty, .pt-note, .pt-logo-note, .pt-focal,
+  .bk-copy, .bk-hint, .bk-plate, .m-logo, .lsc-empty, .lsc-c-empty, .lsc-status, .ui-empty, .pg-date, .imglib-del-empty,
+  .m-zig-panel, .m-pol-copy, [style*="text-align:center"], [style*="text-align: center"]) :is(p, li),
+.hs-quote p, .ab-quote blockquote p { text-align: inherit; -webkit-hyphens: manual; hyphens: manual; }
+nav li, .nav-sheet li, .sheet-list li, .tm-legend li, .ui-stats li, .rx-tl li { text-align: inherit; }

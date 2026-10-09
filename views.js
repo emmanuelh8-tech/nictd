@@ -3875,7 +3875,7 @@ const PROGRAM_TRAININGS = [
     body: 'Web basics, data and a first app, in three weeks of evenings and Saturdays.' },
 ];
 const PROGRAM_FILMS = [
-  { src: '/media/about-hero-720.mp4', poster: '/media/about-hero-poster.jpg', title: 'Towers and the field', body: 'The masts that carry the network, from the hills to the coast, and the teams who survey the counties.' },
+  { src: '/media/about-hero-720.mp4', poster: '/media/about-hero-poster.jpg', title: 'Towers, field and classroom', body: 'The masts that carry the network, the field teams, and children learning on laptops.' },
   { src: '/media/careers-hero-720.mp4', poster: '/media/careers-hero-poster.jpg', title: 'The network at dusk', body: 'The masts that carry Liberia’s connections, as the city lights up.' },
   { src: '/media/mission.mp4', poster: '/media/mission-poster.jpg', title: 'Monrovia from above', body: 'The capital’s streets, where the first data waves begin.' },
   { src: '/media/research-hero.mp4', poster: '/media/research-hero-poster.jpg', title: 'Where research happens', body: 'A university campus from the air.' },

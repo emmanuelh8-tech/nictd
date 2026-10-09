@@ -278,7 +278,7 @@ function mainNav(active, q) {
     <div class="gov-navlinks dock">
       ${links.map(navItem).join('')}
     </div>
-    <a class="nav-cta pearl" href="/login"><span class="pearl-wrap"><span class="pearl-p"><i aria-hidden="true">✧</i><i aria-hidden="true">✦</i>Get Started</span></span></a>
+    <a class="nav-cta pearl" href="/login"><span class="pearl-wrap"><span class="pearl-p">Get Started</span></span></a>
     <button class="nav-icon-btn nav-find" type="button" aria-label="Search indicators" aria-controls="navSheet" data-sheet-search>${icon('search')}</button>
     <button class="nav-icon-btn nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navSheet"><span></span><span></span><span></span></button>
   </div>

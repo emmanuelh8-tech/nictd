@@ -44,13 +44,13 @@ A national ICT intelligence program where one processing system (NIIS) turns man
 
 - Names: NIIP (program), NIIS (system), NICTD (web application).
 - The existing site identity: Liberian navy, blue and flag red, and the Liberian seal. Type: Besley for headings and day numerals, Public Sans for text and figures, chosen by the user from a specimen on 2026-10-02 (the "Public notice" pairing; it replaced Fraunces, Inter, Manrope, Chakra Petch and IBM Plex Mono).
-- The NIIP 3D architecture film (`niip-3d/`) uses a dark graphite and cyan treatment. _Inferred: this is the dark variant of the NIIP brand, with navy and red as the official colours._
+- The NIIP 3D architecture film (in the separate NIIP repository, `niip-3d/`) uses a dark graphite and cyan treatment. _Inferred: this is the dark variant of the NIIP brand, with navy and red as the official colours._
 - It is an original build. No other organization's logos, wordmarks or copy.
 
 ## Evidence on Hand
 
 - Real county geometry: `public/liberia-counties.js`, from geoBoundaries LBR ADM1 (CC BY 3.0 IGO).
-- Architecture film and interactive 3D model: `niip-3d/`. Rendered video: `niip-3d/out/niip-1080x1920.mp4`.
+- Architecture film and interactive 3D model, and the NIIP brand kit: the separate NIIP repository (`niip-3d/` and `brand/`; it sits beside this one at `Desktop\NIIP`). Rendered video: `niip-3d/out/niip-1080x1920.mp4` there.
 - Deliverables: indicators, cost schedule, data-mining phase and pitch decks in `deliverables/`.
 - There are no real testimonials, adoption numbers or official statistics. Do not invent any.
 

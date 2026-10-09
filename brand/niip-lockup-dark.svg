@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 120" width="560" height="120" role="img" aria-label="NIIP — National ICT Intelligence Program">
-  <title>NIIP — National ICT Intelligence Program</title>
-  <g><polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26" fill="#0B0D0F" stroke="#3A4147" stroke-width="2.5" stroke-linejoin="round"/>
-  <clipPath id="ld"><polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26"/></clipPath>
-  <g clip-path="url(#ld)"><rect x="6" y="31" width="80" height="16" rx="8" fill="#6B737C"/><rect x="21" y="52" width="80" height="16" rx="8" fill="#3DFFC8"/><rect x="36" y="73" width="80" height="16" rx="8" fill="#6B737C"/></g>
-  <circle cx="106" cy="20" r="6" fill="#FFC35A"/></g>
-  <text x="146" y="74" font-family="Fraunces, Georgia, serif" font-weight="600" font-size="62" letter-spacing="3" fill="#E8EEEC">NIIP</text>
-  <text x="148" y="100" font-family="Inter, 'Segoe UI', sans-serif" font-weight="600" font-size="13.5" letter-spacing="2.6" fill="#8A9895">NATIONAL ICT INTELLIGENCE PROGRAM</text>
-</svg>

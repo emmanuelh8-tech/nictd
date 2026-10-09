@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="NIIP mark, one colour black">
-  <title>NIIP mark, one colour black</title>
-  <polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26" fill="none" stroke="#000000" stroke-width="7" stroke-linejoin="round"/>
-  <clipPath id="mb"><polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26"/></clipPath>
-  <g clip-path="url(#mb)" fill="#000000"><rect x="6" y="31" width="80" height="16" rx="8"/><rect x="21" y="52" width="80" height="16" rx="8"/><rect x="36" y="73" width="80" height="16" rx="8"/></g>
-</svg>

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152 152" width="152" height="152" role="img" aria-label="NIIP app icon">
-  <title>NIIP app icon</title>
-  <rect width="152" height="152" rx="34" fill="#FFFFFF"/><g transform="translate(16 16) scale(1)"><polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26" fill="#0B2C63"/>
-  <clipPath id="il"><polygon points="111.74,38.57 111.74,81.43 81.43,111.74 38.57,111.74 8.26,81.43 8.26,38.57 38.57,8.26 81.43,8.26"/></clipPath>
-  <g clip-path="url(#il)"><rect x="6" y="31" width="80" height="16" rx="8" fill="#7FA0CE"/><rect x="21" y="52" width="80" height="16" rx="8" fill="#FFFFFF"/><rect x="36" y="73" width="80" height="16" rx="8" fill="#7FA0CE"/></g>
-  <circle cx="106" cy="20" r="6" fill="#C8102E"/></g>
-</svg>
